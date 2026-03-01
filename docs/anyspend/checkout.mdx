@@ -1,15 +1,15 @@
 ---
 title: "Checkout"
-description: "Build full-featured checkout experiences with cart display, order summaries, custom forms, shipping, and multi-payment support"
+description: "Checkout components with cart, order summary, forms, shipping, discounts, and crypto/fiat payment"
 ---
 
-The AnySpend checkout components provide a complete payment experience with cart display, order summaries, multiple payment methods, custom form collection, shipping options, discount codes, and optional workflow integration.
+The checkout components render a two-panel layout: order summary on one side, payment on the other. They support crypto and fiat, custom form fields, shipping options, discount codes, and optional B3 workflow triggers. [See it live](https://sdk-demo.anyspend.com/).
 
 <Info>
   For the checkout **sessions REST API** (backend-driven, session-based flows), see [Checkout Sessions](/anyspend/checkout-sessions). This page covers the **React checkout components**.
 </Info>
 
-## How It Works
+## How it works
 
 ```mermaid
 flowchart LR
@@ -25,7 +25,7 @@ flowchart LR
     H --> I[Success Callback]
 ```
 
-## Quick Start
+## Quick start
 
 <Steps>
   <Step title="Install the SDK">
@@ -71,7 +71,7 @@ flowchart LR
 
 The main checkout component renders a two-panel layout with an order summary/cart panel and a payment panel supporting crypto and fiat options. Optionally includes a form panel for collecting customer information, shipping selection, and discount codes.
 
-#### Core Props
+#### Core props
 
 <ParamField path="recipientAddress" type="string" required>
   Merchant wallet address to receive payment
@@ -107,7 +107,7 @@ The main checkout component renders a two-panel layout with an order summary/car
   Custom text for the payment button
 </ParamField>
 
-#### Order Summary
+#### Order summary
 
 <ParamField path="totalAmount" type="string">
   Override the computed total in wei. Use when the total differs from the sum of item amounts (e.g., after discounts or fees).
@@ -161,7 +161,7 @@ The main checkout component renders a two-panel layout with an order summary/car
   Label for the return/redirect button
 </ParamField>
 
-#### Display Options
+#### Display options
 
 <ParamField path="mode" type="'page' | 'embedded'" default="'page'">
   `page` for standalone, `embedded` for inline within your layout
@@ -197,7 +197,7 @@ The main checkout component renders a two-panel layout with an order summary/car
   CSS class overrides. See [Customization](/anyspend/customization#css-class-overrides).
 </ParamField>
 
-#### Custom Forms
+#### Custom forms
 
 Collect customer information during checkout using a JSON schema or a custom React component.
 
@@ -213,7 +213,7 @@ Collect customer information during checkout using a JSON schema or a custom Rea
   Called when form data changes. Form data is also automatically included in the order's `callbackMetadata`.
 </ParamField>
 
-#### Shipping Options
+#### Shipping options
 
 <ParamField path="shippingOptions" type="ShippingOption[]">
   Array of shipping options to display as a radio-button selector. The selected option's amount is automatically added to the order total.
@@ -227,7 +227,7 @@ Collect customer information during checkout using a JSON schema or a custom Rea
   Called when the user selects a shipping option
 </ParamField>
 
-#### Discount Codes
+#### Discount codes
 
 <ParamField path="enableDiscountCode" type="boolean">
   Show a discount code input field. Requires `validateDiscount` to be set.
@@ -270,7 +270,7 @@ import { AnySpendCheckoutTrigger } from "@b3dotfun/sdk/anyspend/react";
 />;
 ```
 
-#### Workflow Props
+#### Workflow props
 
 All `<AnySpendCheckout>` props are supported, plus:
 
@@ -448,7 +448,7 @@ interface CheckoutFormComponentProps {
 
 ## Examples
 
-### E-Commerce Store
+### E-commerce store
 
 ```tsx title="Full E-Commerce Checkout" icon="store"
 function CheckoutPage({ cart, shippingAddress }) {
@@ -517,7 +517,7 @@ function CheckoutPage({ cart, shippingAddress }) {
 }
 ```
 
-### SaaS Subscription
+### SaaS subscription
 
 ```tsx title="Subscription Checkout" icon="credit-card"
 function SubscriptionCheckout({ plan }) {
@@ -567,7 +567,7 @@ function SubscriptionCheckout({ plan }) {
 }
 ```
 
-### Simple Payment (No Cart)
+### Simple payment (no cart)
 
 ```tsx title="Payment-Only Checkout" icon="money-bill"
 // Use AnySpendCheckoutTrigger without items for a simple payment flow
@@ -584,7 +584,7 @@ function SubscriptionCheckout({ plan }) {
 />
 ```
 
-### Checkout with Custom Forms
+### Checkout with custom forms
 
 Collect customer info, offer shipping options, and validate discount codes — all integrated into the checkout flow:
 
@@ -645,7 +645,7 @@ function FullCheckout({ cart }) {
 }
 ```
 
-### Checkout with Custom Form Component
+### Checkout with custom form component
 
 Use a fully custom form component when the JSON schema isn't flexible enough:
 
@@ -686,7 +686,7 @@ function MyCustomForm({ formData, setFormData, onValidationChange }) {
 />
 ```
 
-### Donation / Tip Jar
+### Donation / tip jar
 
 ```tsx title="Donation Checkout" icon="heart"
 function DonationPage({ creator }) {
@@ -720,7 +720,7 @@ function DonationPage({ creator }) {
 
 ---
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={3}>
 <Card title="Checkout Sessions API" icon="server" href="/anyspend/checkout-sessions">

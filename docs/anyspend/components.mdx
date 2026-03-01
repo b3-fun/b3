@@ -1,9 +1,9 @@
 ---
 title: "Components"
-description: "React components for cross-chain payments, checkout, deposits, NFT purchases, and custom smart contract interactions"
+description: "React components for swaps, checkout, deposits, NFTs, and custom contract calls"
 ---
 
-AnySpend provides a suite of React components for every payment use case — from simple swaps to full checkout flows with forms and shipping.
+All the React components you can drop into your app. Each one handles a different payment pattern. Try them interactively in the [SDK demo](https://sdk-demo.anyspend.com/).
 
 <CardGroup cols={3}>
 <Card title="Swaps & Payments" icon="arrows-rotate" href="#anyspend">
@@ -19,7 +19,7 @@ AnySpend provides a suite of React components for every payment use case — fro
 
 ---
 
-## Core Components
+## Core components
 
 ### `<AnySpend>`
 
@@ -139,7 +139,7 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
   Color and theme configuration. See [Customization](/anyspend/customization#theme).
 </ParamField>
 
-#### Usage Examples
+#### Usage examples
 
 <Tabs>
 <Tab title="Basic Swap">
@@ -396,7 +396,7 @@ interface ChainConfig {
 }
 ```
 
-#### Usage Examples
+#### Usage examples
 
 <Tabs>
 <Tab title="Basic Deposit">
@@ -848,7 +848,7 @@ import { QRDeposit } from "@b3dotfun/sdk/anyspend/react";
 
 ---
 
-## Specialized Components
+## Specialized components
 
 ### `<AnySpendNFTButton>`
 
@@ -1034,7 +1034,7 @@ function App() {
 
 ---
 
-## Payment Method Types
+## Payment method types
 
 ```typescript title="Payment Method Enums" icon="code"
 // Crypto payment methods
@@ -1056,7 +1056,7 @@ enum FiatPaymentMethod {
 
 ---
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={3}>
 <Card title="Customization" icon="palette" href="/anyspend/customization">

@@ -1,6 +1,6 @@
 ---
-title: "AnySpend Facilitator"
-description: "Production-grade payment processor for x402 multi-token payments"
+title: "AnySpend facilitator"
+description: "Payment processor for x402 multi-token payments"
 ---
 
 <CardGroup cols={2}>
@@ -15,13 +15,13 @@ description: "Production-grade payment processor for x402 multi-token payments"
 
 ## Overview
 
-The AnySpend x402 Facilitator is a production-grade payment infrastructure that powers multi-token, cross-chain payments for the x402 protocol. It handles all the complexity of token swaps, cross-chain bridging, and settlement, allowing developers to accept payments in any token while receiving their preferred currency.
+The AnySpend x402 Facilitator handles multi-token, cross-chain payments for the x402 protocol. It takes care of token swaps, cross-chain bridging, and settlement so developers can accept payments in any token while receiving their preferred currency.
 
 **Production Endpoint:** `https://mainnet.anyspend.com/x402`
 
-## Key Capabilities
+## Key capabilities
 
-### Multi-Token Payment Processing
+### Multi-token payment processing
 
 Accept payments in any ERC-20 token that supports EIP-2612 (permit) or EIP-3009 (transferWithAuthorization):
 
@@ -30,7 +30,7 @@ Accept payments in any ERC-20 token that supports EIP-2612 (permit) or EIP-3009 
 - **Custom tokens**: Any token with permit support, including project tokens like B3
 - **19+ Networks**: Support across EVM chains (Base, Ethereum, Arbitrum, etc.) and SVM (Solana)
 
-### Cross-Chain Routing
+### Cross-chain routing
 
 Automatically handles payments across different blockchain networks:
 
@@ -39,16 +39,16 @@ Automatically handles payments across different blockchain networks:
 - **Cross-VM payments**: Experimental support for Solana ↔ EVM transfers
 - **Optimal routing**: Smart route selection for best execution
 
-### Automatic Token Conversion
+### Automatic token conversion
 
-Seamlessly converts between any supported tokens:
+Converts between any supported tokens:
 
 - **Buyer flexibility**: Users pay with whatever token they hold
 - **Seller preference**: Merchants receive their chosen settlement currency
 - **Best pricing**: Routes through optimal DEX liquidity sources
 - **Slippage protection**: Automatic safeguards against price impact
 
-### Gasless Payments
+### Gasless payments
 
 Users never pay gas fees:
 
@@ -57,19 +57,19 @@ Users never pay gas fees:
 - No need to hold native tokens for gas
 - Smooth user experience across all chains
 
-## Standards Compliance
+## Standards compliance
 
-### x402 Protocol Compliant
+### x402 protocol compliant
 
 The AnySpend Facilitator implements the complete x402 specification:
 
-- ✅ **HTTP-native payments** via `402 Payment Required` status
-- ✅ **Standard headers** (`X-PAYMENT`, `X-PAYMENT-RESPONSE`, `X-PREFERRED-TOKEN`)
-- ✅ **Exact payment scheme** with recipient and amount verification
-- ✅ **Signature-based authorization** (EIP-712, EIP-2612, EIP-3009)
-- ✅ **Cryptographic verification** without trusted third parties
+- HTTP-native payments via `402 Payment Required` status
+- Standard headers (`X-PAYMENT`, `X-PAYMENT-RESPONSE`, `X-PREFERRED-TOKEN`)
+- Exact payment scheme with recipient and amount verification
+- Signature-based authorization (EIP-712, EIP-2612, EIP-3009)
+- Cryptographic verification without trusted third parties
 
-### Drop-in Replacement
+### Drop-in replacement
 
 Fully compatible with any x402 implementation:
 
@@ -80,7 +80,7 @@ Fully compatible with any x402 implementation:
 
 ## Architecture
 
-### Payment Flow
+### Payment flow
 
 ```
 ┌──────────────┐
@@ -121,7 +121,7 @@ Fully compatible with any x402 implementation:
 └──────────────────────────┘
 ```
 
-### Infrastructure Components
+### Infrastructure components
 
 **API Layer**
 - RESTful HTTP API for payment verification and settlement
@@ -147,7 +147,7 @@ Fully compatible with any x402 implementation:
 - Deadline enforcement
 - Smart contract audits
 
-## API Endpoints
+## API endpoints
 
 ### POST /verify
 
@@ -327,7 +327,7 @@ const response = await client.request('https://api.example.com/premium');
 
 ## Security
 
-### Signature Verification
+### Signature verification
 
 All payments are verified using EIP-712 typed data signatures:
 
@@ -336,7 +336,7 @@ All payments are verified using EIP-712 typed data signatures:
 
 Signatures are validated before any on-chain execution.
 
-### Replay Protection
+### Replay protection
 
 **Random Nonce (USDC):**
 - Each signature includes unique bytes32 nonce
@@ -348,14 +348,14 @@ Signatures are validated before any on-chain execution.
 - Auto-increments on each permit execution
 - Prevents out-of-order execution
 
-### Deadline Enforcement
+### Deadline enforcement
 
 All signatures include expiration timestamps:
 - Default: 5 minutes from signature time
 - Prevents stale payment authorizations
 - Automatic rejection of expired signatures
 
-### No Private Key Access
+### No private key access
 
 The facilitator **never** has access to user private keys:
 - Users sign messages client-side
@@ -385,43 +385,23 @@ The facilitator **never** has access to user private keys:
 - Failed transaction retry logic
 - 24/7 monitoring and alerts
 
-## Network Support
+## Network support
 
-### EVM Mainnet Networks (12)
+### EVM mainnet networks (12)
 
 Abstract, Arbitrum, Avalanche, B3, Base, BNB Chain, Ethereum, IoTeX, Optimism, Peaq, Polygon, Sei
 
-### EVM Testnets (5)
+### EVM testnets (5)
 
 Abstract Testnet, Avalanche Fuji, Base Sepolia, Polygon Amoy, Sei Testnet
 
-### SVM Networks (2)
+### SVM networks (2)
 
 Solana Mainnet, Solana Devnet
 
 See [Network Support](/anyspend/x402-network-support) for complete details.
 
-## Why Choose AnySpend Facilitator?
-
-<CardGroup cols={2}>
-<Card title="Standards Compliant" icon="check-circle">
-  Full x402 protocol compliance - works with any compatible client or server
-</Card>
-
-<Card title="Production Ready" icon="rocket">
-  Battle-tested infrastructure with enterprise-grade reliability and performance
-</Card>
-
-<Card title="Multi-Chain" icon="globe">
-  Support for 19+ blockchain networks with automatic cross-chain routing
-</Card>
-
-<Card title="Developer Friendly" icon="code">
-  Simple APIs and SDKs for Express, Next.js, Hono, and client-side TypeScript
-</Card>
-</CardGroup>
-
-## Getting Started
+## Getting started
 
 <CardGroup cols={2}>
 <Card title="Quickstart for Sellers" icon="money-bill" href="/anyspend/x402-quickstart-sellers">

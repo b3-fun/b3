@@ -1,5 +1,5 @@
 ---
-title: "Network & Token Support"
+title: "Network & token support"
 description: "Supported blockchains, tokens, and contract addresses for AnySpend x402 payments"
 ---
 
@@ -7,7 +7,7 @@ description: "Supported blockchains, tokens, and contract addresses for AnySpend
 
 AnySpend x402 supports payments across multiple blockchain networks including EVM-compatible chains and Solana (SVM). This page provides the complete reference of supported networks, tokens, and their contract addresses.
 
-## EVM Mainnet Networks
+## EVM mainnet networks
 
 AnySpend x402 supports the following EVM mainnet chains:
 
@@ -30,7 +30,7 @@ AnySpend x402 supports the following EVM mainnet chains:
 **Recommended chains for production:** Base (low fees, fast), Ethereum (maximum liquidity), Arbitrum (balanced)
 </Note>
 
-## EVM Testnet Networks
+## EVM testnet networks
 
 For development and testing, AnySpend supports these testnets:
 
@@ -42,7 +42,7 @@ For development and testing, AnySpend supports these testnets:
 | Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
 | Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
 
-## SVM Networks (Solana)
+## SVM networks (Solana)
 
 AnySpend also supports Solana Virtual Machine (SVM) networks:
 
@@ -55,7 +55,7 @@ AnySpend also supports Solana Virtual Machine (SVM) networks:
 Solana support enables cross-VM payments - users can pay with SOL or SPL tokens while resource servers receive stablecoins on EVM chains.
 </Info>
 
-## Token Compatibility
+## Token compatibility
 
 <Note>
 To use a token with X402, it must implement either **EIP-3009** (`transferWithAuthorization`) or **EIP-2612** (`permit`) for gasless signatures.
@@ -63,7 +63,7 @@ To use a token with X402, it must implement either **EIP-3009** (`transferWithAu
 
 Rather than maintaining a static list of supported tokens, we've built tools to help you verify any token's compatibility in real-time.
 
-## X402 Token Compatibility Checker
+## X402 token compatibility checker
 
 <Note>
 **New Tool Available**: Verify if any ERC-20 token is compatible with X402 payments before integration.
@@ -73,15 +73,15 @@ For a token to be compatible with X402, it must implement either:
 - **EIP-3009** (`transferWithAuthorization`) - Used by USDC
 - **EIP-2612** (`permit`) - Used by USDT (on some chains) and many other modern ERC-20 tokens
 
-### Using the Public Checker
+### Using the public checker
 
 Check any ERC-20 token on AnySpend-supported chains:
 
-**🌐 Web Interface**: [https://anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+**Web interface**: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
 
 Simply enter a token address and select the network to instantly verify X402 compatibility.
 
-**🔗 Direct API**: You can also query the API directly:
+**Direct API**: You can also query the API directly:
 
 ```bash
 curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
@@ -89,11 +89,11 @@ curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034e
 
 This returns the token metadata and compatibility information in JSON format.
 
-### Using the NPM Package
+### Using the npm package
 
 For developers integrating token compatibility checks into their applications:
 
-**📦 NPM Package**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+**npm package**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
 
 ```bash
 npm install @b3dotfun/anyspend-x402-token-compat
@@ -115,7 +115,7 @@ const hasPermit = await client.supportsEip2612('base', tokenAddress);
 ```
 
 
-### How It Works
+### How it works
 
 **Supported Cross-Chain Routes:**
 AnySpend supports cross-chain routing between any of the supported EVM networks, including:
@@ -135,12 +135,12 @@ Built on Cloudflare's global infrastructure with intelligent caching for instant
 
 The checker combines real-time on-chain verification with a growing database of verified tokens:
 
-- **⚡ Lightning Fast**: Millisecond-level response times through smart caching
-- **📊 Crowdsourced**: Database grows automatically as more tokens are checked
-- **🔄 Always Fresh**: On-chain verification for uncached tokens
-- **🌍 Global**: Powered by Cloudflare Workers for low-latency worldwide access
+- Millisecond-level response times through smart caching
+- Database grows automatically as more tokens are checked
+- On-chain verification for uncached tokens
+- Runs on Cloudflare Workers for low-latency worldwide access
 
-### Integration in X402
+### Integration in x402
 
 The token compatibility checker is already integrated into the AnySpend X402 SDK:
 
@@ -154,7 +154,7 @@ The token compatibility checker is already integrated into the AnySpend X402 SDK
 **Important**: Always verify token compatibility before integrating a new token into your payment flow. Incompatible tokens will result in failed payment signatures.
 </Warning>
 
-## Additional Resources
+## Additional resources
 
 <CardGroup cols={2}>
 <Card title="Chainlist" icon="link" href="https://chainlist.org">
@@ -174,7 +174,7 @@ The token compatibility checker is already integrated into the AnySpend X402 SDK
 </Card>
 </CardGroup>
 
-## What's Next?
+## What's next
 
 <CardGroup cols={2}>
 <Card title="Quickstart for Buyers" icon="wallet" href="/anyspend/x402-quickstart-buyers">
@@ -186,7 +186,7 @@ The token compatibility checker is already integrated into the AnySpend X402 SDK
 </Card>
 </CardGroup>
 
-## Getting Help
+## Getting help
 
 If you need a specific token or network supported:
 

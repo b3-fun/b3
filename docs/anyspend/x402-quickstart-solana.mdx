@@ -57,7 +57,7 @@ pnpm add @b3dotfun/anyspend-x402
 ```
 </CodeGroup>
 
-### Basic Server Example
+### Basic server example
 
 ```typescript
 import express from 'express';
@@ -117,11 +117,11 @@ app.listen(3001, () => {
 
 ---
 
-## Client Setup
+## Client setup
 
 There are two ways to make payments on Solana depending on your use case.
 
-### Option 1: Using Fetch (AI Agents & Backend)
+### Option 1: using fetch (AI agents and backend)
 
 Perfect for Node.js scripts, AI agents, and server-side applications.
 
@@ -141,7 +141,7 @@ pnpm add @b3dotfun/anyspend-x402-fetch
 ```
 </CodeGroup>
 
-#### Example Script
+#### Example script
 
 ```typescript
 import {
@@ -181,7 +181,7 @@ main();
 
 ---
 
-### Option 2: Using Browser Wallets (React/Next.js)
+### Option 2: using browser wallets (React/Next.js)
 
 For web applications using Phantom, Solflare, Ledger, or other Solana wallets.
 
@@ -201,7 +201,7 @@ pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-f
 ```
 </CodeGroup>
 
-#### React Component Example
+#### React component example
 
 ```tsx
 import {
@@ -264,7 +264,7 @@ function PremiumDataFetcher() {
 }
 ```
 
-#### App Wrapper Setup
+#### App wrapper setup
 
 Wrap your app with wallet providers:
 
@@ -293,12 +293,12 @@ function App() {
 
 ## Configuration
 
-### Supported Networks
+### Supported networks
 
 - **`solana`** - Solana mainnet-beta
 - **`solana-devnet`** - Solana devnet (for testing)
 
-### Token Configuration
+### Token configuration
 
 The most common SPL token on Solana is USDC:
 
@@ -313,6 +313,7 @@ For other SPL tokens, specify the mint address and decimals.
 
 ### Facilitator URL
 
+
 Production: `https://mainnet.anyspend.com/x402`
 
 The facilitator handles:
@@ -325,7 +326,7 @@ The facilitator handles:
 
 ## Testing
 
-### Get Test USDC
+### Get test USDC
 
 For Solana devnet testing:
 
@@ -333,7 +334,7 @@ For Solana devnet testing:
 2. Use devnet USDC mint: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
 3. Set network to `solana-devnet` in your config
 
-### Test Your Integration
+### Test your integration
 
 ```typescript
 // Server - use devnet
@@ -345,7 +346,7 @@ const endpoint = 'https://api.devnet.solana.com';
 
 ---
 
-## Common Token Addresses
+## Common token addresses
 
 | Token | Mint Address | Decimals | Network |
 |-------|--------------|----------|---------|
@@ -354,7 +355,7 @@ const endpoint = 'https://api.devnet.solana.com';
 
 ---
 
-## Error Handling
+## Error handling
 
 ```typescript
 try {
@@ -373,7 +374,7 @@ try {
 
 ---
 
-## What's Next?
+## What's next
 
 <CardGroup cols={2}>
 <Card title="X402 Overview" icon="book" href="/anyspend/x402-overview">
@@ -422,7 +423,7 @@ Verify:
 
 ---
 
-## Getting Help
+## Getting help
 
 - **Live Demo**: Try it yourself at [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)
 - **Demo Source Code**: [github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)

@@ -50,9 +50,9 @@ pnpm add @b3dotfun/anyspend-x402
 ```
 </CodeGroup>
 
-## Quick Start
+## Quick start
 
-### 1. Basic Integration
+### 1. Basic integration
 
 The simplest way to add payments to your Express API:
 
@@ -115,7 +115,7 @@ app.listen(3000, () => {
 
 ---
 
-### 2. Receive Custom Tokens (e.g., B3)
+### 2. Receive custom tokens (e.g., B3)
 
 You can configure your API to receive any token, not just USDC:
 
@@ -168,11 +168,12 @@ app.listen(3000);
 - Buyers can still pay with **any token** (ETH, USDC, DAI, etc.)
 - AnySpend converts their payment to **B3 tokens**
 - You receive exactly **100 B3 tokens** in your wallet
-- Complete flexibility for both buyers and sellers!
+- Both buyers and sellers keep their token preferences
 
 ## Configuration
 
 ### Facilitator URL
+
 
 The AnySpend facilitator is hosted at:
 
@@ -189,11 +190,11 @@ import { facilitator } from '@b3dotfun/anyspend-x402';
 app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
 ```
 
-### Endpoint Configuration
+### Endpoint configuration
 
 You have three methods to configure payment requirements:
 
-#### Method 1: Simple Dollar Amounts (Recommended)
+#### Method 1: simple dollar amounts (recommended)
 
 Let AnySpend handle token conversion automatically:
 
@@ -215,11 +216,11 @@ const endpointConfig = {
 - AnySpend converts to USDC automatically
 - You always receive USDC
 
-#### Method 2: Specific Token Requirements
+#### Method 2: specific token requirements
 
 Require specific tokens on specific networks. You can receive **any token**, not just USDC!
 
-**Example 1: Receive USDC (Stablecoin)**
+**Example 1: receive USDC (stablecoin)**
 
 ```typescript
 const endpointConfig = {
@@ -231,7 +232,7 @@ const endpointConfig = {
 };
 ```
 
-**Example 2: Receive B3 Tokens (Custom Token)**
+**Example 2: receive B3 tokens (custom token)**
 
 ```typescript
 import { Address } from 'viem';
@@ -263,7 +264,7 @@ const endpointConfig = {
 app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
 ```
 
-**Example 3: Receive DAI (Stablecoin)**
+**Example 3: receive DAI (stablecoin)**
 
 ```typescript
 const endpointConfig = {
@@ -275,7 +276,7 @@ const endpointConfig = {
 };
 ```
 
-**Example 4: Receive Native ETH**
+**Example 4: receive native ETH**
 
 ```typescript
 const endpointConfig = {
@@ -287,7 +288,7 @@ const endpointConfig = {
 };
 ```
 
-**Example 5: Receive Custom ERC-20 Token**
+**Example 5: receive custom ERC-20 token**
 
 For any ERC-20 token with permit support:
 
@@ -322,11 +323,11 @@ const endpointConfig = {
 - Both buyer and seller flexibility are maintained
 </Note>
 
-### Finding Token Details
+### Finding token details
 
 To configure a custom token, you need to know its EIP-712 parameters. Here's how to find them:
 
-**Method 1: Check Token Contract**
+**Method 1: check token contract**
 
 Use a blockchain explorer like [Basescan](https://basescan.org):
 
@@ -337,7 +338,7 @@ const version = await token.read.version(); // e.g., "1"
 const decimals = await token.read.decimals(); // e.g., 18
 ```
 
-**Method 2: Common Tokens**
+**Method 2: common tokens**
 
 | Token | Name | Version | Decimals | Base Address |
 |-------|------|---------|----------|--------------|
@@ -345,7 +346,7 @@ const decimals = await token.read.decimals(); // e.g., 18
 | DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
 | B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
 
-**Method 3: Use Viem**
+**Method 3: use viem**
 
 ```typescript
 import { createPublicClient, http } from 'viem';
@@ -393,7 +394,7 @@ const [name, version, decimals] = await Promise.all([
 ]);
 ```
 
-#### Method 3: Flexible (Let Client Choose)
+#### Method 3: flexible (let client choose)
 
 Allow clients to specify their preferred payment token:
 
@@ -415,9 +416,9 @@ curl https://api.example.com/data \
   -H "X-PREFERRED-NETWORK: base-mainnet"
 ```
 
-## Advanced Configuration
+## Advanced configuration
 
-### Dynamic Pricing
+### Dynamic pricing
 
 Calculate prices based on request parameters:
 
@@ -450,7 +451,7 @@ app.get('/api/compute', (req, res) => {
 });
 ```
 
-### Custom Facilitator Configuration
+### Custom facilitator configuration
 
 If you need custom facilitator settings:
 
@@ -472,7 +473,7 @@ app.use(paymentMiddleware(
 ));
 ```
 
-### Multiple Recipients
+### Multiple recipients
 
 Route payments to different wallets based on endpoint:
 
@@ -494,9 +495,9 @@ const endpointConfig = {
 app.use(paymentMiddleware(null, endpointConfig, facilitator));
 ```
 
-## Protected Routes
+## Protected routes
 
-### Protect Specific Routes
+### Protect specific routes
 
 Only protect endpoints that require payment:
 
@@ -520,7 +521,7 @@ app.get('/api/premium', (req, res) => {
 });
 ```
 
-### Route-Specific Middleware
+### Route-specific middleware
 
 Apply different payment configs to different route groups:
 
@@ -546,7 +547,7 @@ app.use('/api/premium', paymentMiddleware(
 
 ## Testing
 
-### Local Development
+### Local development
 
 Test your API locally with testnet USDC:
 
@@ -574,7 +575,7 @@ app.use(paymentMiddleware(
 
 Get testnet USDC from the [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-### Test Client Request
+### Test client request
 
 Test with curl:
 
@@ -602,9 +603,9 @@ curl https://your-api.com/api/premium-data \
 
 Or use the x402 client SDK (see [Quickstart for Buyers](/anyspend/x402-quickstart-buyers)).
 
-## Monitoring Payments
+## Monitoring payments
 
-### Access Payment Metadata
+### Access payment metadata
 
 The middleware attaches payment information to the request:
 
@@ -628,7 +629,7 @@ app.get('/api/premium', (req, res) => {
 });
 ```
 
-### Webhook Notifications
+### Webhook notifications
 
 Get notified when payments are settled:
 
@@ -664,7 +665,7 @@ app.use(paymentMiddleware(
 
 ## Examples
 
-### AI Agent API
+### AI agent API
 
 ```typescript
 import express from 'express';
@@ -722,7 +723,7 @@ app.post('/api/image', async (req, res) => {
 app.listen(3000);
 ```
 
-### Data API with Rate Limiting
+### Data API with rate limiting
 
 ```typescript
 const endpointConfig = {
@@ -763,7 +764,7 @@ app.get('/api/data/premium', (req, res) => {
 });
 ```
 
-## Best Practices
+## Best practices
 
 <AccordionGroup>
 <Accordion title="Use Environment Variables">
@@ -819,7 +820,7 @@ const facilitatorUrl = process.env.NODE_ENV === 'production'
 </Accordion>
 </AccordionGroup>
 
-## What's Next?
+## What's next
 
 <CardGroup cols={2}>
 <Card title="Overview" icon="book" href="/anyspend/x402-overview">
@@ -863,7 +864,7 @@ Verify:
 </Accordion>
 </AccordionGroup>
 
-## Getting Help
+## Getting help
 
 - **Discord**: Join our [Discord community](https://discord.gg/b3dotfun)
 - **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)

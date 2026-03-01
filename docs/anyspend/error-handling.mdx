@@ -1,308 +1,163 @@
 ---
-title: "Error Handling & Troubleshooting"
-description: "Comprehensive guide to handling errors gracefully and debugging common issues with AnySpend"
+title: "Error handling"
+description: "Order statuses, error codes, and patterns for handling failures in AnySpend"
 ---
 
-# Error Handling & Troubleshooting
+## Order status lifecycle
 
-Comprehensive guide to handling errors gracefully and debugging common issues with AnySpend to provide the best user experience.
+Every AnySpend order moves through these states:
 
-## 📊 Order Status Lifecycle
-
-Understanding order states is crucial for proper error handling and user experience.
-
-### Order Status Types
-
-```typescript title="Order Status Enum" icon="list"
+```typescript title="Order statuses" icon="list"
 enum OrderStatus {
-  // Initial States
+  // Waiting
   SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
   WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
   EXPIRED = "expired",
 
-  // Processing States
+  // Processing
   SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
   RELAY = "relay",
 
-  // Success States
+  // Done
   EXECUTED = "executed",
 
-  // Failure States
+  // Failed
   REFUNDING = "refunding",
   REFUNDED = "refunded",
   FAILURE = "failure",
 }
 ```
 
-### Status Descriptions
+| Status | What's happening | User action |
+|--------|-----------------|-------------|
+| `scanning_deposit_transaction` | Waiting for blockchain confirmation | None -- wait |
+| `waiting_stripe_payment` | Processing card payment | May need to complete 3D Secure |
+| `sending_token_from_vault` | Sending tokens for swap | None -- automatic |
+| `relay` | Cross-chain transaction in progress | None -- wait |
+| `executed` | Done | None |
+| `expired` | Order expired before payment arrived | Create a new order |
+| `refunding` | Automatic refund in progress | None -- wait |
+| `refunded` | Refund sent | Check wallet for refunded tokens |
+| `failure` | Transaction failed | Review error details, retry |
 
-<table>
-  <thead>
-    <tr>
-      <th>Status</th>
-      <th>Description</th>
-      <th>User Action Required</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`scanning_deposit_transaction`</td>
-      <td>Waiting for payment confirmation</td>
-      <td>None - wait for blockchain confirmation</td>
-    </tr>
-    <tr>
-      <td>`waiting_stripe_payment`</td>
-      <td>Processing credit card payment</td>
-      <td>May need to complete 3D Secure</td>
-    </tr>
-    <tr>
-      <td>`sending_token_from_vault`</td>
-      <td>Sending tokens for swap</td>
-      <td>None - automatic process</td>
-    </tr>
-    <tr>
-      <td>`relay`</td>
-      <td>Cross-chain transaction in progress</td>
-      <td>None - wait for completion</td>
-    </tr>
-    <tr>
-      <td>`executed`</td>
-      <td>Transaction completed successfully</td>
-      <td>None - success!</td>
-    </tr>
-    <tr>
-      <td>`expired`</td>
-      <td>Order expired before completion</td>
-      <td>Create new order</td>
-    </tr>
-    <tr>
-      <td>`refunding`</td>
-      <td>Automatic refund in progress</td>
-      <td>None - wait for refund</td>
-    </tr>
-    <tr>
-      <td>`refunded`</td>
-      <td>Refund completed</td>
-      <td>Check wallet for refunded tokens</td>
-    </tr>
-    <tr>
-      <td>`failure`</td>
-      <td>Transaction failed</td>
-      <td>Review error details, retry</td>
-    </tr>
-  </tbody>
-</table>
+## Error codes
 
-## ⚠️ Common Error Codes
-
-### Payment Errors
+### Payment errors
 
 <AccordionGroup>
 <Accordion title="INSUFFICIENT_BALANCE">
-**Description**: User doesn't have enough tokens for the transaction
-
-**Solution**: Request user to add funds to their wallet or choose a different payment token
-
-**Example**:
+User doesn't have enough tokens. Prompt them to add funds or switch to a different token.
 
 ```typescript
 if (error.message === "INSUFFICIENT_BALANCE") {
-  toast.error("Insufficient balance. Please add funds to your wallet.");
-  // Optionally redirect to fiat onramp
-  openFiatOnramp();
+  toast.error("Not enough funds. Add tokens or choose a different payment method.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="INVALID_TOKEN_ADDRESS">
-**Description**: Token contract not supported on the target chain
-
-**Solution**: Verify token is supported and provide alternative options
-
-**Example**:
+Token contract isn't supported on the target chain. Show the user which tokens are available.
 
 ```typescript
 if (error.message === "INVALID_TOKEN_ADDRESS") {
-  toast.error("This token is not supported. Please choose another.");
-  showSupportedTokens();
+  toast.error("This token isn't supported. Please choose another.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="MINIMUM_AMOUNT_NOT_MET">
-**Description**: Transaction amount is below the minimum threshold
-
-**Solution**: Increase transaction amount or inform user of minimum requirements
-
-**Example**:
+Transaction amount is below the minimum threshold.
 
 ```typescript
 if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
-  toast.error(`Minimum amount is $${minimumAmount}. Please increase your amount.`);
+  toast.error(`Minimum amount is $${minimumAmount}.`);
 }
 ```
-
 </Accordion>
 
 <Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
-**Description**: Transaction amount exceeds maximum limit
-
-**Solution**: Reduce amount or split into multiple transactions
-
-**Example**:
+Transaction amount exceeds the limit. Split into multiple transactions or reduce the amount.
 
 ```typescript
 if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
-  toast.error(`Maximum amount is $${maximumAmount}. Please reduce your amount.`);
+  toast.error(`Maximum amount is $${maximumAmount}.`);
 }
 ```
-
 </Accordion>
 </AccordionGroup>
 
-### Network Errors
+### Network errors
 
 <AccordionGroup>
 <Accordion title="SLIPPAGE">
-**Description**: Price moved beyond acceptable tolerance during execution
-
-**Solution**: Retry with higher slippage tolerance or wait for price stability
-
-**Example**:
+Price moved beyond tolerance during execution. Retry or wait for the market to settle.
 
 ```typescript
 if (error.message === "SLIPPAGE") {
-  toast.warning("Price moved unfavorably. Retrying with adjusted settings...");
+  toast.warning("Price moved. Retrying...");
   retryWithHigherSlippage();
 }
 ```
-
 </Accordion>
 
 <Accordion title="NETWORK_ERROR">
-**Description**: RPC connection issues or blockchain congestion
-
-**Solution**: Retry after delay or switch to alternative RPC
-
-**Example**:
+RPC connection issue or chain congestion. Retry after a short delay.
 
 ```typescript
 if (error.message === "NETWORK_ERROR") {
-  toast.error("Network issue detected. Please check connection and try again.");
-  scheduleRetry();
+  toast.error("Network issue. Check your connection and try again.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="QUOTE_EXPIRED">
-**Description**: Price quote is no longer valid
-
-**Solution**: Get fresh quote and retry transaction
-
-**Example**:
+Price quote is stale. Fetch a new one.
 
 ```typescript
 if (error.message === "QUOTE_EXPIRED") {
-  toast.info("Price quote expired. Getting fresh quote...");
+  toast.info("Quote expired. Getting a fresh one...");
   refreshQuoteAndRetry();
 }
 ```
-
 </Accordion>
 
 <Accordion title="CHAIN_NOT_SUPPORTED">
-**Description**: Requested blockchain is not supported
-
-**Solution**: Use supported chains or implement fallback
-
-**Example**:
+Requested chain isn't supported. Show the user which chains are available.
 
 ```typescript
 if (error.message === "CHAIN_NOT_SUPPORTED") {
-  toast.error("This blockchain is not supported. Please choose another.");
+  toast.error("This chain isn't supported.");
   showSupportedChains();
 }
 ```
-
 </Accordion>
 </AccordionGroup>
 
-### Contract Errors
+### Contract errors
 
 <AccordionGroup>
 <Accordion title="CONTRACT_CALL_FAILED">
-**Description**: Smart contract execution failed
-
-**Solution**: Check contract parameters and state
-
-**Example**:
-
-```typescript
-if (error.message === "CONTRACT_CALL_FAILED") {
-  toast.error("Contract interaction failed. Please verify parameters.");
-  logContractError(error);
-}
-```
-
+Smart contract execution failed. Double-check the contract parameters and state.
 </Accordion>
 
 <Accordion title="INSUFFICIENT_GAS">
-**Description**: Gas limit set too low for transaction
-
-**Solution**: Increase gas limit or suggest gas optimization
-
-**Example**:
-
-```typescript
-if (error.message === "INSUFFICIENT_GAS") {
-  toast.error("Transaction requires more gas. Increasing gas limit...");
-  retryWithHigherGas();
-}
-```
-
+Gas limit was too low. Retry with a higher limit.
 </Accordion>
 
 <Accordion title="NONCE_TOO_LOW">
-**Description**: Transaction nonce conflict
-
-**Solution**: Wait for pending transactions to complete
-
-**Example**:
-
-```typescript
-if (error.message === "NONCE_TOO_LOW") {
-  toast.info("Please wait for pending transactions to complete.");
-  waitAndRetry();
-}
-```
-
+Nonce conflict from a pending transaction. Wait for the pending tx to confirm, then retry.
 </Accordion>
 
 <Accordion title="TRANSACTION_REVERTED">
-**Description**: Contract reverted the transaction
-
-**Solution**: Check contract state and parameters
-
-**Example**:
-
-```typescript
-if (error.message === "TRANSACTION_REVERTED") {
-  toast.error("Transaction was rejected by the contract. Please check requirements.");
-  showTransactionDetails();
-}
-```
-
+The contract reverted. Usually means a precondition wasn't met (e.g., sale ended, not enough allowance).
 </Accordion>
 </AccordionGroup>
 
-## 🛠️ Error Handling Patterns
+## Error handling patterns
 
-### Component-Level Error Handling
+### Per-component error handling
 
-```tsx title="Payment Component with Error Handling" icon="shield-exclamation" lines
+```tsx title="Payment with error handling" icon="shield-exclamation"
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
 
 function PaymentComponent() {
@@ -310,48 +165,30 @@ function PaymentComponent() {
   const [retryCount, setRetryCount] = useState(0);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
-    onError: error => {
-      console.error("Payment failed:", error);
-
-      // Handle specific errors
+    onError: (error) => {
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
-          setError("Insufficient balance. Please add funds to your wallet.");
+          setError("Not enough funds. Add tokens or try a different payment method.");
           break;
-
         case "SLIPPAGE":
           if (retryCount < 3) {
-            setError("Price moved unfavorably. Retrying...");
+            setError("Price moved. Retrying...");
             setTimeout(() => {
-              setRetryCount(prev => prev + 1);
+              setRetryCount((prev) => prev + 1);
               retryPayment();
             }, 2000);
           } else {
-            setError("Price too volatile. Please try again later.");
+            setError("Price too volatile right now. Try again later.");
           }
           break;
-
-        case "NETWORK_ERROR":
-          setError("Network issue. Please check your connection and try again.");
-          break;
-
         case "QUOTE_EXPIRED":
-          setError("Price quote expired. Getting fresh quote...");
+          setError("Quote expired. Getting a fresh one...");
           refreshQuote();
           break;
-
         default:
-          setError("Payment failed. Please try again or contact support.");
+          setError("Payment failed. Try again or contact support.");
       }
-
-      // Track errors for monitoring
-      analytics.track("payment_error", {
-        error: error.message,
-        retryCount,
-        timestamp: new Date().toISOString(),
-      });
     },
-
     onSuccess: () => {
       setError(null);
       setRetryCount(0);
@@ -359,15 +196,13 @@ function PaymentComponent() {
   });
 
   return (
-    <div className="payment-component">
+    <div>
       {error && (
         <div className="error-banner">
-          <span className="error-icon">⚠️</span>
           <span>{error}</span>
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-
       <button onClick={handlePayment} disabled={isCreatingOrder}>
         {isCreatingOrder ? "Processing..." : "Pay Now"}
       </button>
@@ -376,517 +211,170 @@ function PaymentComponent() {
 }
 ```
 
-### Order Status Monitoring
+### Order status monitoring
 
-```tsx title="Order Status Monitor" icon="eye" lines
+```tsx title="Order tracker" icon="eye"
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
-function OrderStatusMonitor({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions, getOrderAndTransactionsError } =
+    useAnyspendOrderAndTransactions(orderId);
 
   if (getOrderAndTransactionsError) {
     return (
-      <div className="error-state">
-        <h3>Unable to load order status</h3>
-        <p>Please check your connection and try again.</p>
+      <div>
+        <p>Couldn't load order status. Check your connection and try again.</p>
         <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
 
-  if (!orderAndTransactions) {
-    return <div>Loading order status...</div>;
-  }
+  if (!orderAndTransactions) return <div>Loading order status...</div>;
 
-  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+  const { order, executeTx, refundTxs } = orderAndTransactions.data;
 
-  const renderStatusMessage = () => {
-    switch (order.status) {
-      case "scanning_deposit_transaction":
-        return (
-          <div className="status-pending">
-            <div className="spinner" />
-            <div>
-              <h3>⏳ Waiting for payment confirmation</h3>
-              <p>This usually takes 1-2 minutes. Please don't close this window.</p>
-              {depositTxs.length > 0 && (
-                <a
-                  href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View payment transaction
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "relay":
-        return (
-          <div className="status-processing">
-            <div className="spinner" />
-            <div>
-              <h3>🔄 Processing cross-chain transaction</h3>
-              <p>Your payment is being processed. This may take a few minutes.</p>
-            </div>
-          </div>
-        );
-
-      case "executed":
-        return (
-          <div className="status-success">
-            <div className="success-icon">✅</div>
-            <div>
-              <h3>Transaction completed successfully!</h3>
-              <p>Your order has been processed.</p>
-              {executeTx && (
-                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "failure":
-      case "obtain_failed":
-        return (
-          <div className="status-error">
-            <div className="error-icon">❌</div>
-            <div>
-              <h3>Transaction failed</h3>
-              <p>{order.errorDetails || "An error occurred while processing your order."}</p>
-              <div className="error-actions">
-                <button onClick={() => createNewOrder()}>Try Again</button>
-                <button onClick={() => contactSupport(orderId)}>Contact Support</button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "refunded":
-        return (
-          <div className="status-refunded">
-            <div className="refund-icon">↩️</div>
-            <div>
-              <h3>Refund processed</h3>
-              <p>Your payment has been refunded automatically.</p>
-              {refundTxs.length > 0 && (
-                <a
-                  href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View refund transaction
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "expired":
-        return (
-          <div className="status-expired">
-            <div className="expired-icon">⏰</div>
-            <div>
-              <h3>Order expired</h3>
-              <p>This order expired before payment was received.</p>
-              <button onClick={() => createNewOrder()}>Create New Order</button>
-            </div>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="status-unknown">
-            <div className="spinner" />
-            <div>
-              <h3>Processing...</h3>
-              <p>Order status: {order.status}</p>
-            </div>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className="order-status-monitor">
-      <div className="order-header">
-        <h2>Order #{orderId.slice(0, 8)}</h2>
-        <div className="order-meta">
-          <span>Created: {new Date(order.createdAt).toLocaleString()}</span>
-          <span>Status: {order.status}</span>
+  switch (order.status) {
+    case "scanning_deposit_transaction":
+      return <p>Waiting for payment confirmation (1-2 minutes)...</p>;
+    case "relay":
+      return <p>Processing cross-chain transaction...</p>;
+    case "executed":
+      return (
+        <div>
+          <p>Done!</p>
+          {executeTx && (
+            <a href={`https://basescan.org/tx/${executeTx.txHash}`} target="_blank">
+              View transaction
+            </a>
+          )}
         </div>
-      </div>
-
-      {renderStatusMessage()}
-
-      {/* Debug information in development */}
-      {process.env.NODE_ENV === "development" && (
-        <details className="debug-info">
-          <summary>Debug Information</summary>
-          <pre>{JSON.stringify(order, null, 2)}</pre>
-        </details>
-      )}
-    </div>
-  );
+      );
+    case "failure":
+      return (
+        <div>
+          <p>Transaction failed: {order.errorDetails || "Unknown error"}</p>
+          <button onClick={() => createNewOrder()}>Try again</button>
+        </div>
+      );
+    case "refunded":
+      return <p>Refund processed. Check your wallet.</p>;
+    case "expired":
+      return (
+        <div>
+          <p>Order expired before payment arrived.</p>
+          <button onClick={() => createNewOrder()}>Create new order</button>
+        </div>
+      );
+    default:
+      return <p>Processing... (status: {order.status})</p>;
+  }
 }
 ```
 
-### Global Error Boundary
+### Error boundary
 
-```tsx title="Error Boundary Component" icon="shield" lines
+Wrap AnySpend components in an error boundary to catch rendering crashes:
+
+```tsx title="Error boundary" icon="shield"
 import React, { Component, ErrorInfo } from "react";
 
-interface Props {
-  children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
-}
+class AnySpendErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  state = { hasError: false, error: undefined as Error | undefined };
 
-interface State {
-  hasError: boolean;
-  error?: Error;
-}
-
-class AnySpendErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("AnySpend Error Boundary caught an error:", error, errorInfo);
-
-    // Report to error tracking service
-    if (typeof window !== "undefined") {
-      // Example: Sentry.captureException(error, { contexts: { errorInfo } });
-    }
+    console.error("AnySpend error:", error, errorInfo);
+    // Report to your error tracking service (Sentry, etc.)
   }
-
-  resetError = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
 
   render() {
     if (this.state.hasError) {
-      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+      return (
+        <div>
+          <h3>Something went wrong</h3>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => this.setState({ hasError: false })}>Try again</button>
+        </div>
+      );
     }
-
     return this.props.children;
   }
-}
-
-function DefaultErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
-  return (
-    <div className="error-fallback">
-      <h2>Something went wrong</h2>
-      <p>An unexpected error occurred in the payment component.</p>
-      <details className="error-details">
-        <summary>Error details</summary>
-        <pre>{error.message}</pre>
-      </details>
-      <div className="error-actions">
-        <button onClick={resetError}>Try Again</button>
-        <button onClick={() => window.location.reload()}>Reload Page</button>
-      </div>
-    </div>
-  );
 }
 
 // Usage
 function App() {
   return (
     <AnySpendErrorBoundary>
-      <AnySpendProvider>
+      <AnyspendProvider>
         <YourApp />
-      </AnySpendProvider>
+      </AnyspendProvider>
     </AnySpendErrorBoundary>
   );
 }
 ```
 
-## 📊 Error Monitoring & Analytics
+## User-friendly error messages
 
-### Error Tracking Setup
+A helper that maps error codes to messages your users can actually understand:
 
-```tsx title="Error Analytics" icon="chart-bar" lines
-// Track errors for monitoring and improvement
-function trackPaymentError(error: Error, context: any) {
-  // Analytics tracking
-  analytics.track("payment_error", {
-    error_message: error.message,
-    error_stack: error.stack,
-    user_agent: navigator.userAgent,
-    timestamp: new Date().toISOString(),
-    context,
-  });
-
-  // Error reporting service (e.g., Sentry)
-  if (window.Sentry) {
-    window.Sentry.captureException(error, {
-      tags: {
-        component: "anyspend",
-        error_type: "payment_error",
-      },
-      extra: context,
-    });
-  }
-
-  // Custom error logging
-  console.error("AnySpend Payment Error:", {
-    message: error.message,
-    context,
-    timestamp: new Date().toISOString(),
-  });
-}
-```
-
-### User-Friendly Error Messages
-
-```tsx title="Error Message Helper" icon="comment" lines
-function getErrorMessage(error: Error): { title: string; message: string; action?: string } {
-  switch (error.message) {
-    case "INSUFFICIENT_BALANCE":
-      return {
-        title: "Insufficient Balance",
-        message: "You don't have enough funds for this transaction.",
-        action: "Add funds to your wallet or choose a different payment method.",
-      };
-
-    case "SLIPPAGE":
-      return {
-        title: "Price Changed",
-        message: "The price moved while processing your transaction.",
-        action: "We'll retry automatically with updated pricing.",
-      };
-
-    case "NETWORK_ERROR":
-      return {
-        title: "Connection Issue",
-        message: "Unable to connect to the blockchain network.",
-        action: "Please check your internet connection and try again.",
-      };
-
-    case "QUOTE_EXPIRED":
-      return {
-        title: "Quote Expired",
-        message: "The price quote is no longer valid.",
-        action: "Getting a fresh quote automatically...",
-      };
-
-    default:
-      return {
-        title: "Transaction Failed",
-        message: "An unexpected error occurred.",
-        action: "Please try again or contact support if the problem persists.",
-      };
-  }
-}
-
-// Usage in component
-function ErrorDisplay({ error }: { error: Error }) {
-  const errorInfo = getErrorMessage(error);
-
-  return (
-    <div className="error-display">
-      <h3>{errorInfo.title}</h3>
-      <p>{errorInfo.message}</p>
-      {errorInfo.action && <p className="error-action">{errorInfo.action}</p>}
-    </div>
-  );
-}
-```
-
-## 🔧 Debugging Tools
-
-### Debug Mode
-
-```tsx title="Debug Helper" icon="bug" lines
-// Enable debug mode for detailed logging
-function useAnyspendDebug() {
-  const isDebug = process.env.NODE_ENV === "development" || localStorage.getItem("anyspend_debug") === "true";
-
-  const log = (message: string, data?: any) => {
-    if (isDebug) {
-      console.log(`[AnySpend Debug] ${message}`, data);
-    }
+```tsx title="Error message helper" icon="comment"
+function getErrorMessage(error: Error) {
+  const map: Record<string, { title: string; message: string; action?: string }> = {
+    INSUFFICIENT_BALANCE: {
+      title: "Insufficient balance",
+      message: "You don't have enough funds for this transaction.",
+      action: "Add funds or choose a different payment method.",
+    },
+    SLIPPAGE: {
+      title: "Price changed",
+      message: "The price moved while processing your transaction.",
+      action: "We'll retry with updated pricing.",
+    },
+    NETWORK_ERROR: {
+      title: "Connection issue",
+      message: "Can't reach the blockchain network.",
+      action: "Check your internet connection and try again.",
+    },
+    QUOTE_EXPIRED: {
+      title: "Quote expired",
+      message: "The price quote is no longer valid.",
+      action: "Getting a fresh quote...",
+    },
   };
 
-  const error = (message: string, error?: Error) => {
-    if (isDebug) {
-      console.error(`[AnySpend Debug] ${message}`, error);
-    }
+  return map[error.message] ?? {
+    title: "Transaction failed",
+    message: "Something went wrong.",
+    action: "Try again or contact support.",
   };
-
-  return { log, error, isDebug };
-}
-
-// Usage
-function PaymentComponent() {
-  const debug = useAnyspendDebug();
-
-  const { createOrder } = useAnyspendCreateOrder({
-    onSuccess: data => {
-      debug.log("Order created successfully", data);
-    },
-    onError: error => {
-      debug.error("Order creation failed", error);
-    },
-  });
-
-  // ... rest of component
 }
 ```
 
-### Network Status Checker
+## Tips
 
-```tsx title="Network Status" icon="wifi" lines
-function useNetworkStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [networkSpeed, setNetworkSpeed] = useState<"slow" | "fast" | "unknown">("unknown");
+- **Keep users informed** during long operations. Cross-chain transactions can take a few minutes -- show progress, not just a spinner.
+- **Retry transient errors** (slippage, network, quote expired) with exponential backoff. Many resolve on the second try.
+- **Log errors** with context (order ID, user address, timestamp) so you can debug issues after the fact.
+- **Offer fallbacks** when possible. If cross-chain fails, suggest same-chain. If crypto fails, suggest fiat onramp.
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    // Check network speed
-    const connection = (navigator as any).connection;
-    if (connection) {
-      const speed = connection.effectiveType;
-      setNetworkSpeed(speed === "4g" ? "fast" : "slow");
-    }
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
-
-  return { isOnline, networkSpeed };
-}
-
-// Usage in component
-function PaymentComponent() {
-  const { isOnline, networkSpeed } = useNetworkStatus();
-
-  if (!isOnline) {
-    return (
-      <div className="network-error">
-        <h3>No Internet Connection</h3>
-        <p>Please check your connection and try again.</p>
-      </div>
-    );
-  }
-
-  if (networkSpeed === "slow") {
-    return (
-      <div className="network-warning">
-        <p>⚠️ Slow network detected. Transactions may take longer than usual.</p>
-      </div>
-    );
-  }
-
-  // ... rest of component
-}
-```
-
-## 📋 Best Practices
-
-<AccordionGroup>
-<Accordion title="Always Provide User Feedback">
-Keep users informed about what's happening, especially during longer operations like cross-chain transactions.
-
-```tsx
-// Good: Clear status messages
-<div className="status">
-  <Spinner />
-  <p>Processing your payment... This may take 2-3 minutes.</p>
-</div>
-
-// Bad: No feedback during long operations
-<div>{isLoading && <Spinner />}</div>
-```
-
-</Accordion>
-
-<Accordion title="Implement Retry Logic">
-Many errors are transient and can be resolved by retrying the operation.
-
-```tsx
-// Good: Automatic retry with exponential backoff
-const retryWithBackoff = (attempt: number) => {
-  const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
-  setTimeout(() => retry(), delay);
-};
-
-// Bad: No retry mechanism
-if (error) {
-  throw error;
-}
-```
-
-</Accordion>
-
-<Accordion title="Log Errors for Monitoring">
-Comprehensive error logging helps identify and fix issues quickly.
-
-```tsx
-// Good: Detailed error logging
-console.error("Payment failed", {
-  error: error.message,
-  orderData,
-  userAddress,
-  timestamp: Date.now(),
-});
-
-// Bad: Generic error logging
-console.error("Error occurred");
-```
-
-</Accordion>
-
-<Accordion title="Graceful Degradation">
-Provide alternative options when primary functionality fails.
-
-```tsx
-// Good: Fallback options
-if (crossChainFailed) {
-  return <SameChainSwapOption />;
-}
-
-// Bad: Complete failure with no alternatives
-if (crossChainFailed) {
-  throw new Error("Transaction failed");
-}
-```
-
-</Accordion>
-</AccordionGroup>
-
-## 🆘 Getting Help
+## Getting help
 
 <CardGroup cols={2}>
-<Card title="Discord Support" icon="discord" href="https://discord.gg/b3dotfun">
-  Get real-time help from our community and support team
+<Card title="Discord" icon="discord" href="https://discord.gg/b3dotfun">
+  Get help from the community and support team
 </Card>
 
-<Card title="GitHub Issues" icon="github" href="https://github.com/b3-fun/b3/issues">
-  Report bugs and request features on our GitHub repository
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3/issues">
+  Report bugs and request features
 </Card>
 </CardGroup>
 
 <Info>
-  When reporting issues, please include: - Error messages and codes - Steps to reproduce the issue - Browser and device
-  information - Network conditions (if relevant) - Order IDs (if applicable)
+  When reporting issues, include: error message/code, steps to reproduce, browser/device info, and order ID if applicable.
 </Info>
-
-Remember: Good error handling is about more than just catching errors—it's about providing a smooth, understandable experience for your users even when things go wrong.

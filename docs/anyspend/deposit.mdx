@@ -1,30 +1,23 @@
 ---
 title: "Deposit"
-description: "Enable users to deposit tokens to a specific wallet address on any supported chain."
+description: "Let users deposit tokens to a wallet address from any supported chain"
 ---
 
-## What It Does
+## What it does
 
-The AnySpend Deposit page provides a streamlined interface for users to deposit tokens to a specific recipient wallet address. It supports cross-chain deposits, allowing users to pay with tokens from any supported chain while the recipient receives funds on their desired destination chain and token.
+A hosted deposit page where users can send tokens to a specific wallet address. They connect their wallet, pick a token, and AnySpend handles the cross-chain routing. You generate a URL, they click it.
 
-This feature is designed for integration with dApps, bots, and services that need to receive token deposits from users.
+## How it works
 
-## How It Works
+1. **Your app generates a deposit URL** with the recipient address, chain, and token.
+2. **User connects their wallet** (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet).
+3. **User picks a token** from their available balances.
+4. **AnySpend routes the payment** cross-chain if needed, converting to the destination token.
+5. **Done** -- optionally redirect the user back to your app.
 
-1. **Deep Link Generation**\
-   Your application generates a deposit URL with the recipient address, destination chain, and token.
-2. **User Connects Wallet**\
-   The user connects their wallet (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet, etc.).
-3. **Token Selection**\
-   The user selects which token they want to pay with from their available balances.
-4. **Cross-Chain Execution**\
-   AnySpend handles the cross-chain routing and conversion to deliver the specified token to the recipient.
-5. **Confirmation & Redirect**\
-   After completion, users can be redirected back to your application.
+## URL parameters
 
-## URL Parameters
-
-The deposit page accepts the following URL parameters:
+The deposit page accepts these URL parameters:
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
@@ -39,6 +32,10 @@ The deposit page accepts the following URL parameters:
 \* Not required for Hyperliquid chain where USDC is the default token.
 
 ## Example URLs
+
+<Info>
+  Base URL: `https://anyspend.b3.fun`
+</Info>
 
 **Basic deposit to Base USDC:**
 ```
@@ -55,9 +52,9 @@ The deposit page accepts the following URL parameters:
 /deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Return to App
 ```
 
-## Supported Wallets
+## Supported wallets
 
-The deposit page supports the following wallets out of the box:
+Supported out of the box:
 
 - MetaMask
 - Coinbase Wallet
@@ -67,17 +64,17 @@ The deposit page supports the following wallets out of the box:
 
 Auto-connect is enabled for returning users who have previously connected their wallet.
 
-## Special Chain Support
+## Special chain support
 
 ### Hyperliquid
 
-The deposit page includes special support for Hyperliquid chain:
+Hyperliquid gets special handling:
 
 - USDC uses a special 34-character address format (`0x00000000000000000000000000000000`)
 - When `toChainId` is set to Hyperliquid, `toCurrency` defaults to USDC if not specified
 - Zero addresses are automatically corrected to the Hyperliquid USDC format
 
-## Partner Integration
+## Partner integration
 
 Partners can be configured with custom settings:
 
@@ -93,23 +90,20 @@ To register as a partner, contact the AnySpend team to add your configuration.
 
 ## Security
 
-The deposit page includes built-in security measures:
+- Only HTTPS redirect URLs are allowed (prevents open redirect attacks)
+- Amounts must be valid positive integers (wei)
+- Addresses are validated before processing
 
-- **Redirect URL Validation**: Only HTTPS URLs are allowed for redirects to prevent open redirect attacks
-- **Amount Validation**: Amounts must be valid positive integers (wei values)
-- **Address Validation**: Recipient and token addresses are validated before processing
+## Common use cases
 
-## Common Use Cases
+- **Telegram bots** -- fund bot wallets via a shareable link
+- **Gaming** -- deposit tokens to game accounts
+- **Marketplaces** -- fund escrow addresses
+- **Tipping** -- let users tip creators with a deposit link
 
-- **Telegram Bots**: Let users fund their bot wallets through a simple link
-- **Gaming**: Enable players to deposit tokens to game accounts
-- **Marketplaces**: Allow buyers to fund escrow addresses
-- **Subscription Services**: Collect recurring payments to a service wallet
-- **Tipping**: Enable tipping creators with a shareable deposit link
+## Integration example
 
-## Integration Example
-
-Here's how to generate a deposit link in your application:
+Generate a deposit link in your app:
 
 ```typescript
 function generateDepositLink({

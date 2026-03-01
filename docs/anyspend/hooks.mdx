@@ -1,9 +1,9 @@
 ---
 title: "Hooks"
-description: "React hooks for building custom payment flows, managing orders, and accessing AnySpend services"
+description: "React hooks for quotes, orders, transfers, onramp, and checkout sessions"
 ---
 
-Build fully custom payment UIs with these React hooks. Use them when the pre-built components don't fit your needs.
+Use these hooks when the pre-built components don't fit your UI. They give you direct access to quoting, order creation, status tracking, and fiat onramp logic.
 
 <CardGroup cols={3}>
 <Card title="Order Hooks" icon="plus-circle" href="#order-hooks">
@@ -19,7 +19,7 @@ Build fully custom payment UIs with these React hooks. Use them when the pre-bui
 
 ---
 
-## Order Hooks
+## Order hooks
 
 ### `useAnyspendQuote`
 
@@ -249,7 +249,7 @@ type CreateOnrampOrderParams = {
 
 ---
 
-## Order Tracking Hooks
+## Order tracking hooks
 
 ### `useAnyspendOrderAndTransactions`
 
@@ -351,7 +351,7 @@ const { orderHistory, isLoadingOrderHistory } =
 
 ---
 
-## Token & Chain Hooks
+## Token and chain hooks
 
 ### `useAnyspendTokens`
 
@@ -432,7 +432,7 @@ interface UseGasPriceOptions {
 
 ---
 
-## Payment Hooks
+## Payment hooks
 
 ### `useDirectTransfer`
 
@@ -494,7 +494,7 @@ function DirectTransferButton({ token, recipient, amount }) {
 
 ---
 
-## Fiat & Onramp Hooks
+## Fiat and onramp hooks
 
 ### `useGeoOnrampOptions`
 
@@ -624,7 +624,7 @@ const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(paymentInt
 
 ---
 
-## Checkout Session Hooks
+## Checkout session hooks
 
 ### `useCreateCheckoutSession`
 
@@ -692,9 +692,9 @@ function CheckoutSessionTracker({ sessionId }) {
 
 ---
 
-## Hook Patterns
+## Hook patterns
 
-### Error Handling
+### Error handling
 
 ```tsx title="Error Handling Pattern" icon="shield-exclamation"
 function PaymentComponent() {
@@ -720,7 +720,7 @@ function PaymentComponent() {
 }
 ```
 
-### Loading State Composition
+### Composing loading states
 
 ```tsx title="Combined Loading States" icon="spinner"
 function SwapInterface() {
@@ -740,7 +740,7 @@ function SwapInterface() {
 
 ---
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={3}>
 <Card title="Components" icon="puzzle-piece" href="/anyspend/components">
