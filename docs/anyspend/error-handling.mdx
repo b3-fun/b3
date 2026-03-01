@@ -250,6 +250,7 @@ function OrderTracker({ orderId }: { orderId: string }) {
         </div>
       );
     case "failure":
+    case "obtain_failed":
       return (
         <div>
           <p>Transaction failed: {order.errorDetails || "Unknown error"}</p>

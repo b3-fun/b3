@@ -148,8 +148,12 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
 
         return userAuth;
       } catch (error) {
-        // If re-authentication fails, try fresh authentication
-        debug("Re-authentication failed, attempting fresh authentication");
+        // If re-authentication fails, clear the stale cookie before retrying.
+        // Without this, the expired b3-auth cookie sticks around and causes
+        // repeated 401s on subsequent reAuthenticate() calls.
+        debug("Re-authentication failed, clearing stale session before fresh auth");
+        app.logout();
+
         const userAuth = await authenticate(wallet, partnerId);
         setUser(userAuth.user);
         setIsAuthenticated(true);
@@ -281,6 +285,9 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
     onConnect,
     onTimeout: () => {
       if (skipAutoConnect) return;
+      // Explicitly reset authenticating state — logout() now does this too,
+      // but we set it here as well in case logout() throws.
+      setIsAuthenticating(false);
       logout().catch(error => {
         debug("@@useAuthentication:logout on timeout failed", { error });
       });
@@ -299,6 +306,20 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
   }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating, skipAutoConnect]);
+
+  // Safety net: if isAuthenticating stays true for 15 seconds, force it off.
+  // This catches edge cases where no other code path resets the flag (e.g.
+  // auto-connect never fires its loading transition).
+  useEffect(() => {
+    if (!isAuthenticating) return;
+
+    const timeout = setTimeout(() => {
+      debug("@@useAuthentication:safety timeout — forcing isAuthenticating=false");
+      setIsAuthenticating(false);
+    }, 15_000);
+
+    return () => clearTimeout(timeout);
+  }, [isAuthenticating, setIsAuthenticating]);
 
   const isReady = isAuthenticated && !isAuthenticating;
 
