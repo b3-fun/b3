@@ -3,6 +3,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";
+import { useMemo } from "react";
 import { Account, ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
 /**
  * Props for the LoginStep component
@@ -62,7 +63,7 @@ function LoginStepContent({
   partnerId: string;
   theme: string;
 }) {
-  const wallet = ecosystemWallet(ecosystemWalletId, { partnerId });
+  const wallet = useMemo(() => ecosystemWallet(ecosystemWalletId, { partnerId }), [partnerId]);
   const { onConnect } = useAuthentication(partnerId);
 
   return (
