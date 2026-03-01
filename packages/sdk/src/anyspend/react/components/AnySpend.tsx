@@ -67,7 +67,6 @@ import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { KycGate } from "./checkout/KycGate";
-import { useWalletAuthHeaders } from "../hooks/useKycStatus";
 import { LoginStep } from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/steps/LoginStep";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";

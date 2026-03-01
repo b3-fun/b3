@@ -1,5 +1,6 @@
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { SignInWithB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { SignInWithB3, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import {
   ArrowLeftRight,
   Clock,
@@ -61,6 +62,7 @@ interface DemoSection {
 export default function HomePage() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
+  const { partnerId } = useB3Config();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
@@ -454,7 +456,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <SignInWithB3 withLogo={false} />
+            <SignInWithB3 withLogo={false} chain={thirdwebB3Chain} partnerId={partnerId} />
             <button
               onClick={toggle}
               className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
