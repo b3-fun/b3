@@ -49,26 +49,21 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, chain }: LoginStepProps) {
-  const { partnerId, theme } = useB3Config();
-  // Always call hooks unconditionally (Rules of Hooks).
-  // useAuthentication gracefully handles an empty string during the brief
-  // window before B3Provider has finished hydrating its config.
-  const { onConnect } = useAuthentication(partnerId || "");
-
-  if (!partnerId) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-8 text-center">
-        <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-10 w-10" />
-        <p className="text-sm font-medium">Sign in with B3</p>
-        <p className="text-xs text-gray-500">Partner configuration is missing. Please contact the app developer.</p>
-      </div>
-    );
-  }
-
-  const wallet = ecosystemWallet(ecosystemWalletId, {
-    partnerId: partnerId,
-  });
+/** Inner component that only mounts when partnerId is a non-empty string.
+ *  Keeps all hooks unconditional without calling useAuthentication(""). */
+function LoginStepContent({
+  onSuccess,
+  chain,
+  partnerId,
+  theme,
+}: {
+  onSuccess: (account: Account) => Promise<void>;
+  chain: Chain;
+  partnerId: string;
+  theme: string;
+}) {
+  const wallet = ecosystemWallet(ecosystemWalletId, { partnerId });
+  const { onConnect } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>
@@ -79,26 +74,11 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
         wallets={[wallet]}
         theme={
           theme === "light"
-            ? lightTheme({
-                colors: {
-                  modalBg: "hsl(var(--b3-react-background))",
-                },
-              })
-            : darkTheme({
-                colors: {
-                  modalBg: "hsl(var(--b3-react-background))",
-                },
-              })
+            ? lightTheme({ colors: { modalBg: "hsl(var(--b3-react-background))" } })
+            : darkTheme({ colors: { modalBg: "hsl(var(--b3-react-background))" } })
         }
-        style={{
-          width: "100%",
-          height: "100%",
-          border: 0,
-        }}
-        header={{
-          title: "Sign in with B3",
-          titleIcon: "https://cdn.b3.fun/b3_logo.svg",
-        }}
+        style={{ width: "100%", height: "100%", border: 0 }}
+        header={{ title: "Sign in with B3", titleIcon: "https://cdn.b3.fun/b3_logo.svg" }}
         className="b3-login-step"
         onConnect={async (wallet, allConnectedWallets) => {
           await onConnect(wallet, allConnectedWallets);
@@ -109,4 +89,15 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
       />
     </LoginStepContainer>
   );
+}
+
+export function LoginStep({ onSuccess, chain }: LoginStepProps) {
+  const { partnerId, theme } = useB3Config();
+
+  // partnerId may be undefined during the brief B3Provider hydration window.
+  // Return null rather than rendering ConnectEmbed with an invalid ecosystem
+  // wallet config (which causes a blank screen).
+  if (!partnerId) return null;
+
+  return <LoginStepContent onSuccess={onSuccess} chain={chain} partnerId={partnerId} theme={theme} />;
 }
