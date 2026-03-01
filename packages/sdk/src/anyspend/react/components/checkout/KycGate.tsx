@@ -37,6 +37,12 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
 
+  // Reset consent gate when wallet changes so the signature prompt isn't
+  // skipped for a different (or reconnected) wallet with no cached headers.
+  useEffect(() => {
+    setUserInitiated(false);
+  }, [address]);
+
   // Notify parent when status resolves
   useEffect(() => {
     if (!kycStatus) return;
@@ -191,8 +197,14 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           onClick={async () => {
             // Pre-sign in user-gesture context so React Query's queryFn
             // can reuse the cached headers without a second popup.
-            await preCacheKycHeaders().catch(() => {});
-            setUserInitiated(true);
+            // Only enable the query on success — if the user rejects the
+            // signature, leave userInitiated=false and stay on this screen.
+            try {
+              await preCacheKycHeaders();
+              setUserInitiated(true);
+            } catch {
+              // User rejected signature — stay on consent screen
+            }
           }}
         >
           <span className="flex items-center justify-center gap-2">
