@@ -51,6 +51,17 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
 
 export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const { partnerId, theme } = useB3Config();
+
+  if (!partnerId) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-8 text-center">
+        <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-10 w-10" />
+        <p className="text-sm font-medium">Sign in with B3</p>
+        <p className="text-xs text-gray-500">Partner configuration is missing. Please contact the app developer.</p>
+      </div>
+    );
+  }
+
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
