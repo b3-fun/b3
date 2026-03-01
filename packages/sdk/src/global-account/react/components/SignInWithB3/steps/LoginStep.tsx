@@ -51,6 +51,10 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
 
 export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const { partnerId, theme } = useB3Config();
+  // Always call hooks unconditionally (Rules of Hooks).
+  // useAuthentication gracefully handles an empty string during the brief
+  // window before B3Provider has finished hydrating its config.
+  const { onConnect } = useAuthentication(partnerId || "");
 
   if (!partnerId) {
     return (
@@ -65,7 +69,6 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
-  const { onConnect } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>
