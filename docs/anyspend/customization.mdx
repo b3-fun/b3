@@ -1,9 +1,9 @@
 ---
 title: "Customization"
-description: "Customize AnySpend components with slots, content overrides, themes, and CSS classes"
+description: "Slots, content overrides, themes, and CSS classes for AnySpend components"
 ---
 
-AnySpend components support four layers of customization that can be combined for full control over appearance and behavior. Each layer targets a different concern:
+Four layers of customization, each targeting a different concern:
 
 <CardGroup cols={2}>
 <Card title="Slots" icon="puzzle-piece">
@@ -55,7 +55,7 @@ interface AnySpendSlots {
   The `checkoutForm`, `shippingSelector`, and `discountInput` slots are only used in `<AnySpendCheckout>` and `<AnySpendCheckoutTrigger>`. See the [Checkout Guide](/anyspend/checkout) for details on form/shipping/discount features.
 </Tip>
 
-### Slot Prop Interfaces
+### Slot prop interfaces
 
 <AccordionGroup>
 <Accordion title="ActionButtonSlotProps">
@@ -141,7 +141,7 @@ interface DiscountInputSlotProps {
 </Accordion>
 </AccordionGroup>
 
-### Slot Examples
+### Slot examples
 
 <Tabs>
 <Tab title="Custom Action Button">
@@ -296,7 +296,7 @@ interface AnySpendContent {
 }
 ```
 
-### Content Examples
+### Content examples
 
 <Tabs>
 <Tab title="E-commerce">
@@ -388,7 +388,7 @@ interface AnySpendTheme {
   The `brandColor` prop is a shortcut that sets the `brand` color. If both `brandColor` and `colors.brand` are provided, `colors.brand` takes precedence.
 </Note>
 
-### Theme Examples
+### Theme examples
 
 <Tabs>
 <Tab title="Brand Color Only">
@@ -441,7 +441,7 @@ interface AnySpendTheme {
 
 ---
 
-## CSS Class Overrides
+## CSS class overrides
 
 Apply custom CSS classes to specific elements within AnySpend components. Each component has its own class interface.
 
@@ -590,7 +590,7 @@ interface AnySpendAllClasses {
 }
 ```
 
-### Class Override Example
+### Class override example
 
 ```tsx title="Custom Styling" icon="palette"
 <AnySpend
@@ -620,7 +620,7 @@ interface AnySpendAllClasses {
 
 ---
 
-## Combining Customizations
+## Combining customizations
 
 All customization layers work together. Here's a complete example:
 
@@ -678,7 +678,7 @@ All customization layers work together. Here's a complete example:
 
 ---
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={3}>
 <Card title="Components" icon="puzzle-piece" href="/anyspend/components">

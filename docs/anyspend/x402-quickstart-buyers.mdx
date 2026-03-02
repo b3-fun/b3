@@ -7,7 +7,7 @@ description: "Pay for paywalled APIs and services using any token with the AnySp
 
 This guide shows you how to use the **AnySpend x402 Client SDK** to pay for paywalled resources using compatible tokens with EIP-2612 or EIP-3009 support. The SDK handles the entire payment flow automatically, including signature generation and retry logic.
 
-The beauty of x402 is that you can use this same client to pay for **any x402-enabled service**, not just those using AnySpend.
+You can use this same client to pay for any x402-enabled service, not just those using AnySpend.
 
 <Card title="Token Compatibility Checker" icon="check-circle" href="https://anyspend.com/x402-tokens">
   Browse compatible tokens with EIP-2612 or EIP-3009 support across 19+ networks
@@ -46,9 +46,9 @@ pnpm add anyspend-x402-client viem
 
 The SDK uses [viem](https://viem.sh) for wallet operations and signature generation.
 
-## Basic Usage
+## Basic usage
 
-### 1. Create a Wallet Client
+### 1. Create a wallet client
 
 First, set up your wallet client using viem:
 
@@ -66,7 +66,7 @@ const walletClient = createWalletClient({
 const [address] = await walletClient.getAddresses();
 ```
 
-### 2. Initialize the x402 Client
+### 2. Initialize the x402 client
 
 Create an instance of the x402 client:
 
@@ -80,7 +80,7 @@ const x402Client = new X402Client({
 });
 ```
 
-### 3. Make a Paid Request
+### 3. Make a paid request
 
 Use the client to access paywalled resources:
 
@@ -109,13 +109,13 @@ try {
 5. API verifies and settles the payment
 6. Client receives the requested data
 
-## Advanced Usage
+## Advanced usage
 
-### Specify Payment Token
+### Specify payment token
 
 There are two ways to specify which token you want to pay with:
 
-#### Option 1: Using X402Client
+#### Option 1: using X402Client
 
 Pay with a specific token by setting `preferredToken`:
 
@@ -130,7 +130,7 @@ const response = await x402Client.request(
 );
 ```
 
-#### Option 2: Using wrapFetchWithPayment (Advanced)
+#### Option 2: using wrapFetchWithPayment (advanced)
 
 For more control, use the lower-level `wrapFetchWithPayment` function:
 
@@ -169,7 +169,7 @@ const data = await response.json();
 
 If the resource server supports AnySpend middleware, you'll pay the equivalent amount in your preferred token instead of USDC.
 
-### Using HTTP Headers for Payment Preferences
+### Using HTTP headers for payment preferences
 
 <Note>
 **New in X402**: You can now specify payment preferences using HTTP headers, which is particularly useful when making direct HTTP requests or when integrating with existing HTTP clients.
@@ -196,7 +196,7 @@ curl -X GET https://api.example.com/premium-data \
 
 These headers work with any HTTP client and are automatically respected by X402-enabled resource servers using AnySpend middleware. If no headers are provided, the server will default to USDC.
 
-#### Using Headers with X402Client
+#### Using headers with X402Client
 
 The X402Client automatically adds these headers based on your configuration:
 
@@ -211,7 +211,7 @@ const x402Client = new X402Client({
 const response = await x402Client.request('https://api.example.com/data');
 ```
 
-#### Using Headers with fetch
+#### Using headers with fetch
 
 You can also add these headers manually when using the native `fetch` API or other HTTP clients:
 
@@ -229,7 +229,7 @@ if (response.status === 402) {
 }
 ```
 
-### POST Requests with Body
+### POST requests with body
 
 Make paid POST requests:
 
@@ -249,7 +249,7 @@ const response = await x402Client.request(
 );
 ```
 
-### Manual Payment Flow
+### Manual payment flow
 
 For more control, handle the payment flow manually:
 
@@ -285,7 +285,7 @@ if (initialResponse.status === 402) {
 }
 ```
 
-## Configuration Options
+## Configuration options
 
 ### X402ClientOptions
 
@@ -299,7 +299,7 @@ interface X402ClientOptions {
 }
 ```
 
-### RequestOptions
+### Request options
 
 ```typescript
 interface RequestOptions {
@@ -352,7 +352,7 @@ const fetchWithPayment = wrapFetchWithPayment(
 );
 ```
 
-## Supported Tokens
+## Supported tokens
 
 **Only tokens with EIP-2612 or EIP-3009 support are compatible** with AnySpend x402 for gasless payments.
 
@@ -362,7 +362,7 @@ const fetchWithPayment = wrapFetchWithPayment(
 - **EIP-3009 (TransferWithAuthorization)**: Enables gasless transfers via off-chain signatures (used by USDC)
 
 
-### Common Compatible Tokens
+### Common compatible tokens
 
 - **USDC** - EIP-3009 support on all chains
 - **B3** - EIP-2612 permit support
@@ -376,7 +376,7 @@ See [Network Support](/anyspend/x402-network-support) for detailed token address
 
 ## Examples
 
-### React Component (Using X402Client)
+### React component (using X402Client)
 
 ```tsx
 import { X402Client } from 'anyspend-x402-client';
@@ -422,7 +422,7 @@ export function PremiumDataFetcher() {
 }
 ```
 
-### React Component (Using wrapFetchWithPayment)
+### React component (using wrapFetchWithPayment)
 
 For applications that need more control or use existing fetch-based code:
 
@@ -517,7 +517,7 @@ export function PremiumDataFetcherAdvanced() {
 }
 ```
 
-### Node.js Script
+### Node.js script
 
 ```typescript
 import { X402Client } from 'anyspend-x402-client';
@@ -555,7 +555,7 @@ async function main() {
 main();
 ```
 
-## Error Handling
+## Error handling
 
 The SDK throws typed errors for common failure scenarios:
 
@@ -604,7 +604,7 @@ const response = await testClient.request(
 
 Get testnet USDC from [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-## Best Practices
+## Best practices
 
 <AccordionGroup>
 <Accordion title="Use Environment Variables for Keys">
@@ -653,7 +653,7 @@ await new X402Client({ walletClient }).request('...');
 </Accordion>
 </AccordionGroup>
 
-## What's Next?
+## What's next
 
 <CardGroup cols={2}>
 <Card title="Overview" icon="book" href="/anyspend/x402-overview">
@@ -694,7 +694,7 @@ const walletClient = createWalletClient({
 </Accordion>
 </AccordionGroup>
 
-## Getting Help
+## Getting help
 
 - **Discord**: Join our [Discord community](https://discord.gg/b3dotfun)
 - **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)

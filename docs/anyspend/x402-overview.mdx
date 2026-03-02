@@ -1,6 +1,6 @@
 ---
-title: "AnySpend x402 Overview"
-description: "Pay for paywalled APIs and services with any token - powered by the x402 open payment protocol"
+title: "AnySpend x402 overview"
+description: "Pay for paywalled APIs and services with any token using the x402 open payment protocol"
 ---
 
 <CardGroup cols={2}>
@@ -13,13 +13,13 @@ description: "Pay for paywalled APIs and services with any token - powered by th
 </Card>
 </CardGroup>
 
-## What is AnySpend x402?
+## What is AnySpend x402
 
 AnySpend x402 is B3's implementation of the **x402 payment protocol** that enables instant, automatic cryptocurrency payments directly over HTTP. Unlike traditional x402 facilitators that only support USDC, **AnySpend allows you to pay with any compatible token** (EIP-2612 or EIP-3009) while resource servers receive any token they prefer.
 
 The x402 protocol modernizes the HTTP `402 Payment Required` status code, turning it into a practical solution for machine-to-machine micropayments, paywalled APIs, and autonomous agent interactions.
 
-## For Buyers (Payers)
+## For buyers (payers)
 
 Pay for paywalled resources using any compatible token you hold:
 
@@ -39,7 +39,7 @@ Pay for paywalled resources using any compatible token you hold:
 - Enable autonomous agent-to-agent payments
 - Consume paywalled content programmatically
 
-## For Sellers (Resource Servers)
+## For sellers (resource servers)
 
 Accept payments in USDC while your customers pay with their preferred token:
 
@@ -54,7 +54,7 @@ Accept payments in USDC while your customers pay with their preferred token:
 - Create paywalled content and tools
 - Accept crypto payments without crypto expertise
 
-## Quick Start
+## Quick start
 
 Choose your path:
 
@@ -69,7 +69,7 @@ Choose your path:
 </CardGroup>
 
 
-## How It Works
+## How it works
 
 <Steps>
 <Step title="Client Requests Resource">
@@ -101,9 +101,9 @@ Your API receives payment confirmation and returns the requested resource
 </Step>
 </Steps>
 
-## Key Differentiators
+## Key differentiators
 
-### Multi-Token Support
+### Multi-token support
 
 **Standard x402**: Resource servers and clients must both use USDC
 
@@ -113,7 +113,7 @@ Your API receives payment confirmation and returns the requested resource
 Client pays with DAI (EIP-2612) → AnySpend swaps to 1 USDC → Seller receives 1 USDC
 ```
 
-### No Infrastructure Required
+### No infrastructure required
 
 Resource servers don't need to:
 - Run blockchain nodes
@@ -123,11 +123,11 @@ Resource servers don't need to:
 
 AnySpend's facilitator handles all blockchain operations and provides simple HTTP endpoints for verification and settlement.
 
-### Standard Protocol Compliance
+### Standard protocol compliance
 
-Clients using AnySpend have **zero awareness** they're using a special facilitator. The entire flow uses standard x402 protocol messages - the multi-token magic happens transparently on the resource server side through middleware.
+Clients using AnySpend don't need to know they're using a special facilitator. The flow uses standard x402 protocol messages, and the multi-token conversion happens on the resource server side through middleware.
 
-## Package Delivery
+## Package delivery
 
 AnySpend x402 consists of two packages:
 
@@ -145,18 +145,18 @@ AnySpend x402 consists of two packages:
 </Card>
 </CardGroup>
 
-## Powered by AnySpend Facilitator
+## Powered by AnySpend facilitator
 
-All x402 payments are processed through the **AnySpend Facilitator** - a production-grade payment infrastructure that handles:
+All x402 payments are processed through the AnySpend Facilitator, which handles:
 
-- ✅ Multi-token support across 19+ blockchain networks
-- ✅ Automatic token swaps and cross-chain routing
-- ✅ Gasless payments for users
-- ✅ Standards-compliant x402 implementation
-- ✅ Drop-in replacement for any x402 facilitator
+- Multi-token support across 19+ blockchain networks
+- Automatic token swaps and cross-chain routing
+- Gasless payments for users
+- Standards-compliant x402 implementation
+- Drop-in replacement for any x402 facilitator
 
 **Production Endpoint:** `https://mainnet.anyspend.com/x402`
 
-<Card title="Learn More About the Facilitator" icon="server" href="/anyspend/x402-facilitator">
-  Discover the full capabilities, API endpoints, and architecture of the AnySpend Facilitator
+<Card title="AnySpend facilitator" icon="server" href="/anyspend/x402-facilitator">
+  API endpoints, architecture, and configuration
 </Card>

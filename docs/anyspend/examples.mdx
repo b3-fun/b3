@@ -1,9 +1,9 @@
 ---
-title: "Examples & Use Cases"
-description: "Real-world implementation examples for common AnySpend integration patterns"
+title: "Examples"
+description: "Working code for swaps, checkout, deposits, workflows, NFTs, and customization"
 ---
 
-Real-world implementation examples for common AnySpend integration patterns, from simple swaps to full checkout flows with forms, shipping, and workflow automation.
+Copy-paste examples for the most common integration patterns. See all of these running live in the [SDK demo (Widget Lab)](https://sdk-demo.anyspend.com/).
 
 <CardGroup cols={3}>
 <Card title="Swaps" icon="arrows-rotate" href="#cross-chain-token-swaps">
@@ -28,9 +28,9 @@ Real-world implementation examples for common AnySpend integration patterns, fro
 
 ---
 
-## Cross-Chain Token Swaps
+## Cross-chain token swaps
 
-### Basic Swap Interface
+### Basic swap interface
 
 ```tsx title="Simple Swap Page" icon="exchange-alt"
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -49,7 +49,7 @@ function TokenSwapPage() {
 }
 ```
 
-### Swap with Custom Branding
+### Swap with custom branding
 
 ```tsx title="Branded Swap" icon="palette"
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -77,7 +77,7 @@ function BrandedSwap() {
 }
 ```
 
-### Fixed Amount Payment
+### Fixed amount payment
 
 ```tsx title="Fixed Amount Payment" icon="lock"
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -101,9 +101,9 @@ function FixedPayment() {
 
 ---
 
-## Checkout Experiences
+## Checkout experiences
 
-### E-Commerce Checkout
+### E-commerce checkout
 
 ```tsx title="Store Checkout" icon="cart-shopping"
 import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
@@ -146,7 +146,7 @@ function StoreCheckout({ cart }) {
 }
 ```
 
-### Checkout with Forms, Shipping & Discounts
+### Checkout with forms, shipping, and discounts
 
 ```tsx title="Full-Featured Checkout" icon="file-lines"
 import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
@@ -190,7 +190,7 @@ function FullCheckout({ cart }) {
 }
 ```
 
-### Subscription with Workflow Trigger
+### Subscription with workflow trigger
 
 ```tsx title="Subscription Payment" icon="credit-card"
 import { AnySpendCheckoutTrigger } from "@b3dotfun/sdk/anyspend/react";
@@ -239,9 +239,9 @@ function SubscriptionCheckout({ plan }) {
 
 ---
 
-## Deposit Flows
+## Deposit flows
 
-### Multi-Chain Deposit
+### Multi-chain deposit
 
 ```tsx title="Deposit with Chain Selection" icon="arrow-down"
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
@@ -272,7 +272,7 @@ function DepositPage() {
 }
 ```
 
-### Custom Contract Deposit (Staking)
+### Custom contract deposit (staking)
 
 ```tsx title="Staking via Deposit" icon="coins"
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
@@ -302,7 +302,7 @@ function StakeDeposit({ stakingContract }) {
 }
 ```
 
-### QR Code Deposit
+### QR code deposit
 
 ```tsx title="QR Code Deposit" icon="qrcode"
 import { QRDeposit } from "@b3dotfun/sdk/anyspend/react";
@@ -335,9 +335,9 @@ function QRDepositPage() {
 
 ---
 
-## Workflow Triggers
+## Workflow triggers
 
-### Payment-Triggered Automation
+### Payment-triggered automation
 
 ```tsx title="Workflow Payment Trigger" icon="diagram-project"
 import { AnySpendWorkflowTrigger } from "@b3dotfun/sdk/anyspend/react";
@@ -369,9 +369,9 @@ function WorkflowPayment() {
 
 ---
 
-## NFT Marketplace
+## NFT marketplace
 
-### NFT Purchase Card
+### NFT purchase card
 
 ```tsx title="NFT Card Component" icon="image"
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
@@ -406,9 +406,9 @@ function NFTCard({ nft }) {
 
 ---
 
-## Custom Smart Contract Calls
+## Custom smart contract calls
 
-### DeFi Staking
+### DeFi staking
 
 ```tsx title="Staking Pool" icon="coins"
 import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
@@ -458,9 +458,9 @@ function StakingPool({ pool }) {
 
 ---
 
-## Fiat Onramp
+## Fiat onramp
 
-### User Onboarding with Fiat
+### User onboarding with fiat
 
 ```tsx title="Fiat Onboarding" icon="credit-card"
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -510,9 +510,9 @@ function OnboardingFlow() {
 
 ---
 
-## Full Customization Example
+## Full customization example
 
-### Fully Themed Checkout
+### Fully themed checkout
 
 ```tsx title="Customized Checkout" icon="wand-magic-sparkles"
 import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
@@ -587,9 +587,9 @@ function CustomCheckout({ items }) {
 
 ---
 
-## Direct Transfer
+## Direct transfer
 
-### Same-Chain Token Transfer
+### Same-chain token transfer
 
 ```tsx title="Direct Transfer" icon="arrow-right"
 import { useDirectTransfer } from "@b3dotfun/sdk/anyspend";
@@ -627,7 +627,7 @@ function SendTokens() {
 
 ---
 
-## Getting Help
+## Getting help
 
 <CardGroup cols={2}>
 <Card title="Error Handling Guide" icon="shield-exclamation" href="/anyspend/error-handling">

@@ -1,6 +1,6 @@
 ---
 title: "Permit vs TransferWithAuthorization"
-description: "Understanding gasless payment signatures - EIP-2612 Permit and EIP-3009 TransferWithAuthorization"
+description: "Gasless payment signatures: EIP-2612 permit and EIP-3009 transferWithAuthorization"
 ---
 
 ## Overview
@@ -12,7 +12,7 @@ There are two main signature standards supported, each optimized for different t
 - **EIP-3009 (transferWithAuthorization)** - Used by USDC, one-step direct transfers
 - **EIP-2612 (permit)** - Used by most modern ERC-20 tokens, two-step approval + transfer
 
-## Quick Comparison
+## Quick comparison
 
 | Feature | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
 |---------|-------------------|--------------------------------------|
@@ -32,15 +32,15 @@ Direct transfer authorization - the signature authorizes an immediate transfer f
 
 **Used by:** USDC on all networks (Base, Ethereum, Arbitrum, Optimism, Polygon, etc.)
 
-### Key Advantages
+### Key advantages
 
-- ✅ **One-step execution** - Direct transfer, no approval needed
-- ✅ **Random nonce** - No sequential dependency, parallel transactions possible
-- ✅ **Immediate settlement** - Executes in single transaction
-- ✅ **Gasless for payer** - Facilitator pays gas
-- ✅ **No front-running** - Random nonce prevents MEV attacks
+- One-step execution - direct transfer, no approval needed
+- Random nonce - no sequential dependency, parallel transactions possible
+- Immediate settlement - executes in single transaction
+- Gasless for payer - facilitator pays gas
+- No front-running - random nonce prevents MEV attacks
 
-### Message Structure
+### Message structure
 
 ```solidity
 transferWithAuthorization(
@@ -54,7 +54,7 @@ transferWithAuthorization(
 )
 ```
 
-### Usage Example
+### Usage example
 
 ```typescript
 import { signTransferWithAuthorization } from 'anyspend-x402-client';
@@ -68,7 +68,7 @@ const signature = await signTransferWithAuthorization({
 });
 ```
 
-### How It Works
+### How it works
 
 <Steps>
 <Step title="User Signs Authorization">
@@ -88,7 +88,7 @@ The random nonce is marked as used, preventing replay attacks
 </Step>
 </Steps>
 
-### EIP-712 Typed Data Structure
+### EIP-712 typed data structure
 
 ```typescript
 const typedData = {
@@ -129,15 +129,15 @@ Signature-based approval that sets an allowance, followed by a separate `transfe
 
 **Used by:** Most modern ERC-20 tokens with permit support
 
-### Key Advantages
+### Key advantages
 
-- ✅ **Widely adopted** - Standard across many tokens
-- ✅ **Time-limited approvals** - Deadline-based expiration
-- ✅ **ERC-20 compatible** - Works with existing infrastructure
-- ✅ **Gasless for payer** - Facilitator pays gas
-- ✅ **Ecosystem support** - Supported by major wallets and dapps
+- Widely adopted - standard across many tokens
+- Time-limited approvals - deadline-based expiration
+- ERC-20 compatible - works with existing infrastructure
+- Gasless for payer - facilitator pays gas
+- Supported by major wallets and dapps
 
-### Message Structure
+### Message structure
 
 ```solidity
 permit(
@@ -149,7 +149,7 @@ permit(
 )
 ```
 
-### Usage Example
+### Usage example
 
 ```typescript
 import { signPermit } from 'anyspend-x402-client';
@@ -166,7 +166,7 @@ const signature = await signPermit({
 });
 ```
 
-### How It Works
+### How it works
 
 <Steps>
 <Step title="User Signs Permit">
@@ -186,7 +186,7 @@ Facilitator calls `transferFrom()` to transfer tokens using the approval
 </Step>
 </Steps>
 
-### EIP-712 Typed Data Structure
+### EIP-712 typed data structure
 
 ```typescript
 const typedData = {
@@ -217,9 +217,9 @@ const typedData = {
 
 ---
 
-## Which Method Does My Token Use?
+## Which method does my token use?
 
-### Checking Token Support
+### Checking token support
 
 ```typescript
 // Check if token supports EIP-3009 (USDC-style)
@@ -230,7 +230,7 @@ const hasPermit = await token.read.permit !== undefined;
 const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
 ```
 
-### Common Tokens by Method
+### Common tokens by method
 
 **EIP-3009 (transferWithAuthorization):**
 - USDC (all chains)
@@ -251,9 +251,9 @@ const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
 The AnySpend x402 client automatically detects which signature method to use based on the token contract. You don't need to specify this manually.
 </Note>
 
-## Nonce Management
+## Nonce management
 
-### Random Nonce (EIP-3009)
+### Random nonce (EIP-3009)
 
 **Advantages:**
 - No ordering dependency - multiple signatures can be used in any order
@@ -282,7 +282,7 @@ function isAuthorizationUsed(address authorizer, bytes32 nonce)
 }
 ```
 
-### Sequential Nonce (EIP-2612)
+### Sequential nonce (EIP-2612)
 
 **Advantages:**
 - Simple and predictable
@@ -313,9 +313,9 @@ function permit(/* ... */) external {
 }
 ```
 
-## Security Considerations
+## Security considerations
 
-### Replay Protection
+### Replay protection
 
 **EIP-3009:**
 - Random nonce prevents replay across chains and contracts
@@ -327,7 +327,7 @@ function permit(/* ... */) external {
 - Must use current nonce (auto-increments)
 - Failed transactions block subsequent signatures until re-signed
 
-### Deadline Enforcement
+### Deadline enforcement
 
 Both methods enforce deadlines to prevent stale signatures:
 
@@ -340,7 +340,7 @@ const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes from now
 - Longer deadlines (30-60 minutes) for better UX if needed
 - Never use `type(uint256).max` for infinite approvals
 
-### Signature Validation
+### Signature validation
 
 Both methods validate signatures using EIP-712:
 
@@ -360,7 +360,7 @@ if (recoveredAddress !== expectedSigner) {
 }
 ```
 
-## Client SDK Integration
+## Client SDK integration
 
 The AnySpend x402 client handles all signature complexity automatically:
 
@@ -382,7 +382,7 @@ const client = new X402Client({
 const response = await client.request('https://api.example.com/data');
 ```
 
-## Gas Cost Comparison
+## Gas cost comparison
 
 | Method | User Gas | Facilitator Gas | Total Transactions |
 |--------|----------|-----------------|-------------------|
@@ -393,7 +393,7 @@ const response = await client.request('https://api.example.com/data');
 All gas costs are paid by the facilitator and included in the 0.25% AnySpend fee. Users never pay gas directly.
 </Note>
 
-## Further Reading
+## Further reading
 
 <CardGroup cols={2}>
 <Card title="EIP-2612 Specification" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-2612">

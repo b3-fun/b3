@@ -181,5 +181,6 @@ Contract: `CONTRACT_CALL_FAILED`, `INSUFFICIENT_GAS`, `NONCE_TOO_LOW`, `TRANSACT
 
 - Docs: docs/installation.md, docs/components.md, docs/hooks.md, docs/examples.md, docs/checkout-sessions.md, docs/error-handling.md
 - Live demo: https://anyspend.com
+- SDK demo (Widget Lab): https://sdk-demo.anyspend.com/
 - Discord: https://discord.gg/b3dotfun
 - Issues: https://github.com/b3-fun/b3/issues

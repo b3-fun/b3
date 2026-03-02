@@ -1,38 +1,46 @@
 ---
-title: "Checkout Sessions"
-description: "Decoupled checkout sessions for flexible payment flows with AnySpend"
+title: "Checkout sessions"
+description: "Server-side checkout sessions that decouple session creation from order fulfillment"
 ---
 
-Decoupled checkout sessions for AnySpend. Sessions are decoupled from orders — create a session first, then create an order when the user is ready to pay.
+Checkout sessions let you create a tracking object on your server before the user picks a payment method. The session is a lightweight database record -- no external API calls, no order creation. The order comes later, when the user commits to paying.
+
+<Info>
+  Looking for the React checkout component? See [Checkout](/anyspend/checkout). This page covers the **REST API** for server-driven flows.
+</Info>
+
+## Base URL
+
+All checkout session endpoints live on the AnySpend service:
+
+```
+https://api.anyspend.com
+```
 
 ## Flow
 
 <Steps>
-  <Step title="Merchant creates session" icon="server">
-    `POST /checkout-sessions` returns `{ id, status: "open" }`
+  <Step title="Create a session on your server">
+    `POST https://api.anyspend.com/checkout-sessions` returns `{ id, status: "open" }`
   </Step>
-  <Step title="User picks payment method" icon="wallet">
-    `POST /orders { checkoutSessionId }` returns `{ id, globalAddress, oneClickBuyUrl }`
+  <Step title="User picks a payment method">
+    `POST https://api.anyspend.com/orders` with `checkoutSessionId` returns `{ id, globalAddress, oneClickBuyUrl }`
   </Step>
-  <Step title="User pays" icon="money-bill">
-    **Crypto:** send to `globalAddress` | **Onramp:** redirect to `oneClickBuyUrl`
+  <Step title="User pays">
+    **Crypto:** send to `globalAddress` | **Fiat onramp:** redirect to `oneClickBuyUrl`
   </Step>
-  <Step title="Merchant polls for completion" icon="check">
-    `GET /checkout-sessions/:id` returns `{ status: "complete", order_id }`
+  <Step title="Poll for completion">
+    `GET https://api.anyspend.com/checkout-sessions/:id` returns `{ status: "complete", order_id }`
   </Step>
 </Steps>
 
-### Why Decoupled?
+### Why decouple sessions from orders?
 
-<Info>
-Session creation is instant (DB-only, no external calls). The order is created separately when the user commits to a payment method.
-</Info>
+- The payment method doesn't need to be known at session creation.
+- A hosted checkout page can let users choose how to pay.
+- Session creation is a local DB write, so it never fails due to third-party API errors.
 
-- Payment method doesn't need to be known at session creation
-- A hosted checkout page can let users choose how to pay
-- Session creation never fails due to external API errors
-
-## Session Status Lifecycle
+## Session status lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -42,16 +50,20 @@ stateDiagram-v2
     open --> expired : TTL expired / manually expired
 ```
 
-| Status | When |
-|--------|------|
+| Status | Meaning |
+|--------|---------|
 | `open` | Created, waiting for order/payment |
 | `processing` | Payment received, order executing |
 | `complete` | Order executed successfully |
 | `expired` | TTL expired, payment failed, or manually expired |
 
-## API
+## API reference
 
-### `POST /checkout-sessions` — Create Session
+### Create session
+
+```
+POST https://api.anyspend.com/checkout-sessions
+```
 
 Creates a lightweight session. No order, no external API calls.
 
@@ -67,9 +79,13 @@ Creates a lightweight session. No order, no external API calls.
 
 All fields are optional. Payment config (amount, tokens, chains) lives on the order, not the session.
 
-### `POST /orders` — Create Order with Session Linking
+### Create order linked to a session
 
-Pass `checkoutSessionId` in the standard order creation request to link the order to a session.
+```
+POST https://api.anyspend.com/orders
+```
+
+Pass `checkoutSessionId` in the standard order body to link the order to a session.
 
 ```json
 {
@@ -85,24 +101,32 @@ Pass `checkoutSessionId` in the standard order creation request to link the orde
 }
 ```
 
-**Validation:**
+**Validation rules:**
 - Session must exist (`400` if not found)
 - Session must be `open` (`400` if expired/processing/complete)
 - Session must not already have an order (`409 Conflict`)
 
-### `GET /checkout-sessions/:id` — Retrieve Session
+### Retrieve session
+
+```
+GET https://api.anyspend.com/checkout-sessions/:id
+```
 
 Returns current session state. Status is synced from the underlying order on each retrieval.
 
-| Query Param | Description |
+| Query param | Description |
 |-------------|-------------|
 | `include=order` | Embed the full order object with transactions |
 
-### `POST /checkout-sessions/:id/expire` — Manually Expire
+### Expire a session
+
+```
+POST https://api.anyspend.com/checkout-sessions/:id/expire
+```
 
 Only works on sessions with status `open`.
 
-## Redirect URL Templates
+## Redirect URL templates
 
 Use template variables in `success_url` and `cancel_url`:
 
@@ -113,11 +137,13 @@ Use template variables in `success_url` and `cancel_url`:
 
 If no template variable is present, `?sessionId=<uuid>` is appended automatically.
 
-## SDK Integration
+## SDK integration
 
-### Service Methods
+### Service methods
 
 ```typescript
+import { anyspend } from "@b3dotfun/sdk/anyspend";
+
 // Create a checkout session
 const session = await anyspend.createCheckoutSession({
   success_url: "https://mysite.com/success/{SESSION_ID}",
@@ -128,7 +154,7 @@ const session = await anyspend.createCheckoutSession({
 const session = await anyspend.getCheckoutSession(sessionId);
 ```
 
-### React Hooks
+### React hooks
 
 #### `useCreateCheckoutSession`
 
@@ -150,7 +176,7 @@ import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
 const { data: session, isLoading } = useCheckoutSession(sessionId);
 ```
 
-### Component `checkoutSession` Prop
+### Component prop
 
 The `<AnySpend>`, `<AnySpendCustom>`, and `<AnySpendCustomExactIn>` components accept an optional `checkoutSession` prop:
 
@@ -168,16 +194,19 @@ The `<AnySpend>`, `<AnySpendCustom>`, and `<AnySpendCustomExactIn>` components a
 />
 ```
 
-When the `checkoutSession` prop is set, the component automatically creates a session before creating the order, and uses the session's `success_url` for redirects. Without the prop, existing flows are unchanged.
+When `checkoutSession` is set, the component creates a session before the order, and uses the session's `success_url` for redirects. Without the prop, existing flows work the same as before.
 
 ## Examples
 
-### Crypto Payment
+### Crypto payment
 
 ```typescript
+const BASE_URL = "https://api.anyspend.com";
+
 // 1. Create session
-const session = await fetch("/checkout-sessions", {
+const session = await fetch(`${BASE_URL}/checkout-sessions`, {
   method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     success_url: "https://mysite.com/success/{SESSION_ID}",
     metadata: { sku: "widget-1" },
@@ -185,8 +214,9 @@ const session = await fetch("/checkout-sessions", {
 }).then(r => r.json());
 
 // 2. Create order linked to session
-const order = await fetch("/orders", {
+const order = await fetch(`${BASE_URL}/orders`, {
   method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     recipientAddress: "0x...",
     srcChain: 8453,
@@ -204,7 +234,7 @@ const order = await fetch("/orders", {
 
 // 4. Poll session until complete
 const poll = setInterval(async () => {
-  const s = await fetch(`/checkout-sessions/${session.data.id}`).then(r => r.json());
+  const s = await fetch(`${BASE_URL}/checkout-sessions/${session.data.id}`).then(r => r.json());
   if (s.data.status === "complete") {
     clearInterval(poll);
     // redirect to success_url or show confirmation
@@ -212,12 +242,15 @@ const poll = setInterval(async () => {
 }, 3000);
 ```
 
-### Onramp Payment (Coinbase/Stripe)
+### Fiat onramp (Coinbase/Stripe)
 
 ```typescript
+const BASE_URL = "https://api.anyspend.com";
+
 // Steps 1-2 same as above, but include onramp config in order creation:
-const order = await fetch("/orders", {
+const order = await fetch(`${BASE_URL}/orders`, {
   method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     // ... same order fields ...
     checkoutSessionId: session.data.id,

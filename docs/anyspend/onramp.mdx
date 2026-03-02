@@ -1,85 +1,64 @@
 ---
-title: "Onramp Overview"
-description: "Let users pay in fiat and execute onchain actions in one seamless flow."
+title: "Fiat onramp"
+description: "Let users pay with a credit card or bank transfer and execute onchain actions in one step"
 ---
 
-## What It Does
+## What it does
 
-The AnySpend onramp allows users to pay with traditional fiat methods (e.g., credit card, bank transfer) and automatically execute any onchain transaction. This seamless flow eliminates the need for users to manually acquire cryptocurrency or manage wallet funding.
+Users pay with a card or bank transfer. AnySpend converts the fiat to crypto and executes the onchain transaction in a single flow. The user never has to buy crypto separately.
 
-It’s designed to reduce friction for non-crypto-native users, making blockchain-powered products accessible to a broader audience.
+## How it works
 
-## How It Works
+1. **User starts an action** -- minting, staking, a contract call, whatever.
+2. **Fiat payment** -- they pay with Stripe or Coinbase Pay.
+3. **Conversion + execution** -- AnySpend converts fiat to the right token and executes the transaction.
+4. **Delivery** -- tokens land in the user's wallet. Done.
 
-1. **User Initiates Action**\
-   A user begins an onchain action (e.g., minting, staking, or contract interaction).
-2. **Fiat Payment**\
-   They pay with a card or bank transfer via Stripe or Coinbase Pay.
-3. **Conversion \+ Execution**\
-   AnySpend converts fiat to the desired cryptocurrency and executes the transaction.
-4. **Wallet Delivery**\
-   The result is sent to the user's connected wallet or global wallet. No crypto acquisition required.
-
-## Payment Options
+## Payment providers
 
 **Stripe**
 
-- Global support for major credit/debit cards
+- Credit/debit cards worldwide
 - 3D Secure authentication
-- Currency conversion for non-USD transactions
-- Localized payment methods and fee adjustment
+- Automatic currency conversion for non-USD
+- Localized payment methods by region
 
 **Coinbase Pay**
 
-- Users can pay directly with their Coinbase account balances or debit card
-- No need to transfer funds between platforms
-- Trusted UX for existing Coinbase users
-- No additional fees from AnySpend
+- Pay from Coinbase account balance or debit card
+- Familiar UX for Coinbase users
+- No additional AnySpend fees
 
-**Extensible Provider Architecture**
+New providers can be added through a modular architecture. Routing between providers is automatic based on the user's region.
 
-- Modular system to support additional fiat providers
-- Dynamic routing based on region and availability
-- Built-in compliance flexibility for regional support
+## Fraud prevention
 
-## Security
+Each transaction goes through a real-time risk engine:
 
-AnySpend includes a built-in, real-time risk engine designed to minimize fraud while keeping the user experience seamless.
+- **Allow** -- transaction proceeds
+- **Verify** -- additional user verification required
+- **Block** -- suspicious activity stopped
 
-**Key Features:**
+The engine checks behavioral signals, device fingerprints, and network intelligence.
 
-- Behavioral and transactional risk analysis
-- Device and network security checks
-- Real-time threat intelligence
+## Regional support
 
-**Smart Transaction Evaluation**
-
-Each transaction is evaluated in real time:
-
-- **Allow** – transaction proceeds normally
-- **Verify** – additional user verification may be required
-- **Block** – suspicious activity is prevented
-
-## Global Coverage
-
-AnySpend supports a wide range of currencies and regions through integrated providers:
-
-- Automatic location detection and localization
-- Local payment methods and currency handling
-- Dynamic provider selection based on geography
-- Regional compliance out of the box
+- Automatic location detection
+- Local payment methods and currencies
+- Provider selection based on geography
+- Regional compliance handled for you
 
 ## Fees
 
-- **Stripe Payments:** 5.4% \+ \$0.30 per transaction (flat rate, global)
-- **Coinbase Pay:** No additional fees from AnySpend
+| Provider | Fee |
+|----------|-----|
+| Stripe | 5.4% + $0.30 per transaction |
+| Coinbase Pay | No AnySpend fee |
 
-Users are shown a transparent fee breakdown during checkout.
+Users see a fee breakdown during checkout before they pay.
 
-## Common Use Cases
+## Common use cases
 
-AnySpend enables developers to:
-
-- Let users mint NFTs with a credit card
-- Allow staking, voting, or game actions directly from fiat
-- Onboard users to DeFi, gaming, or other dApps with no crypto prerequisite
+- Mint NFTs with a credit card
+- Stake or vote from fiat
+- Onboard non-crypto users to games and dApps

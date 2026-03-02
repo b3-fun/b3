@@ -1,92 +1,67 @@
 ---
-title: "AnySpend Introduction"
-description: "Cross-chain crypto payments made simple - swap tokens, buy NFTs, and integrate fiat onramps"
+title: "AnySpend"
+description: "Accept payments in any token, on any chain. Swap, checkout, deposit, and fiat onramp."
 ---
 
 <img src="/images/anyspend-example-banner.jpg" alt="AnySpend Banner" className="w-full rounded-xl" />
 
 ## What is AnySpend?
 
-AnySpend is B3's comprehensive payment infrastructure that enables seamless crypto transactions across multiple blockchains. Whether you're building a DeFi application, NFT marketplace, or gaming platform, AnySpend provides the components and APIs you need to accept payments in any token.
+AnySpend is B3's payment infrastructure for crypto. It handles cross-chain routing, token conversion, and fiat onramps so your users can pay with whatever they have in their wallet. You receive the token you want, on the chain you want.
 
-[Try AnySpend in your browser](https://anyspend.com/swap)
+[Try AnySpend in your browser](https://anyspend.com/swap) | [SDK demo (Widget Lab)](https://sdk-demo.anyspend.com/)
 
-## Use Cases
+## Use cases
 
 <CardGroup cols={2}>
 <Card href="/anyspend/examples">
   <img src="/images/customize-for-swap.png" className="w-full h-48 object-cover rounded-xl mb-4" />
-  <h3 className="text-lg font-semibold text-primary block mb-1">Cross-Chain Swaps</h3>
-  Enable users to swap tokens between different blockchains with automatic routing and best price discovery.
+  <h3 className="text-lg font-semibold text-primary block mb-1">Cross-chain swaps</h3>
+  Users swap tokens between chains. AnySpend finds the best route and price.
 </Card>
 
 <Card href="/anyspend/examples">
   <img src="/images/customize-for-checkout.png" className="w-full h-48 object-cover rounded-xl mb-4" />
   <h3 className="text-lg font-semibold text-primary block mb-1">Checkout</h3>
-  One-click checkout buttons that accept any token as payment, with automatic conversion.
+  One-click checkout that accepts any token as payment, with automatic conversion.
 </Card>
 
 <Card href="/anyspend/examples">
   <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
   <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
-  Execute any onchain contract call, with usage for staking, prediction markets, bonding curves, and more.
+  Execute any onchain contract call -- staking, prediction markets, bonding curves, and more.
 </Card>
 
 <Card href="/anyspend/examples">
   <img src="/images/customize-for-games.png" className="w-full h-48 object-cover rounded-xl mb-4" />
   <h3 className="text-lg font-semibold text-primary block mb-1">Games</h3>
-  Embeddable in native iOS/Android, Unity, & other surfaces.
+  Embeddable in native iOS/Android, Unity, and other surfaces.
 </Card>
 </CardGroup>
 
-## Features
+## How it works
 
 <Steps>
-<Step title="User Initiates Payment">
-User clicks a payment button or interacts with your interface, choosing their preferred token
+<Step title="User initiates payment">
+User clicks a payment button or interacts with your UI, choosing their preferred token.
 </Step>
 
-<Step title="AnySpend Quotes">
-Our routing engine finds the best path to convert their token to the required destination token
+<Step title="AnySpend quotes a route">
+The routing engine finds the best path to convert their token to the destination token.
 </Step>
 
-<Step title="Cross-Chain Execution">
-If needed, tokens are bridged across chains using secure, battle-tested infrastructure
+<Step title="Cross-chain execution">
+If needed, tokens are bridged across chains automatically.
 </Step>
 
-<Step title="Final Delivery">
-Tokens arrive at the destination address, execute any custom logic, and trigger your success callbacks
+<Step title="Delivery">
+Tokens arrive at the destination address, execute any custom logic, and trigger your success callbacks.
 </Step>
 </Steps>
 
-## Use Cases
-<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Banner" className="w-full rounded-xl" />
+<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Onramp" className="w-full rounded-xl" />
 
-<AccordionGroup>
-<Accordion title="DeFi Applications">
-Enable token swaps, provide liquidity, and facilitate yield farming across multiple chains with automatic routing and competitive rates.
-</Accordion>
-
-<Accordion title="NFT Marketplaces">
-Allow users to buy NFTs with any token they own, removing barriers and increasing conversion rates by supporting their preferred payment methods.
-</Accordion>
-
-<Accordion title="Gaming Platforms">
-Accept payments for in-game assets, tournament entries, and premium features using any cryptocurrency or fiat payment methods.
-</Accordion>
-
-<Accordion title="E-commerce">
-Integrate crypto payments into traditional e-commerce platforms with automatic fiat conversion and settlement.
-</Accordion>
-
-<Accordion title="Subscription Services">
-Accept recurring payments in crypto with automatic conversion to your preferred settlement currency.
-</Accordion>
-</AccordionGroup>
-
-## Quick Start
-
-Get started with AnySpend in just a few steps:
+## Quick start
 
 ```tsx
 import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
@@ -107,27 +82,26 @@ function App() {
 export default App
 ```
 
-## What's Next?
+## What's next?
 
 <CardGroup cols={3}>
 <Card title="Installation" icon="download" href="/anyspend/installation">
-  Set up AnySpend in your project with npm, yarn, or pnpm
+  Set up AnySpend in your project with npm or pnpm
 </Card>
 
 <Card title="Components" icon="puzzle-piece" href="/anyspend/components">
-  Explore pre-built components for common payment scenarios
+  Pre-built components for swaps, checkout, deposits, and more
 </Card>
 
 <Card title="Examples" icon="code" href="/anyspend/examples">
-  See real-world implementation examples and best practices
+  Working code for common integration patterns
 </Card>
 </CardGroup>
 
-## Getting Help
+## Getting help
 
 - **Discord**: Join our [Discord community](https://discord.gg/b3dotfun) for support
-- **Documentation**: Comprehensive guides and API references
-- **Examples**: Ready-to-use code samples and integrations
+- **GitHub**: [Report issues](https://github.com/b3-fun/b3/issues) or request features
 
 <div className="flex flex-row gap-4">
 <div className="flex-1">
