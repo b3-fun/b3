@@ -1,0 +1,252 @@
+---
+title: Análise de Dados
+description: Visão geral de análise de receita e conversão
+lang: pt-BR
+originalPath: anyspend/api/analytics.mdx
+---
+O endpoint de análise fornece uma visão geral abrangente do seu desempenho de pagamento, incluindo totais de receita, contagem de clientes, taxas de conversão e detalhamentos por dia, link de pagamento, token e cadeia.
+
+<Info>
+  O endpoint de análise requer permissão de **leitura**.
+</Info>
+
+## Autenticação
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Base: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Obter Visão Geral da Análise
+
+<ParamField path="GET /analytics/overview" type="read">
+  Retorna uma visão geral agregada da análise para o período especificado.
+</ParamField>
+
+<ParamField path="period" type="string" query>
+  Período de tempo para as métricas. Uma das opções: `7d`, `30d`, `90d`, `all`. Padrão é `30d`.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/analytics/overview?period=30d" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const analytics = await client.analytics.overview({ period: "30d" });
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "period_usd": 45230.50,
+      "period_transactions": 312,
+      "all_time_usd": 182450.75,
+      "all_time_transactions": 1847
+    },
+    "customers": {
+      "total": 892,
+      "new_in_period": 156
+    },
+    "payment_links": {
+      "total": 24,
+      "active": 18
+    },
+    "conversion_rate": 0.68,
+    "daily": [
+      {
+        "date": "2026-02-27",
+        "transactions": 14,
+        "revenue_usd": 1820.00
+      },
+      {
+        "date": "2026-02-26",
+        "transactions": 18,
+        "revenue_usd": 2340.50
+      },
+      {
+        "date": "2026-02-25",
+        "transactions": 11,
+        "revenue_usd": 1450.25
+      }
+    ],
+    "top_payment_links": [
+      {
+        "id": "pl_abc123",
+        "name": "Plano Pro Mensal",
+        "revenue_usd": 12500.00,
+        "transactions": 125
+      },
+      {
+        "id": "pl_def456",
+        "name": "Anual Empresarial",
+        "revenue_usd": 9800.00,
+        "transactions": 14
+      },
+      {
+        "id": "pl_ghi789",
+        "name": "Pacote Inicial",
+        "revenue_usd": 7200.00,
+        "transactions": 96
+      }
+    ],
+    "top_tokens": [
+      {
+        "symbol": "USDC",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain_id": 8453,
+        "revenue_usd": 32100.00,
+        "transactions": 245
+      },
+      {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "chain_id": 8453,
+        "revenue_usd": 8400.00,
+        "transactions": 42
+      }
+    ],
+    "top_chains": [
+      {
+        "chain_id": 8453,
+        "name": "Base",
+        "revenue_usd": 38200.00,
+        "transactions": 278
+      },
+      {
+        "chain_id": 1,
+        "name": "Ethereum",
+        "revenue_usd": 7030.50,
+        "transactions": 34
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Campos da Resposta
+
+### Receita
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `period_usd` | `number` | Receita total em USD para o período selecionado |
+| `period_transactions` | `number` | Número de transações concluídas no período |
+| `all_time_usd` | `number` | Receita total acumulada em USD |
+| `all_time_transactions` | `number` | Contagem total de transações acumuladas |
+
+### Clientes
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `total` | `number` | Total de clientes únicos (por endereço de carteira) |
+| `new_in_period` | `number` | Novos clientes adquiridos no período selecionado |
+
+### Links de Pagamento
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `total` | `number` | Total de links de pagamento criados |
+| `active` | `number` | Links de pagamento atualmente ativos |
+
+### Taxa de Conversão
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `conversion_rate` | `number` | Proporção de checkouts concluídos para sessões iniciadas (0.0 a 1.0) |
+
+### Detalhamento Diário
+
+Cada entrada no array `daily` contém:
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `date` | `string` | Data no formato `YYYY-MM-DD` |
+| `transactions` | `number` | Transações concluídas nessa data |
+| `revenue_usd` | `number` | Receita em USD nessa data |
+
+### Principais Links de Pagamento
+
+Classificados por receita dentro do período selecionado:
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | `string` | ID do link de pagamento |
+| `name` | `string` | Nome do link de pagamento |
+| `revenue_usd` | `number` | Receita em USD |
+| `transactions` | `number` | Número de transações |
+
+### Principais Tokens
+
+Classificados por receita dentro do período selecionado:
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `symbol` | `string` | Símbolo do token (ex.: `USDC`) |
+| `address` | `string` | Endereço do contrato do token |
+| `chain_id` | `number` | ID da cadeia onde o token foi recebido |
+| `revenue_usd` | `number` | Receita em USD |
+| `transactions` | `number` | Número de transações |
+
+### Principais Cadeias
+
+Classificadas por receita dentro do período selecionado:
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `chain_id` | `number` | ID da cadeia |
+| `name` | `string` | Nome da cadeia |
+| `revenue_usd` | `number` | Receita em USD |
+| `transactions` | `number` | Número de transações |
+
+---
+
+## Opções de Período
+
+| Valor | Descrição |
+|-------|-------------|
+| `7d` | Últimos 7 dias |
+| `30d` | Últimos 30 dias (padrão) |
+| `90d` | Últimos 90 dias |
+| `all` | Todo o período |
+
+<Note>
+  O array `daily` retorna uma entrada por dia para o período selecionado. Para `all`, o array diário é limitado aos 90 dias mais recentes.
+</Note>
+
+## Exemplo: Gráfico do Painel
+
+```typescript
+const analytics = await client.analytics.overview({ period: "30d" });
+
+// Plotar receita diária
+analytics.daily.forEach(({ date, revenue_usd, transactions }) => {
+  console.log(`${date}: $${revenue_usd.toFixed(2)} (${transactions} txns)`);
+});
+
+// Exibir taxa de conversão como porcentagem
+console.log(`Conversão: ${(analytics.conversion_rate * 100).toFixed(1)}%`);
+
+// Mostrar o link de pagamento de melhor desempenho
+const top = analytics.top_payment_links[0];
+if (top) {
+  console.log(`Melhor link: ${top.name} - $${top.revenue_usd.toFixed(2)}`);
+}
+```

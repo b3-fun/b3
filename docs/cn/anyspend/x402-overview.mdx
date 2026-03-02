@@ -1,0 +1,163 @@
+---
+title: AnySpend x402 概述
+description: 使用 x402 开放支付协议，用任何代币支付付费墙API和服务
+lang: cn
+originalPath: anyspend/x402-overview.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub 仓库" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  查看源代码、示例，并贡献
+</Card>
+
+<Card title="npm 包" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  安装 @b3dotfun/anyspend-x402 包
+</Card>
+</CardGroup>
+
+## 什么是 AnySpend x402
+
+AnySpend x402 是 B3 实现的 **x402 支付协议**，该协议通过 HTTP 直接启用即时、自动的加密货币支付。与仅支持 USDC 的传统 x402 服务提供者不同，**AnySpend 允许您使用任何兼容的代币**（EIP-2612 或 EIP-3009）支付，而资源服务器可以接收他们偏好的任何代币。
+
+x402 协议使 HTTP `402 Payment Required` 状态代码现代化，将其转变为机器对机器微支付、付费墙 API 和自主代理交互的实用解决方案。
+
+## 对买家（支付者）
+
+使用您持有的任何兼容代币支付付费资源：
+
+
+- **使用兼容代币支付**：使用支持 EIP-2612 或 EIP-3009 的任何代币进行无燃料支付
+- **标准协议**：使用标准 HTTP 与任何支持 x402 的服务一起工作
+- **无需手动交换**：AnySpend 自动将您的代币转换为卖家需要的代币
+- **简单集成**：一个 SDK 跨所有 x402 服务工作
+
+<Card title="代币兼容性检查器" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  浏览支持 EIP-2612 或 EIP-3009 的兼容代币，跨越 19+ 网络
+</Card>
+
+**使用案例：**
+- 访问高级 API 和 AI 代理服务
+- 为计算资源和数据提要支付
+- 启用自主代理到代理支付
+- 以编程方式消费付费墙内容
+
+## 对卖家（资源服务器）
+
+接受 USDC 支付，而您的客户可以使用他们偏好的代币支付：
+
+- **接收 USDC**：无论客户使用什么代币，都以 USDC 收款
+- **Express 中间件**：只需几行代码即可向您的 API 添加支付功能
+- **无需区块链基础设施**：AnySpend 处理所有链上复杂性
+- **即时结算**：支付被自动验证和结算
+
+**使用案例：**
+- 为高级 API 和数据服务实现货币化
+- 构建付费 AI 代理工作流
+- 创建付费墙内容和工具
+- 无需加密专业知识即可接受加密支付
+
+## 快速开始
+
+选择您的路径：
+
+<CardGroup cols={2}>
+<Card title="我想支付服务" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  **对买家**：了解如何使用 x402 客户端 SDK 用任何代币支付付费资源
+</Card>
+
+<Card title="我想接受支付" icon="cash-register" href="/anyspend/x402-quickstart-sellers">
+  **对卖家**：将 Express 中间件添加到您的 API 并开始接受多代币支付
+</Card>
+</CardGroup>
+
+
+## 它是如何工作的
+
+<Steps>
+<Step title="客户端请求资源">
+用户的应用程序向您的 API 发出标准 HTTP 请求
+</Step>
+
+<Step title="需要支付">
+您的 API 返回 `402 Payment Required` 与支付详情
+</Step>
+
+<Step title="代币偏好">
+客户端指定他们偏好的支付代币（USDC、USDT 等）
+</Step>
+
+<Step title="AnySpend 报价">
+AnySpend 计算出客户选择的代币的等价金额
+</Step>
+
+<Step title="客户端签署支付">
+用户为他们的代币签署一个加密授权
+</Step>
+
+<Step title="自动结算">
+AnySpend 将代币换成 USDC 并结算到您的钱包
+</Step>
+
+<Step title="资源交付">
+您的 API 收到支付确认并返回请求的资源
+</Step>
+</Steps>
+
+## 关键差异化
+
+### 多代币支持
+
+**标准 x402**：资源服务器和客户端都必须使用 USDC
+
+**AnySpend x402**：客户端用他们持有的**任何兼容代币**（需要 EIP-2612 或 EIP-3009 支持）支付。AnySpend 处理转换。
+
+```
+客户端用 DAI (EIP-2612) 支付 → AnySpend 换成 1 USDC → 卖家收到 1 USDC
+```
+
+### 无需基础设施
+
+资源服务器无需：
+- 运行区块链节点
+- 管理钱包或私钥
+- 处理代币交换或桥接
+- 监控交易状态
+
+AnySpend 的服务提供者处理所有区块链操作，并为验证和结算提供简单的 HTTP 端点。
+
+### 标准协议合规
+
+使用 AnySpend 的客户端不需要知道他们正在使用特殊的服务提供者。流程使用标准 x402 协议消息，多代币转换在资源服务器端通过中间件发生。
+
+## 包交付
+
+AnySpend x402 包括两个包：
+
+<CardGroup cols={2}>
+<Card title="服务器 SDK" icon="server">
+  **@b3dotfun/anyspend-x402**
+
+  通用服务器中间件支持 Express、Next.js 和 Hono，使资源服务器能够轻松接受多代币支付
+</Card>
+
+<Card title="客户端 SDK" icon="code">
+  **anyspend-x402-client**
+
+  平台无关的 TypeScript SDK，供客户端使用签名助手进行支付
+</Card>
+</CardGroup>
+
+## 由 AnySpend 服务提供者提供支持
+
+所有 x402 支付都通过 AnySpend 服务提供者处理，该服务提供者处理：
+
+- 跨 19+ 区块链网络的多代币支持
+- 自动代币交换和跨链路由
+- 用户的无燃料支付
+- 符合标准的 x402 实现
+- 任何 x402 服务提供者的即插即用替代品
+
+**生产端点：** `https://mainnet.anyspend.com/x402`
+
+<Card title="AnySpend 服务提供者" icon="server" href="/anyspend/x402-facilitator">
+  API 端点、架构和配置
+</Card>

@@ -1,0 +1,198 @@
+---
+title: Soporte de red y token
+description: >-
+  Cadenas de bloques, tokens y direcciones de contrato soportados para pagos
+  AnySpend x402
+lang: es
+originalPath: anyspend/x402-network-support.mdx
+---
+## Visión general
+
+AnySpend x402 soporta pagos a través de múltiples redes blockchain incluyendo cadenas compatibles con EVM y Solana (SVM). Esta página proporciona la referencia completa de redes soportadas, tokens y sus direcciones de contrato.
+
+## Redes principales EVM
+
+AnySpend x402 soporta las siguientes cadenas principales EVM:
+
+| Red | Identificador | Chain ID | Tipo |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**Cadenas recomendadas para producción:** Base (bajas tarifas, rápido), Ethereum (máxima liquidez), Arbitrum (equilibrado)
+</Note>
+
+## Redes de prueba EVM
+
+Para desarrollo y pruebas, AnySpend soporta estas redes de prueba:
+
+| Red | Identificador | Chain ID | Grifo |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Grifo de Abstract](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Grifo de Fuji](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Grifo de Coinbase](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Grifo de Polygon](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Grifo de Sei](https://atlantic-2.app.sei.io/faucet) |
+
+## Redes SVM (Solana)
+
+AnySpend también soporta redes de Máquina Virtual Solana (SVM):
+
+| Red | Identificador | Chain ID | Tipo |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
+
+<Info>
+El soporte de Solana habilita pagos cruzados de VM - los usuarios pueden pagar con SOL o tokens SPL mientras que los servidores de recursos reciben stablecoins en cadenas EVM.
+</Info>
+
+## Compatibilidad de tokens
+
+<Note>
+Para usar un token con X402, debe implementar **EIP-3009** (`transferWithAuthorization`) o **EIP-2612** (`permit`) para firmas sin gas.
+</Note>
+
+En lugar de mantener una lista estática de tokens soportados, hemos construido herramientas para ayudarte a verificar la compatibilidad de cualquier token en tiempo real.
+
+## Verificador de compatibilidad de tokens X402
+
+<Note>
+**Nueva Herramienta Disponible**: Verifica si cualquier token ERC-20 es compatible con pagos X402 antes de la integración.
+</Note>
+
+Para que un token sea compatible con X402, debe implementar:
+- **EIP-3009** (`transferWithAuthorization`) - Usado por USDC
+- **EIP-2612** (`permit`) - Usado por USDT (en algunas cadenas) y muchos otros tokens ERC-20 modernos
+
+### Usando el verificador público
+
+Verifica cualquier token ERC-20 en cadenas soportadas por AnySpend:
+
+**Interfaz web**: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+Simplemente ingresa una dirección de token y selecciona la red para verificar instantáneamente la compatibilidad con X402.
+
+**API directa**: También puedes consultar la API directamente:
+
+```bash
+curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+```
+
+Esto devuelve los metadatos del token y la información de compatibilidad en formato JSON.
+
+### Usando el paquete npm
+
+Para desarrolladores que integran verificaciones de compatibilidad de tokens en sus aplicaciones:
+
+**paquete npm**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+
+```bash
+npm install @b3dotfun/anyspend-x402-token-compat
+```
+
+**Uso:**
+```typescript
+import { TokenCompatClient } from '@b3dotfun/anyspend-x402-token-compat';
+
+const client = new TokenCompatClient();
+
+// Obtener metadatos del token y compatibilidad
+const metadata = await client.getTokenMetadata('base', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913');
+console.log(metadata.supportsEip2612); // true - soporta permit
+console.log(metadata.supportsEip3009); // true - soporta transferWithAuth
+
+// Verificación rápida de compatibilidad
+const hasPermit = await client.supportsEip2612('base', tokenAddress);
+```
+
+
+### Cómo funciona
+
+**Rutas Cruzadas de Cadena Soportadas:**
+AnySpend soporta enrutamiento cruzado de cadena entre cualquiera de las redes EVM soportadas, incluyendo:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 puenteando a través de todas las cadenas soportadas
+- Cruzado de VM: Solana ↔ cadenas EVM (experimental)
+
+<Info>
+Los pagos entre cadenas tardan más (2-5 minutos) debido al tiempo de puenteo e incurren en tarifas adicionales (~0.5% total). Se recomiendan pagos en la misma cadena para la mejor experiencia de usuario.
+</Info>
+
+
+<Note>
+Construido sobre la infraestructura global de Cloudflare con caché inteligente para resultados instantáneos.
+</Note>
+
+El verificador combina la verificación en cadena en tiempo real con una base de datos en crecimiento de tokens verificados:
+
+- Tiempos de respuesta a nivel de milisegundos a través de caché inteligente
+- La base de datos crece automáticamente a medida que se verifican más tokens
+- Verificación en cadena para tokens no en caché
+- Funciona en Cloudflare Workers para acceso de baja latencia en todo el mundo
+
+### Integración en x402
+
+El verificador de compatibilidad de tokens ya está integrado en el SDK de AnySpend X402:
+
+- Valida la compatibilidad del token de antemano antes del pago
+- Devuelve errores claros y accionables para tokens no soportados
+- Previene transacciones fallidas debido a tokens incompatibles
+
+**Pruébalo en vivo**: [https://x402-demo.anyspend.com/](https://x402-demo.anyspend.com/)
+
+<Warning>
+**Importante**: Siempre verifica la compatibilidad del token antes de integrar un nuevo token en tu flujo de pago. Los tokens incompatibles resultarán en firmas de pago fallidas.
+</Warning>
+
+## Recursos adicionales
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  Puntos finales de RPC y metadatos de cadena
+</Card>
+
+<Card title="Listas de Tokens" icon="list" href="https://tokenlists.org">
+  Direcciones de tokens verificadas a través de cadenas
+</Card>
+
+<Card title="Grifo de Coinbase" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  Obtén tokens de prueba para desarrollo
+</Card>
+
+<Card title="Facilitador de AnySpend" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  Punto final de la API del facilitador de producción
+</Card>
+</CardGroup>
+
+## Qué sigue
+
+<CardGroup cols={2}>
+<Card title="Inicio rápido para Compradores" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Comienza a usar estos tokens para pagar servicios
+</Card>
+
+<Card title="Inicio rápido para Vendedores" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Configura tu API para aceptar estos tokens
+</Card>
+</CardGroup>
+
+## Obtener ayuda
+
+Si necesitas un token o red específicos soportados:
+
+- **Discord**: Solicita en [#anyspend-support](https://discord.gg/b3dotfun)
+- **GitHub**: Abre un problema en [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Correo electrónico**: support@b3.fun

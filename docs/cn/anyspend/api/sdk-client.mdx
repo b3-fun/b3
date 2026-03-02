@@ -1,0 +1,353 @@
+---
+title: TypeScript SDK 客户端
+description: AnySpend 平台 API 的无头 TypeScript 客户端
+lang: cn
+originalPath: anyspend/api/sdk-client.mdx
+---
+AnySpend 平台 SDK 客户端是一个**无头**（无 React 依赖）TypeScript 客户端，用于完整的 AnySpend 平台 API。它可以在现代 JavaScript 运行的任何地方工作 -- Node.js、浏览器、Cloudflare Workers、Deno 和 Bun。
+
+## 安装
+
+<CodeGroup>
+
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+</CodeGroup>
+
+## 快速开始
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// 创建支付链接
+const link = await platform.paymentLinks.create({
+  name: "Pro Plan - Monthly",
+  amount: "29990000",  // 29.99 USDC
+  recipient_address: "0xYourAddress",
+});
+
+console.log(link.url);
+```
+
+## 初始化
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!, {
+  // 下面所有选项都是可选的
+  baseUrl: "https://platform-api.anyspend.com/api/v1", // 默认
+  timeout: 30_000,           // 请求超时时间，以毫秒为单位（默认：30s）
+  maxRetries: 3,             // 5xx / 网络错误的自动重试次数
+  idempotencyKeyGenerator: () => crypto.randomUUID(), // 自定义生成器
+});
+```
+
+<Info>
+  您可以从 [AnySpend Dashboard](https://app.anyspend.com) 的 **Settings > API Keys** 下获取 API 密钥。密钥按您的组织进行限制，可以具有只读或读写权限。
+</Info>
+
+## 可用资源
+
+客户端按资源命名空间组织，每个命名空间都有直接映射到 REST 端点的方法。
+
+<AccordionGroup>
+  <Accordion title="paymentLinks">
+    ```typescript
+    // 增删改查
+    platform.paymentLinks.create(data)
+    platform.paymentLinks.list(params?)
+    platform.paymentLinks.get(id)
+    platform.paymentLinks.update(id, data)
+    platform.paymentLinks.delete(id)
+
+    // 操作
+    platform.paymentLinks.duplicate(id)
+    platform.paymentLinks.stats(id)
+    platform.paymentLinks.sessions(id, params?)
+    platform.paymentLinks.visitors(id, params?)
+
+    // 行项目
+    platform.paymentLinks.items(id)
+    platform.paymentLinks.addItem(id, itemData)
+    platform.paymentLinks.removeItem(id, itemId)
+    ```
+  </Accordion>
+
+  <Accordion title="products">
+    ```typescript
+    platform.products.create(data)
+    platform.products.list(params?)
+    platform.products.get(id)
+    platform.products.update(id, data)
+    platform.products.delete(id)
+    platform.products.generateLink(id, linkOptions?)
+    ```
+  </Accordion>
+
+  <Accordion title="customers">
+    ```typescript
+    platform.customers.create(data)
+    platform.customers.list(params?)
+    platform.customers.get(id)
+    platform.customers.update(id, data)
+    platform.customers.delete(id)
+    platform.customers.transactions(id, params?)
+    platform.customers.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="transactions">
+    ```typescript
+    platform.transactions.list(params?)
+    platform.transactions.get(id)
+    platform.transactions.stats(params?)
+    platform.transactions.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="checkoutSessions">
+    ```typescript
+    platform.checkoutSessions.create(data)
+    platform.checkoutSessions.list(params?)
+    platform.checkoutSessions.get(id)
+    platform.checkoutSessions.expire(id)
+    ```
+  </Accordion>
+
+  <Accordion title="webhooks">
+    ```typescript
+    platform.webhooks.create(data)
+    platform.webhooks.list(params?)
+    platform.webhooks.get(id)
+    platform.webhooks.update(id, data)
+    platform.webhooks.delete(id)
+    platform.webhooks.test(id)
+    platform.webhooks.deliveries(id, params?)
+    platform.webhooks.retry(id, deliveryId)
+    ```
+  </Accordion>
+
+  <Accordion title="discountCodes">
+    ```typescript
+    platform.discountCodes.create(data)
+    platform.discountCodes.list(params?)
+    platform.discountCodes.update(id, data)
+    platform.discountCodes.delete(id)
+    platform.discountCodes.validate(code, context?)
+    platform.discountCodes.batchCreate(codes)
+    ```
+  </Accordion>
+
+  <Accordion title="notifications">
+    ```typescript
+    platform.notifications.get()
+    platform.notifications.update(data)
+    platform.notifications.linkTelegram(chatId)
+    platform.notifications.unlinkTelegram()
+    platform.notifications.testEmail()
+    platform.notifications.testTelegram()
+    ```
+  </Accordion>
+
+  <Accordion title="widgets">
+    ```typescript
+    platform.widgets.create(data)
+    platform.widgets.list(params?)
+    platform.widgets.get(id)
+    platform.widgets.update(id, data)
+    platform.widgets.delete(id)
+    platform.widgets.stats(id)
+    ```
+  </Accordion>
+
+  <Accordion title="organization">
+    ```typescript
+    platform.organization.get()
+    platform.organization.update(data)
+    ```
+  </Accordion>
+
+  <Accordion title="analytics">
+    ```typescript
+    platform.analytics.overview(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="events">
+    ```typescript
+    platform.events.list(params?)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## 分页
+
+所有的 `list` 方法都接受可选的分页参数，并返回一个分页响应：
+
+```typescript
+const page = await platform.transactions.list({
+  status: "completed",
+  limit: 25,
+  cursor: "cur_abc123",
+});
+
+console.log(page.data);       // Transaction[]
+console.log(page.has_more);   // boolean
+console.log(page.next_cursor); // string | null
+```
+
+### 自动分页
+
+为方便起见，每个 `list` 方法都有一个对应的 `listAutoPaginate` 帮助器，它返回一个异步迭代器。它在您消费项目时幕后获取页面。
+
+```typescript
+for await (const txn of platform.transactions.listAutoPaginate({
+  status: "completed",
+})) {
+  console.log(txn.id, txn.amount);
+}
+```
+
+<Tip>
+  自动分页自动遵守速率限制。如果 API 返回 `429`，迭代器会等待 `Retry-After` 持续时间后再获取下一页。
+</Tip>
+
+您也可以将所有结果收集到一个数组中：
+
+```typescript
+const allCustomers = [];
+for await (const c of platform.customers.listAutoPaginate()) {
+  allCustomers.push(c);
+}
+```
+
+## 错误处理
+
+SDK 抛出类型化的错误类，因此您可以处理特定的失败模式：
+
+```typescript
+import {
+  ApiError,
+  AuthenticationError,
+  PermissionError,
+  RateLimitError,
+  NotFoundError,
+  IdempotencyError,
+} from "@b3dotfun/sdk/anyspend/platform";
+
+try {
+  const link = await platform.paymentLinks.get("pl_nonexistent");
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    console.log("链接不存在");
+  } else if (err instanceof AuthenticationError) {
+    console.log("API 密钥无效或已过期");
+  } else if (err instanceof PermissionError) {
+    console.log("API 密钥缺少所需权限");
+  } else if (err instanceof RateLimitError) {
+    console.log(`速率受限。请在 ${err.retryAfter} 秒后重试`);
+  } else if (err instanceof IdempotencyError) {
+    console.log("幂等性冲突 -- 请求已经使用不同的参数处理过了");
+  } else if (err instanceof ApiError) {
+    // 捕获所有 API 错误
+    console.log(err.status, err.code, err.message);
+  }
+}
+```
+
+### 错误类参考
+
+| 类 | HTTP 状态 | 描述 |
+|-------|-------------|-------------|
+| `AuthenticationError` | `401` | 缺少、无效或过期的 API 密钥 |
+| `PermissionError` | `403` | API 密钥没有所需的范围 |
+| `NotFoundError` | `404` | 资源不存在 |
+| `RateLimitError` | `429` | 请求过多。包括 `retryAfter`（秒） |
+| `IdempotencyError` | `409` | 幂等性密钥与不同参数重用 |
+| `ApiError` | 任何 | 所有 API 错误的基类 |
+
+## 自动重试
+
+客户端会在以下情况下自动重试失败的请求：
+
+- **5xx 服务器错误** -- 服务器有短暂故障
+- **网络错误** -- 连接重置、DNS 故障、超时
+- **429 速率限制响应** -- 等待 `Retry-After` 持续时间
+
+重试使用 **指数退避** 与抖动。默认是 3 次重试，可以通过 `maxRetries` 选项配置。
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  maxRetries: 5, // 最多 5 次重试
+});
+```
+
+<Warning>
+  对于 `429` 以外的 `4xx` 错误，不执行重试，因为这些错误表明客户端问题，重试无法解决。
+</Warning>
+
+## 幂等性
+
+所有 `POST` 和 `PATCH` 请求自动包含 `Idempotency-Key` 头。这确保如果请求被重试（例如，由于网络错误），服务器不会处理它两次。
+
+默认生成器使用 `crypto.randomUUID()`。您可以提供自己的：
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  idempotencyKeyGenerator: () => `my-app-${Date.now()}-${Math.random()}`,
+});
+```
+
+您也可以每次请求传递特定的幂等性密钥：
+
+```typescript
+const link = await platform.paymentLinks.create(
+  { name: "Order #1234", amount: "50000000", recipient_address: "0x..." },
+  { idempotencyKey: "order-1234-link" }
+);
+```
+
+<Tip>
+  对于关键操作，建议使用确定性幂等性密钥（如订单 ID）。如果您意外地发送了两次相同的请求，第二次调用将返回原始响应，而不是创建重复项。
+</Tip>
+
+## TypeScript 类型
+
+所有请求和响应类型都导出供在您自己的代码中使用：
+
+```typescript
+import type {
+  PaymentLink,
+  CreatePaymentLinkRequest,
+  Transaction,
+  Customer,
+  CheckoutSession,
+  Webhook,
+  PaginatedResponse,
+} from "@b3dotfun/sdk/anyspend/platform";
+```
+
+## 运行时兼容性
+
+| 运行时 | 支持 |
+|---------|-----------|
+| Node.js 18+ | 是 |
+| 浏览器（ES2020+） | 是 |
+| Cloudflare Workers | 是 |
+| Deno | 是 |
+| Bun | 是 |
+
+客户端内部使用标准的 `fetch` API。在 Node.js 18+ 中，使用内置的 `fetch`。不需要 polyfills。

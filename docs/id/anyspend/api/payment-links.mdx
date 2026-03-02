@@ -1,0 +1,439 @@
+---
+title: Tautan Pembayaran
+description: 'Buat, kelola, dan lacak tautan pembayaran untuk menerima pembayaran kripto'
+lang: id
+originalPath: anyspend/api/payment-links.mdx
+---
+Tautan pembayaran adalah URL yang dapat dibagikan yang memungkinkan pelanggan Anda membayar dengan token apa pun di rantai yang didukung. Setiap tautan dapat disesuaikan dengan branding, formulir, opsi pengiriman, dan lainnya.
+
+<Info>
+  Tautan pembayaran secara otomatis menangani perutean token, abstraksi gas, dan pertukaran lintas-rantai melalui protokol AnySpend.
+</Info>
+
+## Objek Tautan Pembayaran
+
+<ResponseField name="id" type="string">
+  Pengenal unik untuk tautan pembayaran (mis., `pl_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Nama tampilan yang ditunjukkan kepada pelanggan saat checkout.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  URL checkout yang dapat dibagikan (mis., `https://pay.anyspend.com/pl_abc123`).
+</ResponseField>
+
+<ResponseField name="short_url" type="string">
+  URL pendek untuk berbagi (mis., `https://as.pay/abc123`).
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Alamat kontrak token yang ingin Anda terima pembayaran.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  ID rantai di mana Anda ingin menerima pembayaran.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Alamat dompet yang menerima pembayaran.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  Jumlah pembayaran tetap dalam unit terkecil token. Null untuk tautan dengan jumlah variabel.
+</ResponseField>
+
+<ResponseField name="min_amount" type="string | null">
+  Jumlah minimum yang diizinkan untuk tautan dengan jumlah variabel.
+</ResponseField>
+
+<ResponseField name="max_amount" type="string | null">
+  Jumlah maksimum yang diizinkan untuk tautan dengan jumlah variabel.
+</ResponseField>
+
+<ResponseField name="suggested_amount" type="string | null">
+  Jumlah yang disarankan yang telah diisi sebelumnya untuk tautan dengan jumlah variabel.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Deskripsi yang ditampilkan di halaman checkout.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  ID produk yang terkait, jika terhubung ke produk.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  Gambar yang ditampilkan di halaman checkout.
+</ResponseField>
+
+<ResponseField name="theme_color" type="string | null">
+  Kode warna hex untuk branding halaman checkout (mis., `#6366f1`).
+</ResponseField>
+
+<ResponseField name="button_text" type="string | null">
+  Teks kustom untuk tombol bayar (default: `"Bayar"`).
+</ResponseField>
+
+<ResponseField name="max_uses" type="number | null">
+  Jumlah maksimum pembayaran yang selesai diizinkan. Null untuk tidak terbatas.
+</ResponseField>
+
+<ResponseField name="uses" type="number">
+  Jumlah pembayaran yang telah selesai sejauh ini.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string | null">
+  Cap waktu kedaluwarsa ISO 8601. Null untuk tanpa kedaluwarsa.
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  Apakah tautan saat ini menerima pembayaran.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  Bidang formulir kustom untuk dikumpulkan dari pelanggan saat checkout.
+  <Expandable title="properti form_schema">
+    <ResponseField name="fields" type="array">
+      Array definisi bidang formulir.
+      <Expandable title="properti field">
+        <ResponseField name="id" type="string">Pengenal bidang unik.</ResponseField>
+        <ResponseField name="type" type="string">Tipe bidang: `text`, `email`, `phone`, `select`, `textarea`, `number`, `checkbox`.</ResponseField>
+        <ResponseField name="label" type="string">Label tampilan.</ResponseField>
+        <ResponseField name="required" type="boolean">Apakah bidang tersebut wajib.</ResponseField>
+        <ResponseField name="placeholder" type="string">Teks placeholder.</ResponseField>
+        <ResponseField name="options" type="array">Opsi untuk bidang `select`.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  Opsi pengiriman yang tersedia untuk barang fisik.
+  <Expandable title="properti opsi pengiriman">
+    <ResponseField name="id" type="string">Pengenal opsi pengiriman unik.</ResponseField>
+    <ResponseField name="name" type="string">Nama tampilan (mis., `"Pengiriman Standar"`).</ResponseField>
+    <ResponseField name="amount" type="string">Biaya pengiriman dalam unit terkecil token.</ResponseField>
+    <ResponseField name="estimated_days" type="string">Perkiraan waktu pengiriman (mis., `"5-7 hari kerja"`).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="collect_shipping_address" type="boolean">
+  Apakah mengumpulkan alamat pengiriman saat checkout.
+</ResponseField>
+
+<ResponseField name="return_url" type="string | null">
+  URL untuk mengarahkan pelanggan setelah pembayaran.
+</ResponseField>
+
+<ResponseField name="return_label" type="string | null">
+  Label untuk tombol kembali (mis., `"Kembali ke Toko"`).
+</ResponseField>
+
+<ResponseField name="branding" type="object | null">
+  Konfigurasi branding kustom.
+  <Expandable title="properti branding">
+    <ResponseField name="logo_url" type="string">URL gambar logo.</ResponseField>
+    <ResponseField name="business_name" type="string">Nama bisnis yang ditampilkan saat checkout.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="fee_on_top" type="boolean">
+  Apakah biaya platform ditambahkan di atas jumlah pembayaran (true) atau diserap oleh pedagang (false).
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Item baris yang terlampir pada tautan pembayaran ini.
+  <Expandable title="properti item">
+    <ResponseField name="id" type="string">ID item.</ResponseField>
+    <ResponseField name="name" type="string">Nama item.</ResponseField>
+    <ResponseField name="amount" type="string">Harga item.</ResponseField>
+    <ResponseField name="quantity" type="number">Kuantitas item.</ResponseField>
+    <ResponseField name="image_url" type="string | null">URL gambar item.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Cap waktu pembuatan ISO 8601.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Cap waktu pembaruan terakhir ISO 8601.
+</ResponseField>
+
+---
+
+## Parameter URL
+
+Saat membagikan URL tautan pembayaran, Anda dapat menambahkan parameter kueri untuk mengisi data sesi sebelumnya, melacak atribusi, dan mengaitkan pembayaran dengan pelanggan Anda.
+
+| Parameter | Deskripsi | Contoh |
+|-----------|-------------|---------|
+| `client_reference_id` | ID referensi internal Anda (ID pesanan, ID pengguna, dll.) | `?client_reference_id=order_123` |
+| `metadata[key]` | Metadata kunci-nilai sembarang (notasi kurung, hingga 50 kunci) | `?metadata[user_id]=clerk_abc&metadata[plan]=pro` |
+| `session_id` | Gunakan sesi checkout yang telah dibuat sebelumnya alih-alih membuat yang baru | `?session_id=cs_abc123` |
+| `success_url` | Timpa URL pengalihan setelah pembayaran berhasil | `?success_url=https://example.com/thanks` |
+| `cancel_url` | Timpa URL pembatalan/kembali | `?cancel_url=https://example.com/cart` |
+| `utm_source` | Sumber UTM untuk atribusi | `?utm_source=twitter` |
+| `utm_medium` | Media UTM untuk atribusi | `?utm_medium=social` |
+| `utm_campaign` | Kampanye UTM untuk atribusi | `?utm_campaign=launch` |
+
+### Batasan Metadata
+
+- Maksimum 50 kunci per sesi
+- Panjang kunci: hingga 40 karakter
+- Panjang nilai: hingga 500 karakter
+
+### Contoh: mengaitkan pembayaran dengan pelanggan Anda
+
+```
+https://anyspend.com/pay/abc123?client_reference_id=order_456&metadata[user_id]=clerk_abc&metadata[plan]=pro
+```
+
+Semua parameter diteruskan ke webhook, sehingga Anda dapat merekonsiliasi pembayaran di backend Anda.
+
+<Tip>
+  Untuk integrasi perusahaan yang membutuhkan kontrol penuh, gunakan [Checkout Sessions API](/anyspend/api/checkout-sessions-api) untuk membuat sesi di sisi server dengan `customer_email`, `customer_name`, `metadata`, dan `client_reference_id`, kemudian arahkan menggunakan URL yang dikembalikan atau tambahkan `?session_id=` ke tautan pembayaran Anda.
+</Tip>
+
+---
+
+## Daftar tautan pembayaran
+
+<ParamField query="search" type="string">
+  Cari tautan pembayaran berdasarkan nama atau deskripsi.
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filter berdasarkan status aktif. Lewati untuk mengembalikan semua tautan.
+</ParamField>
+
+<ParamField query="sort" type="string" default="created_at">
+  Bidang pengurutan. Salah satu dari: `created_at`, `updated_at`, `name`, `uses`.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Urutan pengurutan. Salah satu dari: `asc`, `desc`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Nomor halaman untuk paginasi.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Jumlah hasil per halaman (maks 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&sort=created_at&order=desc&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.paymentLinks.list({
+  active: true,
+  sort: "created_at",
+  order: "desc",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pl_abc123",
+          "name": "Premium Plan",
+          "url": "https://pay.anyspend.com/pl_abc123",
+          "short_url": "https://as.pay/abc123",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234...abcd",
+          "amount": "50000000",
+          "description": "Langganan bulanan Premium",
+          "active": true,
+          "uses": 42,
+          "max_uses": null,
+          "expires_at": null,
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-20T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Membuat tautan pembayaran
+
+Buat tautan pembayaran baru dengan pengalaman checkout yang dapat disesuaikan.
+
+<ParamField body="name" type="string" required>
+  Nama tampilan untuk tautan pembayaran.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  Alamat kontrak token yang ingin Anda terima.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  ID rantai di mana Anda ingin menerima token.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  Alamat dompet yang menerima pembayaran.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Deskripsi yang ditampilkan di halaman checkout.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Jumlah pembayaran tetap dalam unit terkecil token. Lewati untuk tautan dengan jumlah variabel.
+</ParamField>
+
+<ParamField body="min_amount" type="string">
+  Jumlah minimum untuk tautan dengan jumlah variabel.
+</ParamField>
+
+<ParamField body="max_amount" type="string">
+  Jumlah maksimum untuk tautan dengan jumlah variabel.
+</ParamField>
+
+<ParamField body="suggested_amount" type="string">
+  Jumlah yang telah diisi sebelumnya untuk tautan dengan jumlah variabel.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  Tautan ke produk yang ada.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL gambar yang ditampilkan di halaman checkout.
+</ParamField>
+
+<ParamField body="theme_color" type="string">
+  Kode warna hex untuk branding checkout (mis., `"#6366f1"`).
+</ParamField>
+
+<ParamField body="button_text" type="string">
+  Teks tombol bayar kustom.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  Jumlah maksimum pembayaran yang selesai. Lewati untuk tidak terbatas.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  Cap waktu kedaluwarsa ISO 8601.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  Bidang formulir kustom untuk dikumpulkan saat checkout. Lihat objek Tautan Pembayaran di atas untuk struktur.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  Opsi pengiriman untuk barang fisik. Lihat objek Tautan Pembayaran di atas untuk struktur.
+</ParamField>
+
+<ParamField body="collect_shipping_address" type="boolean" default={false}>
+  Apakah mengumpulkan alamat pengiriman.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  URL untuk mengarahkan pelanggan setelah pembayaran.
+</ParamField>
+
+<ParamField body="return_label" type="string">
+  Label untuk tombol kembali.
+</ParamField>
+
+<ParamField body="branding" type="object">
+  Konfigurasi branding kustom. Lihat objek Tautan Pembayaran di atas untuk struktur.
+</ParamField>
+
+<ParamField body="fee_on_top" type="boolean" default={false}>
+  Tambahkan biaya platform di atas jumlah pembayaran.
+</ParamField>
+
+<ParamField body="items" type="array">
+  Item baris untuk ditampilkan saat checkout.
+  <Expandable title="properti item">
+    <ParamField body="items[].name" type="string" required>Nama item.</ParamField>
+    <ParamField body="items[].amount" type="string" required>Harga item dalam unit terkecil token.</ParamField>
+    <ParamField body="items[].quantity" type="number" required>Kuantitas.</ParamField>
+    <ParamField body="items[].image_url" type="string">URL gambar item.</ParamField>
+  </Expandable>
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Plan",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "50000000",
+    "description": "Langganan bulanan Premium",
+    "image_url": "https://example.com/premium.png",
+    "theme_color": "#6366f1",
+    "button_text": "Berlangganan Sekarang",
+    "return_url": "https://example.com/thank-you",
+    "return_label": "Kembali ke Dashboard",
+    "form_schema": {
+      "fields": [
+        {
+          "id": "company_name",
+          "type": "text",
+          "label": "Nama Perusahaan",
+          "required": true,
+          "placeholder": "Acme Inc."
+        },
+        {
+          "id": "team_size",
+          "type": "select",
+          "label": "Ukuran Tim",
+          "required": true,
+          "options": ["1-10", "11-50", "51-200", "200+"]
+        }
+      ]
+    },
+    "items": [
+      {
+        "name": "Premium Plan - Bulanan",
+        "amount": "50000000",
+        "quantity": 1
+      }
+    ]
+  }'
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const paymentLink = await anyspend.paymentLinks.create({
+  name:

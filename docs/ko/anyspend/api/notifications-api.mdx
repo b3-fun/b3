@@ -1,0 +1,298 @@
+---
+title: 알림
+description: 이메일 및 Telegram 알림 설정 구성
+lang: ko
+originalPath: anyspend/api/notifications-api.mdx
+---
+결제 이벤트에 대한 알림 수신 방법을 구성하세요. AnySpend는 이메일과 Telegram 전달 채널을 이벤트별로 지원합니다.
+
+<Info>
+  알림 설정을 읽으려면 **read** 권한이 필요합니다. 설정을 업데이트하고 Telegram을 연결/연결 해제하려면 **admin** 권한이 필요합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 알림 설정 가져오기
+
+<ParamField path="GET /notifications" type="read">
+  계정의 현재 알림 구성을 검색합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const settings = await client.notifications.get();
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "merchant@example.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": [
+      "payment.completed",
+      "payment.failed",
+      "checkout.completed"
+    ],
+    "updated_at": "2026-02-20T14:30:00Z"
+  }
+}
+```
+
+---
+
+### 알림 설정 업데이트
+
+<ParamField path="PATCH /notifications" type="admin">
+  알림 선호도를 업데이트합니다. 모든 필드는 선택 사항입니다 -- 제공된 필드만 변경됩니다.
+</ParamField>
+
+<ParamField path="email_enabled" type="boolean">
+  이메일 알림을 활성화하거나 비활성화합니다.
+</ParamField>
+
+<ParamField path="email_address" type="string">
+  알림을 받을 이메일 주소입니다. 유효한 이메일 형식이어야 합니다.
+</ParamField>
+
+<ParamField path="telegram_enabled" type="boolean">
+  Telegram 알림을 활성화하거나 비활성화합니다. 먼저 Telegram이 연결되어 있어야 합니다.
+</ParamField>
+
+<ParamField path="enabled_events" type="string[]">
+  알림을 받을 이벤트 유형의 배열입니다. 이메일과 Telegram 채널 모두에 적용됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email_enabled": true,
+        "email_address": "payments@mycompany.com",
+        "telegram_enabled": true,
+        "enabled_events": ["payment.completed", "payment.failed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.notifications.update({
+      email_enabled: true,
+      email_address: "payments@mycompany.com",
+      telegram_enabled: true,
+      enabled_events: ["payment.completed", "payment.failed"],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "payments@mycompany.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": ["payment.completed", "payment.failed"],
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Telegram 연결
+
+<ParamField path="POST /notifications/telegram/link" type="admin">
+  Telegram 봇 링크 URL을 생성합니다. 이 링크를 열면 AnySpend 알림 봇과의 대화가 시작되고 Telegram 계정이 연결됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/telegram/link \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const { link_url } = await client.notifications.linkTelegram();
+    // 사용자를 리디렉션하거나 링크를 표시합니다
+    console.log("Telegram을 연결하려면 이 링크를 열어주세요:", link_url);
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "link_url": "https://t.me/AnySpendBot?start=link_abc123def456",
+    "expires_at": "2026-02-27T12:15:00Z"
+  }
+}
+```
+
+<Steps>
+  <Step title="링크 생성">
+    `POST /notifications/telegram/link`을 호출하여 봇 링크 URL을 가져옵니다.
+  </Step>
+  <Step title="Telegram에서 열기">
+    Telegram에서 `link_url`을 열고 봇 대화에서 **시작**을 누릅니다.
+  </Step>
+  <Step title="알림 활성화">
+    `PATCH /notifications`를 호출하고 `telegram_enabled: true`를 사용합니다.
+  </Step>
+</Steps>
+
+<Note>
+  링크 URL은 15분 후에 만료됩니다. 사용하기 전에 만료되면 새로운 것을 생성하세요.
+</Note>
+
+---
+
+### Telegram 연결 해제
+
+<ParamField path="DELETE /notifications/telegram" type="admin">
+  알림 설정에서 Telegram을 연결 해제합니다. Telegram 알림은 자동으로 비활성화됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/notifications/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.unlinkTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 테스트 이메일 보내기
+
+<ParamField path="POST /notifications/test/email" type="admin">
+  구성된 이메일 주소로 테스트 알림을 보냅니다. 이메일이 활성화되어 있고 주소가 설정되어 있어야 합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/email \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testEmail();
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "payments@mycompany.com",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+### 테스트 Telegram 메시지 보내기
+
+<ParamField path="POST /notifications/test/telegram" type="admin">
+  연결된 Telegram 계정으로 테스트 알림을 보냅니다. Telegram이 연결되어 있고 활성화되어 있어야 합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "@merchant",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+## 알림 설정 객체
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `email_enabled` | `boolean` | 이메일 알림이 활성화되었는지 여부 |
+| `email_address` | `string \| null` | 구성된 이메일 주소 |
+| `telegram_enabled` | `boolean` | Telegram 알림이 활성화되었는지 여부 |
+| `telegram_chat_id` | `string \| null` | 연결된 Telegram 채팅 ID |
+| `telegram_username` | `string \| null` | 연결된 Telegram 사용자 이름 |
+| `enabled_events` | `string[]` | 알림을 트리거하는 이벤트 유형 |
+| `updated_at` | `string` | ISO 8601 마지막 업데이트 타임스탬프 |
+
+## 지원되는 이벤트
+
+이메일과 Telegram 채널 모두 동일한 이벤트 유형을 사용할 수 있습니다:
+
+| 이벤트 유형 | 설명 |
+|------------|-------------|
+| `payment.completed` | 결제가 성공적으로 처리되었습니다 |
+| `payment.failed` | 결제 시도가 실패했습니다 |
+| `checkout.completed` | 모든 양식/배송 데이터가 포함된 체크아웃 세션이 완료되었습니다 |

@@ -1,0 +1,467 @@
+---
+title: Clientes
+description: Gerencie registros de clientes e histórico de pagamentos
+lang: pt-BR
+originalPath: anyspend/api/customers.mdx
+---
+Clientes representam as pessoas que pagam através de seus links de pagamento. Registros de clientes são criados automaticamente quando uma carteira completa uma sessão de checkout, mas você também pode criá-los e gerenciá-los manualmente via API.
+
+<Info>
+  Os campos `name` e `email` do cliente são **criptografados em repouso** para conformidade com a privacidade. Eles são descriptografados automaticamente quando recuperados via API.
+</Info>
+
+## O objeto Cliente
+
+<ResponseField name="id" type="string">
+  Identificador único para o cliente (ex., `cust_abc123`).
+</ResponseField>
+
+<ResponseField name="wallet_address" type="string">
+  O endereço da carteira do cliente.
+</ResponseField>
+
+<ResponseField name="name" type="string | null">
+  Nome do cliente. Criptografado em repouso.
+</ResponseField>
+
+<ResponseField name="email" type="string | null">
+  Email do cliente. Criptografado em repouso.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Pares chave-valor arbitrários para seu próprio uso.
+</ResponseField>
+
+<ResponseField name="total_spent" type="string">
+  Valor total gasto em todas as transações concluídas (em equivalente em USD).
+</ResponseField>
+
+<ResponseField name="transaction_count" type="number">
+  Número total de transações concluídas.
+</ResponseField>
+
+<ResponseField name="first_seen_at" type="string">
+  Carimbo de data/hora ISO 8601 da primeira transação do cliente.
+</ResponseField>
+
+<ResponseField name="last_seen_at" type="string">
+  Carimbo de data/hora ISO 8601 da transação mais recente do cliente.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Carimbo de data/hora ISO 8601 de criação.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Carimbo de data/hora ISO 8601 da última atualização.
+</ResponseField>
+
+---
+
+## Listar clientes
+
+Recupere uma lista paginada de clientes com busca opcional.
+
+<ParamField query="search" type="string">
+  Buscar clientes por endereço da carteira, nome ou email.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Número da página para paginação.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Número de resultados por página (máx 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.customers.list({
+  search: "acme",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "metadata": {
+            "company": "Acme Inc.",
+            "plan": "pro"
+          },
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-25T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Criar um cliente
+
+Crie manualmente um registro de cliente. Isso é útil para pré-registrar clientes antes de eles realizarem um pagamento.
+
+<ParamField body="wallet_address" type="string" required>
+  O endereço da carteira do cliente.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nome do cliente. Será criptografado em repouso.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Email do cliente. Será criptografado em repouso.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Pares chave-valor arbitrários (ex., `{"plan": "pro"}`). Até 50 chaves, valores de 500 caracteres.
+</ParamField>
+
+<Warning>
+  Se um cliente com o mesmo `wallet_address` já existir, a solicitação retornará um erro `409 Conflict`. Use o endpoint de atualização para modificar clientes existentes.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/customers" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+    "name": "Alice Johnson",
+    "email": "alice@acme.com",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "pro"
+    }
+  }'
+```
+
+```typescript SDK
+const customer = await anyspend.customers.create({
+  walletAddress: "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+  name: "Alice Johnson",
+  email: "alice@acme.com",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "pro",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+      "name": "Alice Johnson",
+      "email": "alice@acme.com",
+      "metadata": {
+        "company": "Acme Inc.",
+        "plan": "pro"
+      },
+      "total_spent": "0.00",
+      "transaction_count": 0,
+      "first_seen_at": null,
+      "last_seen_at": null,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Recuperar um cliente
+
+<ParamField path="id" type="string" required>
+  O ID do cliente (ex., `cust_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const customer = await anyspend.customers.retrieve("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Retorna o [objeto Cliente](#o-objeto-cliente) completo.
+  </Tab>
+</Tabs>
+
+---
+
+## Atualizar um cliente
+
+Atualize um cliente existente. Apenas os campos que você incluir no corpo da solicitação serão atualizados.
+
+<ParamField path="id" type="string" required>
+  O ID do cliente.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nome do cliente atualizado.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Email do cliente atualizado.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadados atualizados. Isso **substitui** o objeto de metadados inteiro. Para adicionar uma única chave, inclua os metadados existentes completos mais a nova chave.
+</ParamField>
+
+<Tip>
+  O `wallet_address` não pode ser alterado após a criação. Para associar um cliente a uma carteira diferente, crie um novo registro de cliente.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alice Johnson-Smith",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "enterprise",
+      "upgraded_at": "2026-02-27"
+    }
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.customers.update("cust_abc123", {
+  name: "Alice Johnson-Smith",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "enterprise",
+    upgraded_at: "2026-02-27",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Retorna o [objeto Cliente](#o-objeto-cliente) atualizado.
+  </Tab>
+</Tabs>
+
+---
+
+## Excluir um cliente
+
+Exclua permanentemente um registro de cliente. O histórico de transações associado a este cliente é preservado, mas a referência ao cliente aparecerá como excluída.
+
+<ParamField path="id" type="string" required>
+  O ID do cliente.
+</ParamField>
+
+<Warning>
+  Esta ação é irreversível. Todas as informações pessoalmente identificáveis (nome, email) serão permanentemente excluídas.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.customers.delete("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Listar transações do cliente
+
+Recupere o histórico de transações para um cliente específico.
+
+<ParamField path="id" type="string" required>
+  O ID do cliente.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filtrar por status da transação: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Número da página.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Resultados por página (máx 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123/transactions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.customers.transactions("cust_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_tx001",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Exportar clientes
+
+Exporte seus dados de clientes em formato CSV ou JSON. A resposta é transmitida como um download de arquivo.
+
+<ParamField query="format" type="string" required>
+  Formato de exportação. Um de: `csv`, `json`.
+</ParamField>
+
+<ParamField query="search" type="string">
+  Filtrar clientes exportados por termo de busca.
+</ParamField>
+
+<Info>
+  As exportações são limitadas a 10.000 registros. Para conjuntos de dados maiores, use a paginação com o endpoint de listagem.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# Baixar como CSV
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.csv
+
+# Baixar como JSON
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.json
+```
+
+```typescript SDK
+// Obter exportação como um ReadableStream
+const csvStream = await anyspend.customers.export({ format: "csv" });
+
+// Ou obter como array JSON
+const customers = await anyspend.customers.export({ format: "json" });
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,wallet_address,name,email,total_spent,transaction_count,first_seen_at,last_seen_at,created_at
+    cust_abc123,0xaabb...5678,Alice Johnson,alice@acme.com,250.00,5,2026-01-15T10:30:00Z,2026-02-25T14:22:00Z,2026-01-15T10:30:00Z
+    cust_def456,0xccdd...9012,Bob Smith,bob@example.com,100.00,2,2026-02-01T09:00:00Z,2026-02-20T16:45:00Z,2026-02-01T09:00:00Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z"
+        }
+      ],
+      "total": 2
+    }
+    ```
+  </Tab>
+</Tabs>

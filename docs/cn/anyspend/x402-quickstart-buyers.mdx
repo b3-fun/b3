@@ -1,0 +1,456 @@
+---
+title: 买家快速入门
+description: 使用 AnySpend x402 客户端 SDK 使用任何代币支付付费墙 API 和服务
+lang: cn
+originalPath: anyspend/x402-quickstart-buyers.mdx
+---
+## 概览
+
+本指南展示如何使用 **AnySpend x402 客户端 SDK** 通过支持 EIP-2612 或 EIP-3009 的兼容代币支付付费墙资源。SDK 自动处理整个支付流程，包括签名生成和重试逻辑。
+
+您可以使用相同的客户端支付任何启用 x402 的服务，不仅仅是使用 AnySpend 的服务。
+
+<Card title="代币兼容性检查器" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  浏览支持 EIP-2612 或 EIP-3009 的兼容代币，覆盖 19+ 网络
+</Card>
+
+## 先决条件
+
+在开始之前，请确保您拥有：
+
+- **Node.js 18+** 或兼容的 JavaScript 运行时
+- **加密钱包**，内含兼容代币（USDC、DAI 或其他 EIP-2612/EIP-3009 代币）
+- **钱包库**，如 [viem](https://viem.sh) 或 [ethers.js](https://docs.ethers.org)
+- **访问启用 x402 的服务**（如付费墙 API）
+
+<Note>
+**重要**：只有支持 EIP-2612（Permit）或 EIP-3009（TransferWithAuthorization）的代币才与 AnySpend x402 兼容，用于无 Gas 支付。使用 [代币兼容性检查器](https://anyspend.com/x402-tokens) 验证您的代币是否受支持。
+</Note>
+
+## 安装
+
+安装 x402 客户端 SDK：
+
+<CodeGroup>
+```bash npm
+npm install anyspend-x402-client viem
+```
+
+```bash yarn
+yarn add anyspend-x402-client viem
+```
+
+```bash pnpm
+pnpm add anyspend-x402-client viem
+```
+</CodeGroup>
+
+SDK 使用 [viem](https://viem.sh) 进行钱包操作和签名生成。
+
+## 基本使用
+
+### 1. 创建钱包客户端
+
+首先，使用 viem 设置您的钱包客户端：
+
+```typescript
+import { createWalletClient, custom } from 'viem';
+import { base } from 'viem/chains';
+
+// 对于带有 MetaMask 或其他钱包扩展的浏览器
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// 获取用户地址
+const [address] = await walletClient.getAddresses();
+```
+
+### 2. 初始化 x402 客户端
+
+创建 x402 客户端实例：
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const x402Client = new X402Client({
+  walletClient,           // 您的 viem 钱包客户端
+  preferredToken: '0x...', // 可选：默认支付代币
+  autoRetry: true          // 自动处理 402 响应（默认：true）
+});
+```
+
+### 3. 发起付费请求
+
+使用客户端访问付费墙资源：
+
+```typescript
+try {
+  const response = await x402Client.request(
+    'https://api.example.com/premium-data',
+    {
+      method: 'GET',
+    }
+  );
+
+  console.log('数据:', response.data);
+  console.log('支付交易:', response.paymentResponse?.txHash);
+} catch (error) {
+  console.error('支付失败:', error);
+}
+```
+
+**发生了什么：**
+
+1. 客户端发起初始请求
+2. API 返回 `402 Payment Required` 并提供支付详情
+3. X402Client 自动签署支付授权
+4. 客户端带着支付重试请求
+5. API 验证并结算支付
+6. 客户端接收请求的数据
+
+## 高级使用
+
+### 指定支付代币
+
+有两种方式指定您想使用的支付代币：
+
+#### 选项 1：使用 X402Client
+
+通过设置 `preferredToken` 使用特定代币支付：
+
+```typescript
+const response = await x402Client.request(
+  'https://ai-agent-api.com/inference',
+  {
+    method: 'POST',
+    body: { prompt: '生成一只猫的图像' },
+    preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // 基础链上的 USDC
+  }
+);
+```
+
+#### 选项 2：使用 wrapFetchWithPayment（高级）
+
+为了更多控制，使用更低级别的 `wrapFetchWithPayment` 函数：
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // 基础链上的 USDC
+const selectedChain = 8453; // 基础链
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // 或使用 getNetworkName(selectedChain)
+};
+
+// 用自动支付处理包装 fetch
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // 最大支付金额（1 USDC，6 位小数）
+  undefined, // 使用默认支付要求选择器
+  undefined, // 使用默认配置
+  paymentPreferences, // 指定您偏好的代币和网络
+);
+
+// 像普通 fetch 一样使用包装后的 fetch
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**`wrapFetchWithPayment` 的好处：**
+- 适用于任何现有的基于 `fetch` 的代码
+- 更细粒度的支付行为控制
+- 可指定最大支付金额
+- 自定义支付要求选择器
+- 支持多网络签名者
+
+如果资源服务器支持 AnySpend 中间件，您将以偏好代币支付等价金额，而不是 USDC。
+
+### 使用 HTTP 头部指定支付偏好
+
+<Note>
+**X402 新特性**：您现在可以使用 HTTP 头部指定支付偏好，这在直接进行 HTTP 请求或与现有 HTTP 客户端集成时特别有用。
+</Note>
+
+在向启用 X402 的服务发出请求时，您可以使用这些 HTTP 头部指定偏好支付代币和网络：
+
+```bash
+curl -X GET https://api.example.com/premium-data \
+  -H "X-PREFERRED-TOKEN: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+**常见代币地址：**
+- **基础链上的 USDC**：`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **基础链上的 USDT**：`0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2`
+
+**网络标识符：**
+- `base-mainnet` - 基础链主网
+- `ethereum-mainnet` - 以太坊主网
+- `arbitrum-mainnet` - Arbitrum One
+- `optimism-mainnet` - Optimism 主网
+- `polygon-mainnet` - Polygon PoS
+
+这些头部适用于任何 HTTP 客户端，并且 X402 启用的资源服务器使用 AnySpend 中间件时会自动尊重这些头部。如果没有提供头部，服务器将默认使用 USDC。
+
+#### 使用 X402Client 的头部
+
+X402Client 根据您的配置自动添加这些头部：
+
+```typescript
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
+  network: 'base-mainnet'
+});
+
+// 所有请求自动添加头部
+const response = await x402Client.request('https://api.example.com/data');
+```
+
+#### 使用 fetch 的头部
+
+在使用原生 `fetch` API 或其他 HTTP 客户端时，您也可以手动添加这些头部：
+
+```typescript
+const response = await fetch('https://api.example.com/premium-data', {
+  headers: {
+    'X-PREFERRED-TOKEN': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    'X-PREFERRED-NETWORK': 'base-mainnet'
+  }
+});
+
+// 然后根据需要处理 402 响应
+if (response.status === 402) {
+  // 使用 X402Client 或 wrapFetchWithPayment 处理支付
+}
+```
+
+### 带有主体的 POST 请求
+
+发起带付费的 POST 请求：
+
+```typescript
+const response = await x402Client.request(
+  'https://api.example.com/compute',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: '你好！' }]
+    }
+  }
+);
+```
+
+### 手动支付流程
+
+为了更多控制，手动处理支付流程：
+
+```typescript
+// 1. 发起初始请求
+const initialResponse = await fetch('https://api.example.com/premium-data');
+
+if (initialResponse.status === 402) {
+  // 2. 解析支付要求
+  const paymentRequired = await initialResponse.json();
+  const requirements = paymentRequired.requirements[0];
+
+  console.log('需要支付：', {
+    amount: requirements.amount,
+    token: requirements.asset,
+    recipient: requirements.recipient
+  });
+
+  // 3. 签署支付授权
+  const paymentHeader = await x402Client.signPayment(requirements);
+
+  // 4. 带着支付重试
+  const paidResponse = await fetch('https://api.example.com/premium-data', {
+    headers: {
+      'X-PAYMENT': paymentHeader
+    }
+  });
+
+  const data = await paidResponse.json();
+  const paymentResponse = paidResponse.headers.get('X-PAYMENT-RESPONSE');
+
+  console.log('支付成功！', JSON.parse(atob(paymentResponse)));
+}
+```
+
+## 配置选项
+
+### X402ClientOptions
+
+```typescript
+interface X402ClientOptions {
+  walletClient: WalletClient;        // viem 钱包客户端（必需）
+  network?: string;                   // 默认网络（例如，'base-mainnet'）
+  preferredToken?: string;            // 偏好支付代币地址
+  autoRetry?: boolean;                // 自动重试 402（默认：true）
+  timeout?: number;                   // 请求超时时间（毫秒，默认：30000）
+}
+```
+
+### 请求选项
+
+```typescript
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: any;                         // 请求主体（自动序列化为 JSON）
+  preferredToken?: string;            // 覆盖默认偏好代币
+}
+```
+
+### wrapFetchWithPayment 参数
+
+对于高级用例，`wrapFetchWithPayment` 提供更低级别的控制：
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // 要包装的 Fetch 函数
+  signer: Signer | MultiNetworkSigner, // 签名钱包客户端
+  maxPaymentValue: string,             // 最大支付金额（最小单位，例如，'1000000' 对于 1 USDC）
+  selectPaymentRequirements?: Function, // 自定义要求选择器
+  config?: {
+    timeout?: number;                  // 请求超时时间（毫秒）
+    maxRetries?: number;               // 最大支付重试次数
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // 用于支付的代币地址
+    preferredNetwork?: string;         // 网络标识符（例如，'base', 'ethereum'）
+  }
+): typeof fetch
+```
+
+**带有所有参数的示例：**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // 最大 5 USDC
+  undefined, // 默认要求选择器
+  {
+    timeout: 60000,    // 60 秒超时
+    maxRetries: 3      // 最多重试 3 次
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
+## 支持的代币
+
+**只有支持 EIP-2612 或 EIP-3009 的代币** 才与 AnySpend x402 兼容，用于无 Gas 支付。
+
+### 什么是 EIP-2612 和 EIP-3009？
+
+- **EIP-2612（Permit）**：允许通过离线签名进行无 Gas 代币授权
+- **EIP-3009（TransferWithAuthorization）**：通过离线签名启用无 Gas 转账（由 USDC 使用）
+
+### 常见兼容代币
+
+- **USDC** - 所有链上都支持 EIP-3009
+- **B3** - 支持 EIP-2612 permit
+- **许多其他代币** - 使用下面的工具检查兼容性
+
+<Card title="代币兼容性检查器" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  浏览所有支持 EIP-2612 或 EIP-3009 的兼容代币，覆盖 19+ 网络
+</Card>
+
+查看 [网络支持](/anyspend/x402-network-support) 以获取每个链上详细的代币地址。
+
+## 示例
+
+### React 组件（使用 X402Client）
+
+```tsx
+import { X402Client } from 'anyspend-x402-client';
+import { useWalletClient } from 'wagmi';
+import { useState } from 'react';
+
+export function PremiumDataFetcher() {
+  const { data: walletClient } = useWalletClient();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    try {
+      const client = new X402Client({
+        walletClient,
+        preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // 基础链上的 USDC
+      });
+
+      const response = await client.request(
+        'https://api.example.com/premium-data'
+      );
+
+      setData(response.data);
+      console.log('使用交易支付:', response.paymentResponse?.txHash);
+    } catch (error) {
+      console.error('支付失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? '支付中...' : '获取高级数据（花费 1 USDC）'}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### React 组件（使用 wrapFetchWithPayment）
+
+对于需要更多控制或使用现有基于 fetch 的代码的应用程序：
+
+```tsx
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+import { useWalletClient, useChainId } from 'wagmi';
+import { useState } from 'react';
+
+// 从链 ID 获取网络名称的助手函数
+const getNetworkName = (chainId: number): string => {
+  const networks: Record<number, string> = {
+    8453: 'base',
+    1: 'ethereum',
+    42161: 'arbitrum',
+    10: 'optimism',
+    137: 'polygon',
+  };
+  return networks[chainId] || 'base';
+};
+
+export function PremiumDataFetcherAdvanced() {
+  const { data: walletClient } = useWalletClient();
+  const selectedChain = useChainId();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+
+  // 链上的代币地址
+  const tokenAddresses: Record<number, string> = {
+    8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // 基础链上的 USDC
+    1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // 以太坊上

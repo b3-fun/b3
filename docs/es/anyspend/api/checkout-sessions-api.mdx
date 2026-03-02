@@ -1,0 +1,457 @@
+---
+title: Sesiones de Pago
+description: >-
+  Gestión de sesiones de pago del lado del servidor para flujos de pago
+  programáticos
+lang: es
+originalPath: anyspend/api/checkout-sessions-api.mdx
+---
+Las sesiones de pago representan un intento de pago individual. Puedes crear sesiones en el lado del servidor para generar URLs de pago únicas para cada cliente, prellenar detalles de pago y rastrear conversiones con tus propios IDs de referencia.
+
+<Info>
+  Las sesiones de pago expiran después de 30 minutos por defecto. Usa el parámetro `expires_in` para personalizar el período de expiración (mínimo 5 minutos, máximo 24 horas).
+</Info>
+
+## El objeto de sesión de pago
+
+<ResponseField name="id" type="string">
+  Identificador único para la sesión de pago (por ejemplo, `cs_abc123`).
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  La URL de pago para redirigir al cliente.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Estado actual de la sesión. Uno de: `open`, `processing`, `completed`, `expired`, `failed`.
+</ResponseField>
+
+<ResponseField name="payment_link_id" type="string | null">
+  ID del enlace de pago asociado, si la sesión fue creada a partir de un enlace de pago.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  ID del producto asociado.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Dirección del contrato del token a recibir.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  ID de la cadena donde deseas recibir el pago.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Dirección de la cartera que recibe el pago.
+</ResponseField>
+
+<ResponseField name="amount" type="string">
+  Monto del pago en la unidad más pequeña del token.
+</ResponseField>
+
+<ResponseField name="amount_usd" type="string | null">
+  Equivalente en USD en el momento de la creación de la sesión.
+</ResponseField>
+
+<ResponseField name="success_url" type="string | null">
+  URL a la que se redirige al cliente después de un pago exitoso. Soporta variables de plantilla.
+</ResponseField>
+
+<ResponseField name="cancel_url" type="string | null">
+  URL a la que se redirige al cliente si cancelan.
+</ResponseField>
+
+<ResponseField name="client_reference_id" type="string | null">
+  Tu ID de referencia interna para esta sesión.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Pares clave-valor arbitrarios pasados a través de webhooks y la transacción.
+</ResponseField>
+
+<ResponseField name="customer_email" type="string | null">
+  Dirección de correo electrónico del cliente. Cifrado en reposo, incluido en los payloads de webhook.
+</ResponseField>
+
+<ResponseField name="customer_name" type="string | null">
+  Nombre del cliente. Cifrado en reposo, incluido en los payloads de webhook.
+</ResponseField>
+
+<ResponseField name="payer_address" type="string | null">
+  Dirección de la cartera del pagador (poblada después de la conexión).
+</ResponseField>
+
+<ResponseField name="tx_hash" type="string | null">
+  Hash de la transacción en cadena (poblado después del envío).
+</ResponseField>
+
+<ResponseField name="customer_id" type="string | null">
+  ID del cliente asociado (poblado después del pago).
+</ResponseField>
+
+<ResponseField name="form_data" type="object | null">
+  Datos del formulario personalizado enviados por el cliente.
+</ResponseField>
+
+<ResponseField name="shipping_address" type="object | null">
+  Dirección de envío proporcionada por el cliente.
+</ResponseField>
+
+<ResponseField name="utm_source" type="string | null">
+  Parámetro de fuente UTM para atribución.
+</ResponseField>
+
+<ResponseField name="utm_medium" type="string | null">
+  Parámetro de medio UTM para atribución.
+</ResponseField>
+
+<ResponseField name="utm_campaign" type="string | null">
+  Parámetro de campaña UTM para atribución.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string">
+  Marca de tiempo de expiración en formato ISO 8601.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Marca de tiempo de creación en formato ISO 8601.
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  Marca de tiempo de finalización en formato ISO 8601.
+</ResponseField>
+
+### Estados de la sesión
+
+| Estado | Descripción |
+|--------|-------------|
+| `open` | La sesión está activa y esperando que el cliente pague. |
+| `processing` | El cliente ha iniciado el pago; la transacción se está procesando en cadena. |
+| `completed` | Pago confirmado y recibido por el destinatario. |
+| `expired` | La sesión expiró antes de que el cliente completara el pago. |
+| `failed` | El pago falló debido a un error en cadena o tiempo de espera. |
+
+### Variables de plantilla de URL
+
+Los campos `success_url` y `cancel_url` soportan variables de plantilla que se reemplazan con valores reales cuando el cliente es redirigido:
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `{SESSION_ID}` | El ID de la sesión de pago | `cs_abc123` |
+
+<Tip>
+  Usa variables de plantilla para buscar detalles de la sesión en tu servidor después de la redirección:
+  `https://ejemplo.com/success?session_id={SESSION_ID}`
+</Tip>
+
+---
+
+## Listar sesiones de pago
+
+Recupera una lista paginada de sesiones de pago.
+
+<ParamField query="status" type="string">
+  Filtrar por estado de la sesión: `open`, `processing`, `completed`, `expired`, `failed`.
+</ParamField>
+
+<ParamField query="payment_link_id" type="string">
+  Filtrar por ID del enlace de pago.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Número de página para la paginación.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Número de resultados por página (máx. 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/checkout-sessions?status=completed&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.checkoutSessions.list({
+  status: "completed",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cs_abc123",
+          "url": "https://pay.anyspend.com/s/cs_abc123",
+          "status": "completed",
+          "payment_link_id": "pl_abc123",
+          "product_id": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "success_url": "https://ejemplo.com/success?session_id=cs_abc123",
+          "cancel_url": "https://ejemplo.com/cancel",
+          "client_reference_id": "order_12345",
+          "metadata": {
+            "order_id": "12345"
+          },
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "customer_id": "cust_abc123",
+          "form_data": null,
+          "shipping_address": null,
+          "utm_source": "twitter",
+          "utm_medium": "social",
+          "utm_campaign": "launch_feb_2026",
+          "expires_at": "2026-02-25T08:45:00Z",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 340,
+        "total_pages": 17,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Crear una sesión de pago
+
+Crea una sesión de pago en el lado del servidor con una URL de pago única. Usa esto para integraciones programáticas donde controlas el flujo de pago desde tu backend.
+
+<ParamField body="payment_link_id" type="string">
+  Crea la sesión a partir de un enlace de pago existente. Esto hereda la configuración del enlace. Se requiere `payment_link_id` o los campos manuales (`token_address`, `chain_id`, `recipient_address`, `amount`).
+</ParamField>
+
+<ParamField body="token_address" type="string">
+  Dirección del contrato del token a recibir. Requerido si `payment_link_id` no se proporciona.
+</ParamField>
+
+<ParamField body="chain_id" type="number">
+  ID de la cadena donde deseas recibir el pago. Requerido si `payment_link_id` no se proporciona.
+</ParamField>
+
+<ParamField body="recipient_address" type="string">
+  Dirección de la cartera que recibe el pago. Requerido si `payment_link_id` no se proporciona.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Monto del pago en la unidad más pequeña del token. Requerido si `payment_link_id` no se proporciona.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  Asocia la sesión con un producto.
+</ParamField>
+
+<ParamField body="success_url" type="string">
+  URL a la que se redirige al cliente después de un pago exitoso. Soporta la variable de plantilla `{SESSION_ID}`.
+</ParamField>
+
+<ParamField body="cancel_url" type="string">
+  URL a la que se redirige al cliente si cancelan.
+</ParamField>
+
+<ParamField body="client_reference_id" type="string">
+  Tu ID de referencia interna (por ejemplo, ID de pedido). Máximo 200 caracteres.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Pares clave-valor arbitrarios pasados a través de webhooks y la transacción resultante. Hasta 50 claves, valores de 500 caracteres.
+</ParamField>
+
+<ParamField body="customer_email" type="string">
+  Dirección de correo electrónico del cliente. Cifrado en reposo e incluido en los payloads de webhook para la realización de pedidos.
+</ParamField>
+
+<ParamField body="customer_name" type="string">
+  Nombre del cliente. Cifrado en reposo e incluido en los payloads de webhook para la realización de pedidos.
+</ParamField>
+
+<ParamField body="expires_in" type="number" default={1800}>
+  Tiempo de expiración de la sesión en segundos. Mínimo 300 (5 minutos), máximo 86400 (24 horas). Por defecto: 1800 (30 minutos).
+</ParamField>
+
+<ParamField body="utm_source" type="string">
+  Fuente UTM para seguimiento de atribución.
+</ParamField>
+
+<ParamField body="utm_medium" type="string">
+  Medio UTM para seguimiento de atribución.
+</ParamField>
+
+<ParamField body="utm_campaign" type="string">
+  Campaña UTM para seguimiento de atribución.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+# Crear a partir de un enlace de pago
+curl -X POST "https://platform-api.anyspend.com/api/v1/checkout-sessions" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123",
+    "success_url": "https://ejemplo.com/success?session_id={SESSION_ID}",
+    "cancel_url": "https://ejemplo.com/cancel",
+    "client_reference_id": "order_12345",
+    "metadata": {
+      "order_id": "12345"
+    },
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "expires_in": 3600
+  }'
+
+# Crear con configuración manual
+curl -X POST "https://platform-api.anyspend.com/api/v1/checkout-sessions" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "25000000",
+    "success_url": "https://ejemplo.com/success?session_id={SESSION_ID}",
+    "cancel_url": "https://ejemplo.com/cancel",
+    "client_reference_id": "inv_67890",
+    "utm_source": "email",
+    "utm_medium": "newsletter",
+    "utm_campaign": "february_promo"
+  }'
+```
+
+```typescript SDK
+// Crear a partir de un enlace de pago
+const session = await anyspend.checkoutSessions.create({
+  paymentLinkId: "pl_abc123",
+  successUrl: "https://ejemplo.com/success?session_id={SESSION_ID}",
+  cancelUrl: "https://ejemplo.com/cancel",
+  clientReferenceId: "order_12345",
+  metadata: {
+    order_id: "12345",
+    user_email: "alice@example.com",
+  },
+  expiresIn: 3600,
+});
+
+// Redirigir al cliente
+console.log(session.url);
+// => "https://pay.anyspend.com/s/cs_newSession123"
+
+// Crear con configuración manual
+const manualSession = await anyspend.checkoutSessions.create({
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "25000000",
+  successUrl: "https://ejemplo.com/success?session_id={SESSION_ID}",
+  cancelUrl: "https://ejemplo.com/cancel",
+  clientReferenceId: "inv_67890",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cs_newSession123",
+      "url": "https://pay.anyspend.com/s/cs_newSession123",
+      "status": "open",
+      "payment_link_id": "pl_abc123",
+      "product_id": null,
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "amount_usd": "50.00",
+      "success_url": "https://ejemplo.com/success?session_id={SESSION_ID}",
+      "cancel_url": "https://ejemplo.com/cancel",
+      "client_reference_id": "order_12345",
+      "metadata": {
+        "order_id": "12345",
+        "user_email": "alice@example.com"
+      },
+      "payer_address": null,
+      "tx_hash": null,
+      "customer_id": null,
+      "form_data": null,
+      "shipping_address": null,
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "expires_at": "2026-02-27T11:30:00Z",
+      "created_at": "2026-02-27T10:30:00Z",
+      "completed_at": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Recuperar una sesión de pago
+
+<ParamField path="id" type="string" required>
+  El ID de la sesión de pago (por ejemplo, `cs_abc123`).
+</ParamField>
+
+<Tip>
+  Usa este endpoint en tu manejador de `success_url` para verificar el estado del pago y recuperar detalles de la transacción después de que el cliente sea redirigido de vuelta a tu sitio.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/checkout-sessions/cs_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const session = await anyspend.checkoutSessions.retrieve("cs_abc123");
+
+if (session.status === "completed") {
+  // El pago fue exitoso
+  console.log("Hash de la transacción:", session.tx_hash);
+  console.log("Pagador:", session.payer_address);
+}
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Devuelve el objeto [Checkout Session completo](#el-objeto-de-sesión-de-pago).
+  </Tab>
+</Tabs>
+
+---
+
+## Expirar una sesión de pago
+
+Expira manualmente una sesión de pago abierta. Esto es útil cuando el pedido subyacente se cancela o el pago ya no es necesario.
+
+<ParamField path="id" type="string" required>
+  El ID de la sesión de pago.
+</ParamField>
+
+<Warning>
+  Solo las sesiones con `status: "open"` pueden expirar. Intentar expirar una sesión en cualquier

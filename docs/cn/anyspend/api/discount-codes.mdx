@@ -1,0 +1,435 @@
+---
+title: 折扣码
+description: 为支付链接创建和管理折扣码
+lang: cn
+originalPath: anyspend/api/discount-codes.mdx
+---
+折扣码允许您在支付链接上提供基于百分比或固定金额的折扣。创建单个代码，批量生成代码批次，并在结账时验证代码。
+
+<Info>
+  管理折扣码需要 **admin** 权限。`/validate` 端点需要 **read** 权限，使其可以安全地从客户端结账流程中调用。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 列出折扣码
+
+<ParamField path="GET /discount-codes" type="read">
+  列出所有折扣码，支持可选的过滤和分页。
+</ParamField>
+
+<ParamField path="search" type="string" query>
+  通过代码字符串搜索（不区分大小写的部分匹配）。
+</ParamField>
+
+<ParamField path="active" type="boolean" query>
+  通过活动状态过滤。省略以返回所有代码。
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  分页的页码（默认：`1`）。
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  每页结果数（默认：`20`，最大：`100`）。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/discount-codes?search=SUMMER&active=true&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const codes = await client.discountCodes.list({
+      search: "SUMMER",
+      active: true,
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "dc_abc123",
+      "code": "SUMMER25",
+      "type": "percentage",
+      "value": 25,
+      "payment_link_id": "pl_xyz789",
+      "max_uses": 100,
+      "current_uses": 42,
+      "min_order_amount": "5000000",
+      "expires_at": "2026-09-01T00:00:00Z",
+      "is_active": true,
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+### 创建折扣码
+
+<ParamField path="POST /discount-codes" type="admin">
+  创建单个折扣码。
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  折扣码字符串（例如，`SUMMER25`）。必须是唯一的。自动转换为大写。
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  折扣类型：`percentage` 或 `fixed`。
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  折扣值。对于 `percentage`，数字在 1-100 之间。对于 `fixed`，金额为代币的最小单位（例如，`5000000` 表示 5 USDC）。
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  将此代码限制为特定的支付链接。如果省略，代码适用于所有支付链接。
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  此代码可以被兑换的最大次数。省略表示无限次使用。
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  使用此代码所需的最小订单金额，以代币的最小单位表示。
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  ISO 8601 过期时间戳。省略表示代码永不过期。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "type": "percentage",
+        "value": 25,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 100,
+        "min_order_amount": "5000000",
+        "expires_at": "2026-09-01T00:00:00Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const code = await client.discountCodes.create({
+      code: "SUMMER25",
+      type: "percentage",
+      value: 25,
+      payment_link_id: "pl_xyz789",
+      max_uses: 100,
+      min_order_amount: "5000000",
+      expires_at: "2026-09-01T00:00:00Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dc_abc123",
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "payment_link_id": "pl_xyz789",
+    "max_uses": 100,
+    "current_uses": 0,
+    "min_order_amount": "5000000",
+    "expires_at": "2026-09-01T00:00:00Z",
+    "is_active": true,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### 更新折扣码
+
+<ParamField path="PATCH /discount-codes/:id" type="admin">
+  更新现有的折扣码。所有字段都是可选的。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "max_uses": 200,
+        "expires_at": "2026-12-31T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.discountCodes.update("dc_abc123", {
+      max_uses: 200,
+      expires_at: "2026-12-31T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 删除折扣码
+
+<ParamField path="DELETE /discount-codes/:id" type="admin">
+  永久删除一个折扣码。使用此代码的活动会话不会受到影响。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.discountCodes.delete("dc_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 验证折扣码
+
+<ParamField path="POST /discount-codes/validate" type="read">
+  根据支付链接和订单金额验证折扣码。如果有效，返回折扣详情；如果无效，返回解释代码无效原因的错误消息。
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  要验证的折扣码。
+</ParamField>
+
+<ParamField path="payment_link_id" type="string" required>
+  正在应用代码的支付链接。
+</ParamField>
+
+<ParamField path="amount" type="string" required>
+  代币最小单位的订单金额，用于检查 `min_order_amount` 并计算折扣后的总额。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/validate \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "payment_link_id": "pl_xyz789",
+        "amount": "20000000"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.discountCodes.validate({
+      code: "SUMMER25",
+      payment_link_id: "pl_xyz789",
+      amount: "20000000",
+    });
+
+    if (result.valid) {
+      console.log("Discount:", result.discount_amount);
+      console.log("New total:", result.final_amount);
+    } else {
+      console.log("Invalid:", result.error);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**有效响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "discount_amount": "5000000",
+    "final_amount": "15000000"
+  }
+}
+```
+
+**无效响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": false,
+    "error": "Code has reached maximum number of uses"
+  }
+}
+```
+
+<Note>
+  验证端点 **不** 消耗使用次数。只有在支付完成且应用了折扣时，才会计算使用次数。
+</Note>
+
+---
+
+### 批量创建折扣码
+
+<ParamField path="POST /discount-codes/batch" type="admin">
+  一次性批量创建多个折扣码，具有共享配置。用于生成促销活动或独特的一次性代码。
+</ParamField>
+
+<ParamField path="codes" type="string[]" required>
+  要创建的代码字符串数组。每个都必须是唯一的。
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  应用于所有代码的折扣类型：`percentage` 或 `fixed`。
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  应用于所有代码的折扣值。
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  将所有代码限制为特定的支付链接。
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  每个代码的最大使用次数。设置为 `1` 表示一次性代码。
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  所有代码的最小订单金额。
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  所有代码的 ISO 8601 过期时间戳。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/batch \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "codes": ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+        "type": "fixed",
+        "value": 2000000,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 1,
+        "expires_at": "2026-06-30T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const batch = await client.discountCodes.batchCreate({
+      codes: ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+      type: "fixed",
+      value: 2000000,
+      payment_link_id: "pl_xyz789",
+      max_uses: 1,
+      expires_at: "2026-06-30T23:59:59Z",
+    });
+
+    console.log(`Created ${batch.created} codes`);
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "created": 3,
+    "codes": [
+      { "id": "dc_001", "code": "PROMO-A1B2" },
+      { "id": "dc_002", "code": "PROMO-C3D4" },
+      { "id": "dc_003", "code": "PROMO-E5F6" }
+    ]
+  }
+}
+```
+
+---
+
+## 折扣码对象
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `id` | `string` | 唯一标识符（例如，`dc_abc123`） |
+| `code` | `string` | 折扣码字符串（大写） |
+| `type` | `string` | `percentage` 或 `fixed` |
+| `value` | `number` | 折扣值（百分比 1-100，或最小单位的固定金额） |
+| `payment_link_id` | `string \| null` | 限制支付链接，或 `null` 表示所有链接 |
+| `max_uses` | `number \| null` | 最大兑换次数，或 `null` 表示无限 |
+| `current_uses` | `number` | 到目前为止已兑换的次数 |
+| `min_order_amount` | `string \| null` | 所需的最小订单金额 |
+| `expires_at` | `string \| null` | ISO 8601 过期时间，或 `null` 表示无过期 |
+| `is_active` | `boolean` | 代码当前是否可用 |
+| `created_at` | `string` | ISO 8601 创建时间戳 |
+| `updated_at` | `string` | ISO 8601 最后更新时间戳 |
+
+## 验证规则
+
+如果满足以下任何条件，折扣码将被视为 **无效**：
+
+| 条件 | 错误消息 |
+|-----------|---------------|
+| 代码不存在 | `Invalid discount code` |
+| 代码处于非活动状态（`is_active: false`） | `Discount code is not active` |
+| 代码已过期 | `Discount code has expired` |
+| `current_uses >= max_uses` | `Code has reached maximum number of uses` |
+| 代码限制于不同的支付链接 | `Code is not valid for this payment link` |
+| 订单金额低于 `min_order_amount` | `Order amount is below minimum required` |

@@ -1,0 +1,353 @@
+---
+title: Klien SDK TypeScript
+description: Klien TypeScript Headless untuk API Platform AnySpend
+lang: id
+originalPath: anyspend/api/sdk-client.mdx
+---
+Klien SDK Platform AnySpend adalah klien TypeScript **headless** (tanpa dependensi React) untuk seluruh API Platform AnySpend. Bekerja di mana saja JavaScript modern berjalan -- Node.js, browser, Cloudflare Workers, Deno, dan Bun.
+
+## Instalasi
+
+<CodeGroup>
+
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+</CodeGroup>
+
+## Mulai Cepat
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Membuat link pembayaran
+const link = await platform.paymentLinks.create({
+  name: "Pro Plan - Bulanan",
+  amount: "29990000",  // 29.99 USDC
+  recipient_address: "0xYourAddress",
+});
+
+console.log(link.url);
+```
+
+## Inisialisasi
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!, {
+  // Semua opsi di bawah ini opsional
+  baseUrl: "https://platform-api.anyspend.com/api/v1", // default
+  timeout: 30_000,           // waktu tunggu permintaan dalam ms (default: 30s)
+  maxRetries: 3,             // jumlah auto-retry untuk kesalahan 5xx / jaringan
+  idempotencyKeyGenerator: () => crypto.randomUUID(), // generator kustom
+});
+```
+
+<Info>
+  Anda dapat memperoleh kunci API dari [Dasbor AnySpend](https://app.anyspend.com) di bawah **Settings > API Keys**. Kunci dibatasi untuk organisasi Anda dan dapat memiliki izin baca-saja atau baca-tulis.
+</Info>
+
+## Sumber Daya Tersedia
+
+Klien diorganisir ke dalam ruang nama sumber daya, masing-masing dengan metode yang langsung dipetakan ke titik akhir REST.
+
+<AccordionGroup>
+  <Accordion title="paymentLinks">
+    ```typescript
+    // CRUD
+    platform.paymentLinks.create(data)
+    platform.paymentLinks.list(params?)
+    platform.paymentLinks.get(id)
+    platform.paymentLinks.update(id, data)
+    platform.paymentLinks.delete(id)
+
+    // Aksi
+    platform.paymentLinks.duplicate(id)
+    platform.paymentLinks.stats(id)
+    platform.paymentLinks.sessions(id, params?)
+    platform.paymentLinks.visitors(id, params?)
+
+    // Item baris
+    platform.paymentLinks.items(id)
+    platform.paymentLinks.addItem(id, itemData)
+    platform.paymentLinks.removeItem(id, itemId)
+    ```
+  </Accordion>
+
+  <Accordion title="products">
+    ```typescript
+    platform.products.create(data)
+    platform.products.list(params?)
+    platform.products.get(id)
+    platform.products.update(id, data)
+    platform.products.delete(id)
+    platform.products.generateLink(id, linkOptions?)
+    ```
+  </Accordion>
+
+  <Accordion title="customers">
+    ```typescript
+    platform.customers.create(data)
+    platform.customers.list(params?)
+    platform.customers.get(id)
+    platform.customers.update(id, data)
+    platform.customers.delete(id)
+    platform.customers.transactions(id, params?)
+    platform.customers.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="transactions">
+    ```typescript
+    platform.transactions.list(params?)
+    platform.transactions.get(id)
+    platform.transactions.stats(params?)
+    platform.transactions.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="checkoutSessions">
+    ```typescript
+    platform.checkoutSessions.create(data)
+    platform.checkoutSessions.list(params?)
+    platform.checkoutSessions.get(id)
+    platform.checkoutSessions.expire(id)
+    ```
+  </Accordion>
+
+  <Accordion title="webhooks">
+    ```typescript
+    platform.webhooks.create(data)
+    platform.webhooks.list(params?)
+    platform.webhooks.get(id)
+    platform.webhooks.update(id, data)
+    platform.webhooks.delete(id)
+    platform.webhooks.test(id)
+    platform.webhooks.deliveries(id, params?)
+    platform.webhooks.retry(id, deliveryId)
+    ```
+  </Accordion>
+
+  <Accordion title="discountCodes">
+    ```typescript
+    platform.discountCodes.create(data)
+    platform.discountCodes.list(params?)
+    platform.discountCodes.update(id, data)
+    platform.discountCodes.delete(id)
+    platform.discountCodes.validate(code, context?)
+    platform.discountCodes.batchCreate(codes)
+    ```
+  </Accordion>
+
+  <Accordion title="notifications">
+    ```typescript
+    platform.notifications.get()
+    platform.notifications.update(data)
+    platform.notifications.linkTelegram(chatId)
+    platform.notifications.unlinkTelegram()
+    platform.notifications.testEmail()
+    platform.notifications.testTelegram()
+    ```
+  </Accordion>
+
+  <Accordion title="widgets">
+    ```typescript
+    platform.widgets.create(data)
+    platform.widgets.list(params?)
+    platform.widgets.get(id)
+    platform.widgets.update(id, data)
+    platform.widgets.delete(id)
+    platform.widgets.stats(id)
+    ```
+  </Accordion>
+
+  <Accordion title="organization">
+    ```typescript
+    platform.organization.get()
+    platform.organization.update(data)
+    ```
+  </Accordion>
+
+  <Accordion title="analytics">
+    ```typescript
+    platform.analytics.overview(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="events">
+    ```typescript
+    platform.events.list(params?)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Pagination
+
+Semua metode `list` menerima parameter pagination opsional dan mengembalikan respons yang dipaginasi:
+
+```typescript
+const page = await platform.transactions.list({
+  status: "completed",
+  limit: 25,
+  cursor: "cur_abc123",
+});
+
+console.log(page.data);       // Transaction[]
+console.log(page.has_more);   // boolean
+console.log(page.next_cursor); // string | null
+```
+
+### Auto-Pagination
+
+Untuk kenyamanan, setiap metode `list` memiliki pembantu `listAutoPaginate` yang mengembalikan iterator asinkron. Ini mengambil halaman di belakang layar saat Anda mengonsumsi item.
+
+```typescript
+for await (const txn of platform.transactions.listAutoPaginate({
+  status: "completed",
+})) {
+  console.log(txn.id, txn.amount);
+}
+```
+
+<Tip>
+  Auto-pagination secara otomatis menghormati batas laju. Jika API mengembalikan `429`, iterator menunggu durasi `Retry-After` sebelum mengambil halaman berikutnya.
+</Tip>
+
+Anda juga dapat mengumpulkan semua hasil ke dalam array:
+
+```typescript
+const allCustomers = [];
+for await (const c of platform.customers.listAutoPaginate()) {
+  allCustomers.push(c);
+}
+```
+
+## Penanganan Kesalahan
+
+SDK melempar kelas kesalahan bertipe sehingga Anda dapat menangani mode kegagalan tertentu:
+
+```typescript
+import {
+  ApiError,
+  AuthenticationError,
+  PermissionError,
+  RateLimitError,
+  NotFoundError,
+  IdempotencyError,
+} from "@b3dotfun/sdk/anyspend/platform";
+
+try {
+  const link = await platform.paymentLinks.get("pl_nonexistent");
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    console.log("Link tidak ada");
+  } else if (err instanceof AuthenticationError) {
+    console.log("Kunci API tidak valid atau telah kedaluwarsa");
+  } else if (err instanceof PermissionError) {
+    console.log("Kunci API tidak memiliki izin yang diperlukan");
+  } else if (err instanceof RateLimitError) {
+    console.log(`Dibatasi laju. Coba lagi setelah ${err.retryAfter} detik`);
+  } else if (err instanceof IdempotencyError) {
+    console.log("Konflik idempotensi -- permintaan sudah diproses dengan parameter yang berbeda");
+  } else if (err instanceof ApiError) {
+    // Penangkap untuk setiap kesalahan API
+    console.log(err.status, err.code, err.message);
+  }
+}
+```
+
+### Referensi Kelas Kesalahan
+
+| Kelas | Status HTTP | Deskripsi |
+|-------|-------------|-------------|
+| `AuthenticationError` | `401` | Kunci API hilang, tidak valid, atau telah kedaluwarsa |
+| `PermissionError` | `403` | Kunci API tidak memiliki cakupan yang diperlukan |
+| `NotFoundError` | `404` | Sumber daya tidak ada |
+| `RateLimitError` | `429` | Terlalu banyak permintaan. Termasuk `retryAfter` (detik) |
+| `IdempotencyError` | `409` | Kunci idempotensi digunakan kembali dengan parameter yang berbeda |
+| `ApiError` | any | Kelas dasar untuk semua kesalahan API |
+
+## Auto-Retry
+
+Klien secara otomatis mencoba kembali permintaan yang gagal dalam kasus berikut:
+
+- **Kesalahan server 5xx** -- server mengalami kegagalan sementara
+- **Kesalahan jaringan** -- reset koneksi, kegagalan DNS, timeout
+- **Respons batas laju 429** -- menunggu durasi `Retry-After`
+
+Percobaan kembali menggunakan **exponential backoff** dengan jitter. Defaultnya adalah 3 percobaan, dapat dikonfigurasi melalui opsi `maxRetries`.
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  maxRetries: 5, // hingga 5 percobaan
+});
+```
+
+<Warning>
+  Percobaan kembali **tidak** dilakukan untuk kesalahan `4xx` selain `429`, karena itu menunjukkan masalah di sisi klien yang tidak akan terselesaikan dengan mencoba kembali.
+</Warning>
+
+## Idempotensi
+
+Semua permintaan `POST` dan `PATCH` secara otomatis menyertakan header `Idempotency-Key`. Ini memastikan bahwa jika permintaan dicoba kembali (karena kesalahan jaringan, misalnya), server tidak akan memprosesnya dua kali.
+
+Generator default menggunakan `crypto.randomUUID()`. Anda dapat menyediakan milik Anda sendiri:
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  idempotencyKeyGenerator: () => `my-app-${Date.now()}-${Math.random()}`,
+});
+```
+
+Anda juga dapat melewati kunci idempotensi spesifik per-permintaan:
+
+```typescript
+const link = await platform.paymentLinks.create(
+  { name: "Order #1234", amount: "50000000", recipient_address: "0x..." },
+  { idempotencyKey: "order-1234-link" }
+);
+```
+
+<Tip>
+  Menggunakan kunci idempotensi deterministik (seperti ID pesanan) direkomendasikan untuk operasi kritis. Jika Anda secara tidak sengaja mengirim permintaan yang sama dua kali, panggilan kedua mengembalikan respons asli alih-alih membuat duplikat.
+</Tip>
+
+## Tipe TypeScript
+
+Semua tipe permintaan dan respons diekspor untuk digunakan dalam kode Anda sendiri:
+
+```typescript
+import type {
+  PaymentLink,
+  CreatePaymentLinkRequest,
+  Transaction,
+  Customer,
+  CheckoutSession,
+  Webhook,
+  PaginatedResponse,
+} from "@b3dotfun/sdk/anyspend/platform";
+```
+
+## Kompatibilitas Runtime
+
+| Runtime | Didukung |
+|---------|-----------|
+| Node.js 18+ | Ya |
+| Browser (ES2020+) | Ya |
+| Cloudflare Workers | Ya |
+| Deno | Ya |
+| Bun | Ya |
+
+Klien menggunakan API `fetch` standar secara internal. Di Node.js 18+, `fetch` bawaan digunakan. Tidak diperlukan polyfill.

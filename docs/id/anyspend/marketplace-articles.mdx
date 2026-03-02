@@ -1,0 +1,479 @@
+---
+title: Penempatan Artikel x402
+description: >-
+  Terbitkan artikel di situs konten kripto dengan penulis kripto AI kami dan
+  dapatkan visibilitas
+lang: id
+originalPath: anyspend/marketplace-articles.mdx
+---
+[Kunjungi x402 Article Marketplace (UI)](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+<CardGroup cols={2}>
+  <Card title="Validasi AI" icon="brain">
+    AI menilai konten Anda dan menghasilkan judul yang dioptimalkan
+  </Card>
+  <Card title="Tanpa Biaya Gas" icon="gas-pump">
+    Bayar hanya harga artikel - nol biaya transaksi
+  </Card>
+  <Card title="100+ Situs" icon="globe">
+    Kirim ke situs berita crypto, DeFi, NFT
+  </Card>
+  <Card title="Pengajuan Instan" icon="bolt">
+    Satu tanda tangan dan pitch Anda terkirim
+  </Card>
+</CardGroup>
+
+## Cara Kerjanya
+
+<Steps>
+  <Step title="Hubungkan Wallet">
+    Kunjungi [x402 Article Marketplace](https://explorer.b3.fun/apps/x402-article-marketplace) dan hubungkan wallet Anda di jaringan Base
+  </Step>
+  <Step title="Pilih Situs Target">
+    Pilih situs konten crypto yang sesuai dengan topik artikel Anda
+  </Step>
+  <Step title="Berikan Ide Anda">
+    Masukkan URL tweet, ide topik, atau judul artikel lengkap
+  </Step>
+  <Step title="Tinjau & Setujui">
+    Lihat saran AI dan skor persetujuan sebelum membayar
+  </Step>
+  <Step title="Kirim & Bayar">
+    Satu tanda tangan dengan USDC - nol biaya gas - pengajuan instan ke penerbit
+  </Step>
+</Steps>
+
+## Aturan Validasi AI
+
+Endpoint validasi AI menilai ide artikel Anda dan menyetujuinya apa adanya, menyarankan perbaikan, atau menolaknya.
+
+<Tabs>
+  <Tab title="✅ Skor ≥80">
+    **Sempurna!** Masukan Anda disetujui apa adanya.
+    
+    Judul atau topik yang Anda berikan sangat baik dan sesuai dengan fokus situs. Tidak perlu perubahan - kami akan mengirimkannya persis seperti yang Anda tulis.
+    
+    **Contoh:** "Cara Menggunakan Base Pay untuk Kreator di DApp Anda"
+  </Tab>
+  <Tab title="⚠️ Skor 70-79">
+    **Bagus dengan Saran!** AI menyediakan versi yang lebih baik.
+    
+    Konten Anda relevan tetapi bisa dioptimalkan. AI menghasilkan judul dan deskripsi yang lebih baik sambil mempertahankan ide inti Anda.
+    
+    **Contoh Masukan:** "base pay untuk kreator"
+    
+    **Keluaran AI:** "Mengintegrasikan Base Pay: Panduan Lengkap untuk Kreator Konten"
+  </Tab>
+  <Tab title="❌ Skor <70">
+    **Ditolak.** Konten tidak sesuai dengan fokus situs.
+    
+    Topik Anda tidak relevan untuk situs ini. Coba topik lain atau pilih situs yang lebih cocok dengan konten Anda.
+    
+    **Contoh:** Mengirimkan resep masakan ke situs berita crypto
+  </Tab>
+</Tabs>
+
+## Harga
+
+Harga pengajuan artikel bervariasi berdasarkan lalu lintas dan otoritas situs.
+
+**Rentang Tipikal:**
+- Situs kecil/emerging: $3-50 USDC per pengajuan
+- Situs kelas menengah: $50-200 USDC per pengajuan
+- Situs premium: $200-500 USDC per pengajuan
+
+<Note>
+  Harga ditetapkan oleh penerbit individu. Periksa detail situs sebelum mengirimkan.
+</Note>
+
+## Referensi API
+
+### Detail Jaringan & Pembayaran
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 desimal
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  Tanda tangan Permit ERC-20
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  Harga maksimum per pengajuan
+</ParamField>
+
+### Validasi Ide Artikel (Gratis)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Endpoint gratis untuk memvalidasi ide artikel Anda. AI menghasilkan judul, deskripsi, dan skor persetujuan.
+
+**Body Permintaan:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "Cara menggunakan Base Pay untuk kreator"
+}
+```
+
+```json Respons Sukses (200) - Disetujui
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 85,
+    "reasoning": "Topik bagus untuk situs berfokus Base. AI mengoptimalkan judul untuk keterlibatan yang lebih baik.",
+    "suggestedTitle": "Mengintegrasikan Base Pay: Panduan Lengkap untuk Kreator Konten",
+    "suggestedDescription": "Pelajari cara mengimplementasikan Base Pay di platform kreator Anda dengan contoh langkah demi langkah dan praktik terbaik.",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": false,
+    "message": "Konten disetujui dengan saran AI"
+  }
+}
+```
+
+```json Respons Sukses (200) - Skor Sempurna
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 95,
+    "reasoning": "Judul luar biasa! Jelas, spesifik, dan sangat relevan dengan audiens situs.",
+    "suggestedTitle": "Cara Menggunakan Base Pay untuk Kreator di DApp Anda",
+    "suggestedDescription": "Panduan implementasi lengkap untuk Base Pay",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": true,
+    "message": "Konten disetujui apa adanya"
+  }
+}
+```
+
+```json Respons Penolakan (200) - Skor Terlalu Rendah
+{
+  "success": true,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "Topik tidak sejalan dengan fokus situs pada ekosistem Base dan DeFi. Pertimbangkan mengirimkan ke situs lain atau menyesuaikan topik Anda.",
+    "estimatedPrice": "50000000",
+    "message": "Konten ditolak - skor terlalu rendah"
+  }
+}
+```
+</CodeGroup>
+
+**Parameter:**
+- `siteDomain` (diperlukan) - Domain situs target (mis., "baseradar.com")
+- `userInput` (diperlukan) - URL tweet, ide topik, atau judul lengkap (10-200 karakter)
+
+**Opsi Masukan:**
+
+<AccordionGroup>
+  <Accordion title="Opsi 1: Judul Lengkap">
+    Berikan judul artikel yang siap digunakan.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "Cara Membangun DEX di Base dengan Uniswap V3"
+    }
+    ```
+    
+    Jika disetujui (skor ≥90), judul Anda digunakan apa adanya.
+  </Accordion>
+  
+  <Accordion title="Opsi 2: URL Tweet">
+    Berikan URL tweet dengan konten yang relevan.
+    
+    ```json
+    {
+      "siteDomain": "solanaecho.com",
+      "userInput": "https://x.com/BuildOnBase/status/1234567890"
+    }
+    ```
+    
+    AI mengekstrak topik dan menghasilkan judul/deskripsi.
+  </Accordion>
+  
+  <Accordion title="Opsi 3: Topik/Ide">
+    Berikan topik atau ide singkat.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "base pay untuk kreator"
+    }
+    ```
+    
+    AI menghasilkan judul dan deskripsi lengkap.
+  </Accordion>
+</AccordionGroup>
+
+### Mengajukan Permintaan Artikel (Pembayaran x402)
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+Kirim permintaan artikel dengan pembayaran x402. Anda harus memvalidasi konten Anda terlebih dahulu dan menerima persetujuan.
+
+**Body Permintaan:**
+
+<CodeGroup>
+```json Request
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "Mengintegrasikan Base Pay: Panduan Lengkap untuk Kreator Konten",
+  "description": "Pelajari cara mengimplementasikan Base Pay di platform kreator Anda dengan contoh langkah demi langkah dan praktik terbaik."
+}
+```
+
+```json Respons Sukses (200)
+{
+  "success": true,
+  "data": {
+    "requestId": "req_789...",
+    "productSpecificId": "req_789...",
+    "totalPrice": "50000000",
+    "status": "pending"
+  }
+}
+```
+
+```json Respons Kesalahan (400)
+{
+  "success": false,
+  "error": "Validasi konten diperlukan sebelum pengajuan"
+}
+```
+</CodeGroup>
+
+**Parameter:**
+- `buyerAddress` (diperlukan) - Alamat wallet Anda
+- `siteDomain` (diperlukan) - Domain situs target
+- `title` (diperlukan) - Judul artikel (dari validasi atau milik Anda sendiri jika skor ≥90)
+- `description` (diperlukan) - Deskripsi artikel (dari validasi atau milik Anda sendiri)
+
+**Contoh JavaScript/TypeScript:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Langkah 1: Validasi konten Anda (GRATIS)
+const validateResponse = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: 'Cara menggunakan Base Pay untuk kreator'
+  })
+});
+
+const validation = await validateResponse.json();
+
+if (!validation.data.approved) {
+  console.error('Konten ditolak:', validation.data.reasoning);
+  process.exit(1);
+}
+
+console.log('✅ Disetujui! Skor:', validation.data.score);
+console.log('Judul:', validation.data.suggestedTitle);
+
+// Langkah 2: Kirim dengan pembayaran (x402)
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Maks 1000 USDC
+);
+
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: validation.data.suggestedTitle,
+      description: validation.data.suggestedDescription
+    })
+  }
+);
+
+const result = await response.json();
+console.log('🎉 Artikel diajukan! ID Permintaan:', result.data.requestId);
+```
+
+<Note>
+  Lihat [dokumentasi SDK x402](/anyspend/x402-overview) untuk detail lebih lanjut tentang penggunaan `wrapFetchWithPayment`.
+</Note>
+
+### Lihat Pengajuan Anda (Gratis)
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+Lacak semua pengajuan artikel Anda - tertunda, diterima, dan dipublikasikan.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json Respons
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_789...",
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "Mengintegrasikan Base Pay: Panduan Lengkap untuk Kreator Konten",
+      "description": "Pelajari cara mengimplementasikan Base Pay di platform kreator Anda...",
+      "status": "published",
+      "totalPrice": "50000000",
+      "publishedUrl": "https://baseradar.com/articles/integrating-base-pay",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "publishedAt": "2025-01-18T14:30:00.000Z"
+    },
+    {
+      "requestId": "req_790...",
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteDomain": "solanaecho.com",
+      "title": "Jembatan NFT Lintas Rantai: Solana ke Base",
+      "description": "Panduan teknis tentang menjembatani NFT antara Solana dan Base",
+      "status": "pending",
+      "totalPrice": "75000000",
+      "createdAt": "2025-01-20T08:15:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Nilai status:**
+- `pending` - Diajukan ke penerbit, menunggu tinjauan
+- `accepted` - Penerbit menerima, artikel dalam produksi
+- `published` - Artikel sudah live (termasuk `publishedUrl`)
+- `rejected` - Penerbit menolak (jarang, biasanya sudah divalidasi sebelumnya)
+
+<Info>
+  Harga dalam respons API dalam USDC wei (6 desimal). Bagi dengan 1,000,000 untuk mendapatkan jumlah USDC.
+</Info>
+
+### Jelajahi Situs (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+Daftar semua situs yang menerima pengajuan artikel. Endpoint yang sama dengan pasar iklan - situs mendukung baik iklan maupun artikel.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?limit=20"
+```
+
+```json Respons
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteUrl": "https://baseradar.com",
+      "siteDomain": "baseradar.com",
+      "description": "Berita dan analisis untuk ekosistem Base",
+      "keywords": ["base", "defi", "nft", "gaming"],
+      "articlePrice": "50000000"
+    },
+    {
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteUrl": "https://solanaecho.com",
+      "siteDomain": "solanaecho.com",
+      "description": "Berita dan tutorial ekosistem Solana",
+      "keywords": ["solana", "defi", "nft"],
+      "articlePrice": "75000000"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+## Tips Validasi AI
+
+<AccordionGroup>
+  <Accordion title="Tulis Judul yang Jelas dan Spesifik">
+    **Bagus:** "Cara Membangun DEX di Base dengan Uniswap V3"
+    
+    **Buruk:** "Hal-hal DeFi"
+    
+    Judul spesifik mendapat skor lebih tinggi dan lebih mungkin disetujui.
+  </Accordion>
+  
+  <Accordion title="Sesuaikan dengan Fokus Situs">
+    Periksa kata kunci dan deskripsi situs sebelum mengirimkan. Artikel berfokus Base tidak akan mendapat skor baik di situs hanya Solana.
+  </Accordion>
+  
+  <Accordion title="Gunakan Kalimat Lengkap untuk Judul">
+    **Bagus:** "Cara Menggunakan Base Pay untuk Kreator di DApp Anda"
+    
+    **Buruk:** "base pay kreator"
+    
+    Judul lengkap (10-200 karakter) mendapat skor lebih tinggi.
+  </Accordion>
+  
+  <Accordion title="Manfaatkan URL Tweet">
+    Jika Anda memiliki tweet viral tentang topik Anda, gunakan URL-nya! AI mengekstrak konteks dan menghasilkan judul yang relevan.
+  </Accordion>
+</AccordionGroup>
+
+## Masalah Umum
+
+<AccordionGroup>
+  <Accordion title="'Konten ditolak' dengan skor rendah">
+    Topik Anda tidak sesuai dengan fokus situs. Opsi:
+    - Pilih situs lain yang lebih cocok dengan topik Anda
+    - Sesuaikan topik Anda agar sesuai dengan kata kunci situs
+    - Berikan judul yang lebih spesifik dan terperinci
+  </Accordion>
+  
+  <Accordion title="'Validasi konten diperlukan' kesalahan">
+    Anda harus memanggil `/articles/validate` terlebih dahulu dan mendapatkan persetujuan sebelum memanggil `/articles/buy`.
+  </Accordion>
+  
+  <Accordion title="'Saldo tidak cukup' kesalahan">
+    Anda memerlukan USDC di jaringan Base. Pastikan bahwa:
+    - Anda terhubung ke Base (Chain ID: 8453)
+    - Anda memiliki cukup USDC untuk harga artikel
+  </Accordion>
+  
+  <Accordion title="Apa yang terjadi setelah saya mengirimkan?">
+    1. Perm

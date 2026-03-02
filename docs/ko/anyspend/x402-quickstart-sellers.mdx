@@ -1,0 +1,463 @@
+---
+title: 판매자를 위한 빠른 시작
+description: AnySpend x402 미들웨어를 사용하여 API 및 서비스에 대해 어떤 토큰으로든 결제를 수락하세요
+lang: ko
+originalPath: anyspend/x402-quickstart-sellers.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  소스 코드 및 예제 보기
+</Card>
+
+<Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## 개요
+
+이 가이드는 Express API에 **AnySpend x402** 결제 지원을 추가하는 방법을 보여줍니다. 이를 통해 모든 토큰으로 결제를 받으면서 원하는 토큰으로 수령할 수 있습니다. 몇 줄의 코드만으로 API가 엔드포인트를 수익화하고 자동 결제 검증 및 정산을 처리할 수 있습니다.
+
+**주요 이점:**
+- **구매자**는 보유한 모든 토큰(ETH, DAI, USDC 등)으로 결제할 수 있습니다.
+- **판매자**는 원하는 모든 토큰(USDC, B3, DAI, 사용자 정의 토큰 등)을 받을 수 있습니다.
+- AnySpend가 모든 토큰 변환을 자동으로 처리합니다.
+- 블록체인 인프라나 지갑 관리가 필요 없습니다.
+
+## 사전 요구 사항
+
+시작하기 전에 다음이 있는지 확인하세요:
+
+- **Node.js 18+** 설치됨
+- **Express.js API** (또는 만들 준비가 되어 있음)
+- **지갑 주소**로 USDC 결제를 받음
+- Express 미들웨어에 대한 **기본 지식**
+
+## 설치
+
+AnySpend x402 패키지를 설치하세요:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+## 빠른 시작
+
+### 1. 기본 통합
+
+Express API에 결제를 추가하는 가장 간단한 방법:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+
+// 결제 경로 및 가격 정의
+const endpointConfig = {
+  '/api/premium-data': {
+    amount: '1.00',        // USDC에서 $1.00
+    asset: 'USD'           // USDC로 변환됩니다
+  },
+  '/api/ai-inference': {
+    amount: '0.50',        // USDC에서 $0.50
+    asset: 'USD'
+  }
+};
+
+// USDC 수령 주소
+const recipientAddress = '0xYourWalletAddress...';
+
+// 결제 미들웨어 적용
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator                    // 사전 구성된 Anyspend facilitator
+));
+
+// 보호된 경로 정의
+app.get('/api/premium-data', (req, res) => {
+  // 결제 성공 후에만 실행됩니다
+  res.json({
+    data: '여기에 프리미엄 데이터',
+    message: '결제 성공!'
+  });
+});
+
+app.get('/api/ai-inference', (req, res) => {
+  res.json({
+    result: 'AI 추론 결과',
+    model: 'gpt-4'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API with x402 payments running on port 3000');
+});
+```
+
+**이 작업의 내용:**
+
+1. 클라이언트가 API 엔드포인트를 요청합니다.
+2. 미들웨어가 결제 세부 정보와 함께 `402 Payment Required`를 반환합니다.
+3. 클라이언트가 선호하는 토큰(ETH, DAI 등)으로 결제합니다.
+4. AnySpend facilitator가 USDC로 변환하고 지갑으로 정산합니다.
+5. 라우트 핸들러가 실행되어 데이터를 반환합니다.
+
+---
+
+### 2. 사용자 정의 토큰 수령 (예: B3)
+
+API가 USDC뿐만 아니라 원하는 모든 토큰을 수령하도록 구성할 수 있습니다:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// B3 토큰 수령으로 구성
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 토큰 (18 소수점)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: '프리미엄 데이터 접근',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // 결제가 검증되었습니다 - 100 B3 토큰을 받았습니다!
+  res.json({
+    data: '프리미엄 ETH 가격 이력',
+    paymentReceived: '100 B3 토큰'
+  });
+});
+
+app.listen(3000);
+```
+
+**무엇이 다른가요:**
+
+- 구매자는 여전히 **모든 토큰** (ETH, USDC, DAI 등)으로 결제할 수 있습니다.
+- AnySpend가 그들의 결제를 **B3 토큰**으로 변환합니다.
+- 지갑에서 정확히 **100 B3 토큰**을 받습니다.
+- 구매자와 판매자 모두 자신의 토큰 선호도를 유지합니다.
+
+## 구성
+
+### Facilitator URL
+
+AnySpend facilitator는 다음에서 호스팅됩니다:
+
+```
+https://mainnet.anyspend.com/x402
+```
+
+`@b3dotfun/anyspend-x402` 패키지에는 사전 구성된 facilitator 인스턴스가 포함되어 있습니다:
+
+```typescript
+import { facilitator } from '@b3dotfun/anyspend-x402';
+
+// mainnet.anyspend.com/x402를 사용하도록 사전 구성됨
+app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
+```
+
+### 엔드포인트 구성
+
+결제 요구 사항을 구성하는 세 가지 방법이 있습니다:
+
+#### 방법 1: 단순 달러 금액 (권장)
+
+AnySpend가 토큰 변환을 자동으로 처리하도록 합니다:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',      // 어떤 토큰의 $1.00 가치
+    asset: 'USD'
+  },
+  '/api/compute': {
+    amount: '2.50',
+    asset: 'USD'
+  }
+};
+```
+
+**이점:**
+- 클라이언트는 지원되는 모든 토큰으로 결제할 수 있습니다.
+- AnySpend가 자동으로 USDC로 변환합니다.
+- 항상 USDC를 받습니다.
+
+#### 방법 2: 특정 토큰 요구 사항
+
+특정 네트워크에서 특정 토큰을 요구합니다. USDC만 받는 것이 아니라 **모든 토큰**을 받을 수 있습니다!
+
+**예시 1: USDC(스테이블코인) 수령**
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1000000',   // 1 USDC (6 소수점)
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base에서의 USDC
+    network: 'base-mainnet'
+  }
+};
+```
+
+**예시 2: B3 토큰(사용자 정의 토큰) 수령**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 토큰 (100 * 10^18)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'CoinGecko에서 프리미엄 ETH 가격 이력 데이터에 대한 접근',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**예시 3: DAI(스테이블코인) 수령**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI (18 소수점)
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // Base에서의 DAI
+    network: 'base-mainnet'
+  }
+};
+```
+
+**예시 4: 네이티브 ETH 수령**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH (18 소수점)
+    asset: '0x0000000000000000000000000000000000000000', // 네이티브 ETH
+    network: 'base-mainnet'
+  }
+};
+```
+
+**예시 5: 사용자 정의 ERC-20 토큰 수령**
+
+허가 지원이 있는 모든 ERC-20 토큰에 대해:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 토큰 (소수점 조정)
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // 토큰의 소수점
+        eip712: {
+          name: 'YourTokenName', // 토큰 계약서에서
+          version: '1',          // EIP-712 버전
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: 'API 엔드포인트 설명',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**핵심 포인트:**
+- 구매자는 여전히 **보유한 모든 토큰**으로 결제할 수 있습니다.
+- AnySpend가 자동으로 그들의 토큰을 원하는 토큰으로 변환합니다.
+- 구성에서 지정한 토큰을 정확히 받습니다.
+- 구매자와 판매자 모두 유연성을 유지합니다.
+</Note>
+
+### 토큰 세부 정보 찾기
+
+사용자 정의 토큰을 구성하려면 EIP-712 매개변수를 알아야 합니다. 방법은 다음과 같습니다:
+
+**방법 1: 토큰 계약 확인**
+
+[Basescan](https://basescan.org)과 같은 블록체인 탐색기 사용:
+
+```typescript
+// 토큰 계약에서 읽기
+const name = await token.read.name();      // 예: "B3"
+const version = await token.read.version(); // 예: "1"
+const decimals = await token.read.decimals(); // 예: 18
+```
+
+**방법 2: 일반 토큰**
+
+| 토큰 | 이름 | 버전 | 소수점 | Base 주소 |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**방법 3: viem 사용**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+```
+
+#### 방법 3: 유연하게 (클라이언트가 선택하도록 허용)
+
+클라이언트가 선호하는 결제 토큰을 지정할 수 있도록 허용합니다:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true       // X-PREFERRED-TOKEN 헤더 허용
+  }
+};
+```
+
+그런 다음 클라이언트가 토큰 선호도를 지정할 수 있습니다:
+
+```bash
+curl https://api.example.com/data \
+  -H "X-PREFERRED-TOKEN: 0x4200000000000000000000000000000000000006" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+## 고급 구성
+
+### 동적 가격 책정
+
+요청 매개변수에 따라 가격을 계산합니다:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use('/api/compute', (req, res, next) => {
+  // 요청된 계산 단위에 따라 가격 계산
+  const units = parseInt(req.query.units as string) || 1;
+  const pricePerUnit = 0.10; // 단위당 $0.10
+  const totalPrice = (units * pricePerUnit).toFixed(2);
+
+  // 요청에 동적 구성 첨부
+  req.x402Config = {
+    amount: totalPrice,
+    asset: 'USD'
+  };
+
+  next();
+}, paymentMiddleware(recipientAddress, {
+  '/api/compute': (req) => req.x402Config // 동적 구성
+}, facilitator));
+
+app.get('/api/compute', (req, res) => {
+  const units = parseInt(req.query.units as string) || 1;
+  res.json({
+    result: `${units} 단위 계산됨`,
+    cost: req.x402Config.amount
+  });
+});
+```
+
+### 사용자 정의 facilitator 구성
+
+사용자 정의 facilitator 설정이 필요한 경우:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const customFacilitator = new Facilitator({
+  baseUrl: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.CDP_API_KEY_ID,        // 선택

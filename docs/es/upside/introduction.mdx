@@ -9,7 +9,7 @@ originalPath: upside/introduction.mdx
 ---
 ## Visión general
 
-Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra plataforma, recibe autenticación de jugador vía JWT e interactúa con el backend de Upside a través de nuestro SDK para la colocación de apuestas y el procesamiento de pagos.
+Integrarse con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra plataforma, recibe autenticación del jugador vía JWT e interactúa con el backend de Upside a través de nuestro SDK para la colocación de apuestas y el procesamiento de pagos.
 
 **Principio clave**: Tu backend maneja la lógica y el estado del juego (cartas, ganadores, resultados), mientras que Upside maneja todas las transacciones de tokens WIN.
 
@@ -17,13 +17,14 @@ Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra p
 
 <Steps>
   <Step title="Contactar al Equipo B3">
-    Ponte en contacto para obtener la aprobación y configuración de tu juego en Upside.
 
-    ```text
-    Contacto: contact@npclabs.org
-    Incluir: Nombre del juego, descripción, tipo de juego y tu URL del backend
-    ```
-  </Step>
+  <iframe
+    src="https://b3builders.typeform.com/upside"
+    style={{ width: "100%", height: "600px", border: "0", borderRadius: "8px" }}
+  ></iframe>
+
+</Step>
+
   <Step title="El Juego se Carga en Iframe">
     Los jugadores lanzan tu juego, que se carga dentro de un iframe en upside.win. Tu juego recibe: - Token JWT para el jugador - Contexto de autenticación del jugador - Acceso al SDK de Upside
   </Step>
@@ -43,7 +44,7 @@ Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra p
     ```
   </Step>
   <Step title="Backend: Colocar Apuesta">
-    Cuando un jugador comienza a jugar, tu backend llama a `placeBet` para bloquear su apuesta.
+    Cuando un jugador comienza a jugar, tu backend llama a `placeBet` para asegurar su apuesta.
 
     ```javascript
     { createB3Client } from "@b3dotfun/upside-sdk/server"; 
@@ -52,12 +53,12 @@ Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra p
     const betResult = await
     b3Client.placeBet(
       "coin-flip", // gameType 
-      "100000000000000000" // betAmount in wei (1 token = 10^18 wei) 
+      "100000000000000000" // betAmount en wei (1 token = 10^18 wei) 
     ); 
     ```
   </Step>
   <Step title="Backend: Manejar Lógica del Juego">
-    Tu backend: - Determina el resultado del juego (la moneda cae en cara/sello) - Almacena el estado del juego en tu base de datos - Calcula la cantidad de pago - Prepara los datos del resultado (elección del jugador, resultado, resultado)
+    Tu backend: - Determina el resultado del juego (la moneda cae en cara/sello) - Almacena el estado del juego en tu base de datos - Calcula la cantidad del pago - Prepara los datos del resultado (elección del jugador, resultado, resultado final)
   </Step>
   <Step title="Backend: Procesar Pago">
     Cuando el juego termina, envía el resultado a Upside para acreditar el balance WIN del jugador.
@@ -65,8 +66,8 @@ Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra p
     ```javascript
     const payoutResult = await b3Client.processPayout(
       "coin-flip",      // gameType
-      sessionId,        // unique game session ID
-      payoutAmount,     // WIN tokens to award (0 if loss)
+      sessionId,        // ID de sesión de juego único
+      payoutAmount,     // tokens WIN a otorgar (0 si hay pérdida)
       // gameData
       {
         playerChoice: "heads",
@@ -82,7 +83,7 @@ Integrar con Upside.win es simple. Tu juego se ejecuta en un iframe en nuestra p
     La plataforma de Upside automáticamente:
 
     - Actualiza el balance WIN del jugador
-    - Añade la victoria/derrota a las tablas de clasificación
+    - Añade la victoria/derrota a las clasificaciones
     - Envía notificaciones
   </Step>
 </Steps>

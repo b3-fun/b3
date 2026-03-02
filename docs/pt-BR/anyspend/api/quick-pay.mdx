@@ -1,0 +1,153 @@
+---
+title: Pagamento Rápido
+description: Crie links de pagamento instantaneamente sem autenticação
+lang: pt-BR
+originalPath: anyspend/api/quick-pay.mdx
+---
+Quick Pay é um único endpoint que permite criar um link de pagamento **sem a necessidade de uma chave API**. Ele é projetado para prototipagem rápida, faturas avulsas, jarros de gorjetas e páginas de doação onde o trabalho de criar uma organização e gerenciar chaves API é desnecessário.
+
+<Info>
+  Quick Pay é limitado a **5 solicitações por minuto por endereço IP**. Para maior capacidade de processamento ou acesso a análises, webhooks e formulários personalizados, [crie uma organização](/anyspend/api/sdk-client) e use uma chave API.
+</Info>
+
+## Endpoint
+
+```
+POST /api/v1/quick-pay
+```
+
+Não é necessário cabeçalho `Authorization`.
+
+## Corpo da Requisição
+
+| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
+|-----------|------|----------|---------|-------------|
+| `recipient_address` | `string` | Sim | -- | Endereço Ethereum que receberá o pagamento |
+| `amount` | `string` | Não | -- | Quantidade de tokens na menor unidade (ex.: `"1000000"` para 1 USDC) |
+| `token_address` | `string` | Não | USDC na Base | Endereço do contrato do token ERC-20 |
+| `chain_id` | `number` | Não | `8453` (Base) | ID da cadeia de destino |
+| `name` | `string` | Não | -- | Nome legível por humanos para o link |
+| `description` | `string` | Não | -- | Descrição mostrada ao pagador |
+| `expires_in` | `number` | Não | `86400` (24 h) | Segundos até o link expirar. O máximo é `86400`. |
+
+## Resposta
+
+Uma solicitação bem-sucedida retorna um objeto `PaymentLink` completo:
+
+```json
+{
+  "id": "pl_abc123",
+  "url": "https://pay.anyspend.com/pl_abc123",
+  "recipient_address": "0x1234...abcd",
+  "amount": "1000000",
+  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "chain_id": 8453,
+  "name": "Gorjeta para o café",
+  "description": null,
+  "status": "ativo",
+  "expires_at": "2025-06-02T12:00:00Z",
+  "created_at": "2025-06-01T12:00:00Z",
+  "org_id": "anônimo"
+}
+```
+
+Compartilhe o `url` com qualquer pessoa -- elas podem pagar de qualquer carteira em qualquer cadeia suportada e os fundos serão encaminhados para o destinatário via AnySpend.
+
+## Exemplos
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "5000000",
+    "name": "Compre-me um café",
+    "description": "Obrigado pela ajuda!"
+  }'
+```
+
+```typescript SDK
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+// quickPay é um método estático -- não é necessária chave API
+const link = await AnySpendPlatformClient.quickPay({
+  recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "5000000",          // 5 USDC
+  name: "Compre-me um café",
+  description: "Obrigado pela ajuda!",
+});
+
+console.log(link.url);
+// => https://pay.anyspend.com/pl_abc123
+```
+
+```python Python (requests)
+import requests
+
+resp = requests.post(
+    "https://platform-api.anyspend.com/api/v1/quick-pay",
+    json={
+        "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+        "amount": "5000000",
+        "name": "Compre-me um café",
+    },
+)
+link = resp.json()
+print(link["url"])
+```
+
+</CodeGroup>
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+  <Card title="Jarros de Gorjeta" icon="hand-holding-dollar">
+    Incorpore um link Quick Pay em seu blog ou perfil de mídia social para aceitar gorjetas sem qualquer configuração.
+  </Card>
+  <Card title="Páginas de Doação" icon="heart">
+    Organizações sem fins lucrativos e projetos de código aberto podem gerar links instantaneamente para doações únicas.
+  </Card>
+  <Card title="Faturamento Rápido" icon="file-invoice-dollar">
+    Freelancers podem enviar um link de pagamento por e-mail ou chat para uma única fatura.
+  </Card>
+  <Card title="Prototipagem" icon="flask">
+    Teste seu fluxo de integração antes de se comprometer com uma configuração completa de chave API.
+  </Card>
+</CardGroup>
+
+## Limitações
+
+<Warning>
+  Os links Quick Pay são intencionalmente limitados. Se você precisa de qualquer uma das funcionalidades abaixo, crie uma organização e use endpoints autenticados.
+</Warning>
+
+| Funcionalidade | Quick Pay | API Autenticada |
+|---------|-----------|-------------------|
+| Análises e rastreamento de visitantes | Não | Sim |
+| Notificações via webhook | Não | Sim |
+| Formulários de checkout personalizados | Não | Sim |
+| Opções de envio e códigos de desconto | Não | Sim |
+| Expiração personalizada (> 24 h) | Não | Sim |
+| Edição de link após criação | Não | Sim |
+| Branding da organização | Não | Sim |
+| Limite de taxa | 5 req/min/IP | 100 req/min/chave |
+
+## Respostas de Erro
+
+| Status | Código | Descrição |
+|--------|------|-------------|
+| `400` | `invalid_request` | `recipient_address` ausente ou parâmetro inválido |
+| `422` | `invalid_address` | `recipient_address` não é um endereço Ethereum válido |
+| `429` | `rate_limit_exceeded` | Mais de 5 solicitações na janela de minuto atual |
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Limite de taxa excedido. Tente novamente em 45 segundos.",
+    "retry_after": 45
+  }
+}
+```

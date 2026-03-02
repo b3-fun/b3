@@ -1,0 +1,432 @@
+---
+title: AnySpend 协调器
+description: 用于 x402 多代币支付的支付处理器
+lang: cn
+originalPath: anyspend/x402-facilitator.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub 仓库" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  查看源代码、示例，并贡献
+</Card>
+
+<Card title="npm 包" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  安装 @b3dotfun/anyspend-x402 包
+</Card>
+</CardGroup>
+
+## 概览
+
+AnySpend x402 Facilitator 处理 x402 协议的多代币、跨链支付。它负责代币交换、跨链桥接和结算，因此开发者可以接受任何代币的支付，同时收到他们偏好的货币。
+
+**生产端点：** `https://mainnet.anyspend.com/x402`
+
+## 关键功能
+
+### 多代币支付处理
+
+接受任何支持 EIP-2612（permit）或 EIP-3009（transferWithAuthorization）的 ERC-20 代币支付：
+
+- **稳定币**：USDC、USDT（在支持的链上）
+- **原生代币**：ETH、SOL、BNB、MATIC
+- **自定义代币**：任何支持 permit 的代币，包括项目代币如 B3
+- **19+ 网络**：跨 EVM 链（Base、Ethereum、Arbitrum 等）和 SVM（Solana）的支持
+
+### 跨链路由
+
+自动处理不同区块链网络间的支付：
+
+- **同链支付**：直接代币转账，最小开销
+- **跨链支付**：自动在网络间桥接（例如，ETH → Base）
+- **跨虚拟机支付**：Solana ↔ EVM 转账的实验性支持
+- **最优路由**：智能路由选择，以获得最佳执行
+
+### 自动代币转换
+
+在任何支持的代币之间转换：
+
+- **买家灵活性**：用户可以使用他们持有的任何代币支付
+- **卖家偏好**：商家收到他们选择的结算货币
+- **最佳定价**：通过最优 DEX 流动性源路由
+- **滑点保护**：自动防范价格影响的保障
+
+### 无燃料费支付
+
+用户永远不需要支付燃料费：
+
+- Facilitator 覆盖所有链上燃料费用
+- 用户只需签署 EIP-712 消息
+- 无需持有原生代币用于燃料费
+- 跨所有链的流畅用户体验
+
+## 标准合规性
+
+### x402 协议兼容
+
+AnySpend Facilitator 实现了完整的 x402 规范：
+
+- 通过 `402 Payment Required` 状态的 HTTP 原生支付
+- 标准头部（`X-PAYMENT`、`X-PAYMENT-RESPONSE`、`X-PREFERRED-TOKEN`）
+- 准确的支付方案，包括收款人和金额验证
+- 基于签名的授权（EIP-712、EIP-2612、EIP-3009）
+- 无需可信第三方的加密验证
+
+### 替代品
+
+与任何 x402 实现完全兼容：
+
+- **客户端兼容性**：与任何 x402 兼容的客户端一起工作
+- **服务器兼容性**：可与任何 x402 中间件一起使用
+- **无供应商锁定**：标准 HTTP API，随时切换 facilitators
+- **互操作性**：与 Coinbase CDP x402、PayAI 等集成
+
+## 架构
+
+### 支付流程
+
+```
+┌──────────────┐
+│    客户端    │  签署支付授权
+│  (任何代币) │  preferredToken: USDT
+└──────┬───────┘
+       │
+       │ X-PAYMENT 头部
+       ▼
+┌──────────────────────────┐
+│   资源服务器              │
+│   (您的 API)             │
+│                          │
+│  AnySpend 中间件          │
+│  • 拦截请求               │
+│  • 获取报价               │
+│  • 返回 402              │
+└──────┬───────────────────┘
+       │
+       │ /verify, /settle
+       ▼
+┌──────────────────────────┐
+│  AnySpend Facilitator    │
+│  mainnet.anyspend.com    │
+│                          │
+│  • 验证签名               │
+│  • 执行代币交换           │
+│  • 向卖家结算             │
+└──────┬───────────────────┘
+       │
+       │ 链上交易
+       ▼
+┌──────────────────────────┐
+│      区块链               │
+│  • 接收支付               │
+│  • 如有需要，交换代币      │
+│  • 向商家结算             │
+└──────────────────────────┘
+```
+
+### 基础设施组件
+
+**API 层**
+- 用于支付验证和结算的 RESTful HTTP API
+- 支持实时支付状态更新的 WebSocket
+- 速率限制和 DDoS 保护
+- 99.9% 正常运行时间 SLA
+
+**交换引擎**
+- 从多个 DEX 聚合流动性
+- 为最佳执行价格提供最优路由
+- 滑点保护和 MEV 防御
+- 跨链桥接集成
+
+**结算系统**
+- 并行交易处理
+- 自动 nonce 管理
+- 失败交易恢复
+- 实时结算确认
+
+**安全性**
+- EIP-712 签名验证
+- 重放攻击防御（nonce 跟踪）
+- 截止日期执行
+- 智能合约审计
+
+## API 端点
+
+### POST /verify
+
+在不执行链上操作的情况下验证支付签名。
+
+**目的：**
+- 快速验证（100ms 以下）
+- 检查签名真实性
+- 验证截止日期未过期
+- 无燃料费用
+
+**请求：**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": {
+    "scheme": "exact",
+    "network": "base-mainnet",
+    "amount": "1000000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "recipient": "0xMerchantAddress..."
+  }
+}
+```
+
+**响应：**
+```json
+{
+  "valid": true
+}
+```
+
+---
+
+### POST /settle
+
+执行链上结算并返回交易证明。
+
+**目的：**
+- 执行支付授权
+- 如需要，交换代币（买家代币 → 卖家代币）
+- 向资源服务器结算
+- 返回交易哈希以供验证
+
+**请求：**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": { /* ... */ }
+}
+```
+
+**响应：**
+```json
+{
+  "txHash": "0xabc123...",
+  "network": "base-mainnet",
+  "metadata": {
+    "receiptTxHash": "0x...",
+    "swapTxHash": "0x...",
+    "settlementTxHash": "0x..."
+  }
+}
+```
+
+---
+
+### POST /quote
+
+获取多代币支付的代币转换率。
+
+**目的：**
+- 计算支付所需的确切代币数量
+- 获取当前汇率
+- 估计交换执行时间
+
+**请求：**
+```json
+{
+  "usdcAmount": "1000000",        // 目标金额（1 USDC）
+  "paymentToken": "0xfde4...",    // USDT 地址
+  "network": "base-mainnet"
+}
+```
+
+**响应：**
+```json
+{
+  "tokenAmount": "1000000",  // 需要 1.0 USDT
+  "exchangeRate": "1.0",
+  "deadline": 1730000000,
+  "route": {
+    "srcToken": "0xfde4...",
+    "dstToken": "0x8335...",
+    "path": ["USDT", "USDC"]
+  }
+}
+```
+
+---
+
+### GET /supported
+
+列出支持的支付方案和网络。
+
+**响应：**
+```json
+{
+  "schemes": [{
+    "scheme": "exact",
+    "networks": [
+      "base",
+      "ethereum",
+      "arbitrum",
+      "optimism",
+      "polygon",
+      "bsc",
+      "avalanche",
+      "solana"
+    ]
+  }]
+}
+```
+
+## 集成
+
+### 服务器端（Express）
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/premium': {
+    amount: '1.00',
+    asset: 'USD'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourAddress...',
+  endpointConfig,
+  facilitator  // 预配置为 mainnet.anyspend.com/x402
+));
+```
+
+### 服务器端（自定义）
+
+```typescript
+import { X402Facilitator } from '@b3dotfun/anyspend-x402';
+
+const facilitator = new X402Facilitator({
+  url: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.ANYSPEND_API_KEY  // 可选
+});
+
+// 验证支付
+const { valid } = await facilitator.verify(paymentHeader, requirements);
+
+// 结算支付
+const { txHash } = await facilitator.settle(paymentHeader, requirements);
+```
+
+### 客户端
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  facilitatorUrl: 'https://mainnet.anyspend.com/x402'  // 可选，默认使用此 URL
+});
+
+const response = await client.request('https://api.example.com/premium');
+```
+
+## 安全性
+
+### 签名验证
+
+所有支付都使用 EIP-712 类型数据签名进行验证：
+
+- **USDC**：EIP-3009 `transferWithAuthorization`
+- **其他代币**：EIP-2612 `permit`
+
+在任何链上执行之前都会验证签名。
+
+### 重放保护
+
+**随机 Nonce（USDC）：**
+- 每个签名包含唯一的 bytes32 nonce
+- Nonce 每个地址只能使用一次
+- 没有顺序依赖
+
+**顺序 Nonce（Permit）：**
+- 代币合约维护 nonce 计数器
+- 每次 permit 执行后自动增加
+- 防止乱序执行
+
+### 截止日期执行
+
+所有签名都包括过期时间戳：
+- 默认：签名时间后 5 分钟
+- 防止过时的支付授权
+- 过期签名自动拒绝
+
+### 无私钥访问
+
+facilitator **永远** 不访问用户私钥：
+- 用户在客户端签名消息
+- 只传输签名
+- 非托管架构
+
+## 性能
+
+### 速度
+
+- **验证**：签名验证在 100ms 以下
+- **同链结算**：平均 2-10 秒
+- **跨链结算**：2-5 分钟（取决于桥接）
+- **报价生成**：200ms 以下
+
+### 可扩展性
+
+- 处理 1000+ 并发支付
+- 高吞吐量的水平扩展
+- 并行交易处理
+- 多节点间的负载均衡
+
+### 可靠性
+
+- 99.9% 正常运行时间保证
+- 自动故障转移和冗余
+- 失败交易重试逻辑
+- 24/7 监控和警报
+
+## 网络支持
+
+### EVM 主网网络（12）
+
+Abstract, Arbitrum, Avalanche, B3, Base, BNB Chain, Ethereum, IoTeX, Optimism, Peaq, Polygon, Sei
+
+### EVM 测试网（5）
+
+Abstract Testnet, Avalanche Fuji, Base Sepolia, Polygon Amoy, Sei Testnet
+
+### SVM 网络（2）
+
+Solana Mainnet, Solana Devnet
+
+查看 [网络支持](/anyspend/x402-network-support) 以获取完整详情。
+
+## 入门
+
+<CardGroup cols={2}>
+<Card title="卖家快速入门" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  开始在您的 API 中接受多代币支付
+</Card>
+
+<Card title="买家快速入门" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  使用 AnySpend 客户端支付任何代币
+</Card>
+
+<Card title="网络支持" icon="network-wired" href="/anyspend/x402-network-support">
+  查看所有支持的网络和代币
+</Card>
+
+<Card title="概览" icon="book" href="/anyspend/x402-overview">
+  了解 AnySpend x402 如何工作
+</Card>
+</CardGroup>
+
+## 支持
+
+需要帮助吗？
+
+- **Discord**：[discord.gg/b3dotfun](https://discord.gg/b3dotfun)
+- **GitHub**：[github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **电子邮件**：support@b3.fun
+- **文档**：[docs.b3.fun](https://docs.b3.fun)

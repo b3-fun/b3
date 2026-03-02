@@ -1,0 +1,245 @@
+---
+title: 플랫폼 API
+description: 'AnySpend에 대한 프로그래밍 방식 접근 - 결제 링크 생성, 제품 관리, 거래 추적 등'
+lang: ko
+originalPath: anyspend/api/introduction.mdx
+---
+# 플랫폼 API
+
+AnySpend 플랫폼 API는 결제 인프라에 대한 완전한 프로그래밍 제어를 제공합니다. 통합 구축, 워크플로 자동화, AI 에이전트가 커머스 스택을 관리하게 하세요 -- 모두 깔끔한 Stripe 스타일의 REST API를 통해 가능합니다.
+
+## 이 문서는 누구를 위한 것인가?
+
+- AnySpend과 사용자 정의 통합을 구축하는 **개발자**
+- 결제 링크 생성, 제품 관리 또는 분석 추출을 하는 **AI 에이전트**
+- 커머스 워크플로를 조율하는 **자동화 플랫폼** (Zapier, n8n, 사용자 정의 스크립트)
+- 프로그래밍 방식으로 체크아웃 세션을 생성하거나 거래를 추적해야 하는 **백엔드 서비스**
+
+## 빠른 시작
+
+3줄로 결제 링크 생성:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+API는 생성된 리소스와 함께 Stripe 스타일의 응답을 반환합니다:
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "short_code": "xK9mQ2",
+  "amount": "10000000",
+  "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "chain_id": 8453,
+  "recipient_address": "0xYourAddress...",
+  "url": "https://platform-api.anyspend.com/pay/xK9mQ2",
+  "is_active": true,
+  "items": [],
+  "created_at": 1709078400000,
+  "updated_at": 1709078400000
+}
+```
+
+## 고객과 결제 연결하기
+
+AnySpend 결제를 사용자에게 연결하는 두 가지 패턴이 있습니다:
+
+### 패턴 1: URL 파라미터 (간단함)
+
+결제 링크 URL에 `client_reference_id`와 `metadata`를 추가하세요:
+
+```
+https://anyspend.com/pay/xK9mQ2?client_reference_id=order_123&metadata[user_id]=clerk_abc
+```
+
+이 값들은 자동으로 `payment.completed` 웹훅으로 전달됩니다.
+
+### 패턴 2: 서버 측 세션 (엔터프라이즈)
+
+백엔드에서 전체 고객 컨텍스트를 가진 체크아웃 세션을 생성하세요:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/checkout-sessions \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123def456",
+    "client_reference_id": "order_456",
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "metadata": { "user_id": "clerk_abc", "plan": "pro" },
+    "success_url": "https://example.com/success?session_id={SESSION_ID}"
+  }'
+```
+
+응답에는 `url` 필드가 포함되어 있습니다 -- 고객을 거기로 리디렉션하여 결제하게 하세요. 모든 데이터는 결제가 완료될 때 웹훅에 포함됩니다.
+
+<Tip>
+  웹훅 핸들러에서 결제를 시스템과 연결하는 완전한 예제를 보려면 [웹훅 가이드](/anyspend/api/webhooks-guide#reconciling-payments-with-your-system)를 참조하세요.
+</Tip>
+
+## 기본 URL
+
+모든 API 요청은 다음으로 이루어집니다:
+
+```
+https://platform-api.anyspend.com/api/v1
+```
+
+## 인증 등급
+
+API는 엔드포인트에 따라 세 가지 인증 등급을 사용합니다:
+
+| 등급 | 필요한 인증 | 요청 한도 | 사용 사례 |
+|------|--------------|------------|----------|
+| **Open** | 없음 (IP 기반 요청 한도) | IP당 분당 5회 요청 | Quick Pay -- 계정이 필요 없는 일회성 결제 |
+| **API Key** | 헤더를 통한 `asp_xxx` 키 | 키당 분당 120회 요청 | 모든 표준 API 작업 -- 결제 링크, 제품, 거래 등의 CRUD |
+| **JWT** | 대시보드 세션 토큰 | 표준 세션 한도 | 대시보드 전용 경로 (웹 앱에 의해 자동으로 관리됨) |
+
+대부분의 개발자는 API Key 인증을 사용할 것입니다. 키를 생성하고 관리하는 방법에 대한 자세한 내용은 [인증](/anyspend/api/authentication) 페이지를 참조하세요.
+
+## 응답 형식
+
+모든 API 응답은 일관된 Stripe 스타일 형식을 따릅니다.
+
+### 단일 리소스
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "amount": "10000000",
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+`object` 필드는 리소스 유형을 알려줍니다. `id` 필드는 고유 식별자입니다.
+
+### 리소스 목록
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+목록 응답을 탐색하는 방법에 대한 자세한 내용은 [페이지네이션 및 필터링](/anyspend/api/pagination) 페이지를 참조하세요.
+
+### 오류 응답
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "The 'name' field is required.",
+    "param": "name"
+  }
+}
+```
+
+전체 오류 분류에 대해서는 [오류](/anyspend/api/errors) 페이지를 참조하세요.
+
+### 삭제된 리소스
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "deleted": true
+}
+```
+
+## 요청 한도
+
+요청 한도는 인증 등급에 따라 다릅니다. 한도를 초과하면 API는 `429` 상태와 `rate_limit_error`를 반환합니다:
+
+| 등급 | 한도 | 윈도우 |
+|------|-------|--------|
+| Open (Quick Pay) | 5 요청 | 1 분 |
+| API Key | 120 요청 | 1 분 |
+
+응답 헤더에는 요청 한도 정보가 포함됩니다:
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 117
+X-RateLimit-Reset: 1709078460
+```
+
+## 멱등성
+
+`POST` 및 `PATCH` 요청에 대한 안전한 재시도를 위해 `Idempotency-Key` 헤더를 포함하세요. 동일한 키와 본문으로 중복 요청을 하면 캐시된 응답을 반환합니다. 자세한 내용은 [멱등성](/anyspend/api/idempotency) 페이지를 참조하세요.
+
+## 사용 가능한 리소스
+
+<CardGroup cols={2}>
+<Card title="인증" icon="key" href="/anyspend/api/authentication">
+  API 키를 생성하고 관리하며, 권한 수준을 이해하고 보안 모범 사례를 따르세요.
+</Card>
+
+<Card title="결제 링크" icon="link" href="/anyspend/api/payment-links">
+  항목, 통계, 세션 및 방문자 추적이 포함된 결제 링크를 생성, 업데이트 및 관리하세요.
+</Card>
+
+<Card title="제품" icon="box" href="/anyspend/api/products">
+  결제 링크에 첨부할 수 있는 제품을 생성하여 제품 카탈로그를 관리하세요.
+</Card>
+
+<Card title="체크아웃 세션" icon="credit-card" href="/anyspend/api/checkout-sessions-api">
+  체크아웃 세션을 생성하고 추적하며, 결제 상태를 모니터링하고 완료를 처리하세요.
+</Card>
+
+<Card title="거래" icon="arrow-right-arrow-left" href="/anyspend/api/transactions">
+  거래 내역을 조회하고, 상태별로 필터링하며, 정산 세부 정보를 추출하세요.
+</Card>
+
+<Card title="고객" icon="users" href="/anyspend/api/customers">
+  고객 지갑을 추적하고, 구매 내역을 보고, 고객 기록을 관리하세요.
+</Card>
+
+<Card title="웹훅" icon="bell" href="/anyspend/api/webhooks-api">
+  결제 이벤트에 대한 실시간 알림을 받기 위해 웹훅 엔드포인트를 등록하세요.
+</Card>
+
+<Card title="할인 코드" icon="tag" href="/anyspend/api/discount-codes">
+  결제 링크에 대한 할인 코드를 생성하고 관리하세요.
+</Card>
+</CardGroup>
+
+## 다음 단계
+
+<Steps>
+<Step title="API 키 받기">
+  **설정 > API 키** 아래 [AnySpend 대시보드](https://anyspend.com/dashboard)로 이동하여 필요한 권한으로 키를 생성하세요.
+</Step>
+
+<Step title="첫 번째 요청하기">
+  위의 curl 예제나 선호하는 HTTP 클라이언트를 사용하여 결제 링크를 생성하세요.
+</Step>
+
+<Step title="웹훅 설정하기">
+  결제가 완료될 때 실시간 알림을 받기 위해 웹훅 엔드포인트를 등록하세요.
+</Step>
+</Steps>

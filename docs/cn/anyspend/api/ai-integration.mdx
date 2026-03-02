@@ -1,0 +1,485 @@
+---
+title: AI与代理集成
+description: 使用 AnySpend 平台 API 与 AI 代理和 LLMs
+lang: cn
+originalPath: anyspend/api/ai-integration.mdx
+---
+AnySpend 平台 API 设计考虑了**以 AI 集成为首**。每个端点都有一个独特的 `operationId`、详细的 JSON 架构，并且遵循一致的约定，使其能够直接用于 LLM 函数调用、自主代理和 AI 编排框架。
+
+## OpenAPI 规范
+
+完整的 OpenAPI 3.1 规范可在以下位置获取：
+
+```
+GET /api/v1/openapi.json
+```
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/openapi.json -o openapi.json
+```
+
+规范包括：
+- 每个端点的独特 `operationId`（例如 `createPaymentLink`、`listTransactions`）
+- 带有描述的详细请求和响应 JSON 架构
+- 认证要求
+- 错误响应架构
+
+<Tip>
+  使用 OpenAPI 规范为您的 LLM 自动生成工具定义。大多数 AI 框架可以将 OpenAPI 操作以编程方式转换为函数/工具定义。
+</Tip>
+
+## LLM 函数调用
+
+### Claude (Anthropic)
+
+将 OpenAPI 操作转换为 Claude 工具定义。以下是创建支付链接的工具定义示例：
+
+```json
+{
+  "name": "create_payment_link",
+  "description": "创建一个新的支付链接，可以与客户共享以收集加密支付。返回包括可共享 URL 的支付链接对象。",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "支付链接的人类可读名称（例如 'Pro Plan Monthly'）"
+      },
+      "amount": {
+        "type": "string",
+        "description": "以代币最小单位表示的支付金额。对于 USDC（6位小数），'1000000' = 1 USDC。"
+      },
+      "recipient_address": {
+        "type": "string",
+        "description": "将接收支付的以太坊地址（0x 前缀，42个字符）"
+      },
+      "token_address": {
+        "type": "string",
+        "description": "ERC-20 代币合约地址。如果省略，默认为 Base 上的 USDC。"
+      },
+      "chain_id": {
+        "type": "number",
+        "description": "目标链 ID。默认为 8453（Base）。"
+      },
+      "description": {
+        "type": "string",
+        "description": "在结账页面向付款人显示的可选描述"
+      }
+    },
+    "required": ["name", "amount", "recipient_address"]
+  }
+}
+```
+
+### OpenAI
+
+对于 OpenAI 的函数调用，等效的函数定义：
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "create_payment_link",
+    "description": "创建一个新的支付链接，可以与客户共享以收集加密支付。返回支付链接对象，包括可共享的 URL。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "支付链接的人类可读名称"
+        },
+        "amount": {
+          "type": "string",
+          "description": "最小单位的支付金额（例如，对于 1 USDC 的 '1000000'）"
+        },
+        "recipient_address": {
+          "type": "string",
+          "description": "接收支付的以太坊地址"
+        },
+        "token_address": {
+          "type": "string",
+          "description": "ERC-20 代币合约地址（默认：Base 上的 USDC）"
+        },
+        "chain_id": {
+          "type": "number",
+          "description": "目标链 ID（默认：8453 / Base）"
+        },
+        "description": {
+          "type": "string",
+          "description": "结账页面上显示的描述"
+        }
+      },
+      "required": ["name", "amount", "recipient_address"]
+    }
+  }
+}
+```
+
+## 示例：对话流程
+
+以下是 AI 助手如何在对话中使用 AnySpend 工具的示例：
+
+<Steps>
+  <Step title="用户请求创建支付链接">
+    **用户：** "为 Pro 计划订阅创建一个 50 USDC 的支付链接"
+
+    AI 决定调用 `create_payment_link` 工具。
+  </Step>
+  <Step title="AI 调用工具">
+    ```json
+    {
+      "name": "create_payment_link",
+      "input": {
+        "name": "Pro Plan Subscription",
+        "amount": "50000000",
+        "recipient_address": "0xYourConfiguredAddress",
+        "description": "Monthly Pro plan subscription"
+      }
+    }
+    ```
+  </Step>
+  <Step title="工具返回结果">
+    ```json
+    {
+      "id": "pl_abc123",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "name": "Pro Plan Subscription",
+      "amount": "50000000",
+      "status": "active"
+    }
+    ```
+  </Step>
+  <Step title="AI 回应用户">
+    "我已为 Pro 计划订阅创建了一个 50 USDC 的支付链接。这是链接：https://pay.anyspend.com/pl_abc123"
+  </Step>
+</Steps>
+
+## 构建 AI 支付代理
+
+以下是使用 Claude 和 AnySpend SDK 构建可以管理支付的 AI 代理的完整示例：
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const anthropic = new Anthropic();
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// 定义代理可以使用的工具
+const tools: Anthropic.Tool[] = [
+  {
+    name: "create_payment_link",
+    description: "创建一个用于收集加密支付的支付链接",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "链接的名称" },
+        amount: { type: "string", description: "最小单位的金额" },
+        recipient_address: { type: "string", description: "接收者 ETH 地址" },
+      },
+      required: ["name", "amount", "recipient_address"],
+    },
+  },
+  {
+    name: "list_recent_transactions",
+    description: "列出最近的交易，可选状态过滤",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: { type: "string", enum: ["completed", "pending", "failed"] },
+        limit: { type: "number", description: "最大结果数（默认 10）" },
+      },
+    },
+  },
+  {
+    name: "get_transaction_stats",
+    description: "获取汇总交易统计数据",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+];
+
+// 从 LLM 工具输入中验证必需的字符串字段
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`缺失或无效字段：${key}`);
+  }
+  return value;
+}
+
+// 执行工具调用
+async function executeTool(name: string, input: Record<string, unknown>) {
+  switch (name) {
+    case "create_payment_link":
+      return await platform.paymentLinks.create({
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
+      });
+
+    case "list_recent_transactions":
+      return await platform.transactions.list({
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
+      });
+
+    case "get_transaction_stats":
+      return await platform.transactions.stats();
+
+    default:
+      throw new Error(`未知工具：${name}`);
+  }
+}
+
+const SYSTEM_PROMPT =
+  "你是一个支付管理助手。使用提供的工具帮助用户创建支付链接、查看交易并管理他们的 AnySpend 账户。金额以代币的最小单位表示 -- 对于 USDC 有 6 位小数，1 USDC = 1000000。";
+
+// 运行代理循环
+async function chat(userMessage: string) {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  let response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    tools,
+    messages,
+    system: SYSTEM_PROMPT,
+  });
+
+  // 在循环中处理工具使用
+  while (response.stop_reason === "tool_use") {
+    const toolUseBlocks = response.content.filter(
+      (b): b is Anthropic.ContentBlock & { type: "tool_use" } =>
+        b.type === "tool_use"
+    );
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolUseBlocks) {
+      const result = await executeTool(
+        block.name,
+        block.input as Record<string, unknown>
+      );
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
+    }
+
+    messages.push({ role: "assistant", content: response.content });
+    messages.push({ role: "user", content: toolResults });
+
+    response = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 1024,
+      tools,
+      messages,
+      system: SYSTEM_PROMPT,
+    });
+  }
+
+  // 提取文本响应
+  const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock?.type === "text" ? textBlock.text : "";
+}
+
+// 使用
+const reply = await chat("为一件 T 恤订单创建一个 25 USDC 的支付链接");
+console.log(reply);
+```
+
+## MCP 服务器（即将推出）
+
+<Info>
+  我们正在构建一个模型上下文协议（MCP）服务器，它将把完整的 AnySpend 平台 API 暴露为 MCP 工具。这将允许任何兼容 MCP 的 AI 客户端（Claude Desktop、Cursor、Windsurf 等）直接与您的 AnySpend 账户进行交互。
+
+  加入[等待名单](https://anyspend.com/mcp-waitlist)以获得提前访问权限。
+</Info>
+
+MCP 服务器将支持：
+- 支付链接、产品、客户和 Webhooks 的所有 CRUD 操作
+- 交易查询和导出
+- 分析和统计
+- 结账会话管理
+
+## 额外的工具定义
+
+以下是您可以为代理添加的更多工具定义，以实现全面覆盖：
+
+<AccordionGroup>
+  <Accordion title="list_payment_links">
+    ```json
+    {
+      "name": "list_payment_links",
+      "description": "列出所有支付链接，可选按状态过滤",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "disabled"],
+            "description": "按链接状态过滤"
+          },
+          "limit": {
+            "type": "number",
+            "description": "返回的最大结果数（默认 20，最大 100）"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="get_analytics_overview">
+    ```json
+    {
+      "name": "get_analytics_overview",
+      "description": "获取高层次的分析概览，包括总量、交易计数和顶级支付链接",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "开始日期，ISO 8601 格式"
+          },
+          "to": {
+            "type": "string",
+            "description": "结束日期，ISO 8601 格式"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="create_discount_code">
+    ```json
+    {
+      "name": "create_discount_code",
+      "description": "创建一个折扣码，客户可以在结账时使用",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "折扣码字符串（例如 'SUMMER20'）"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"],
+            "description": "折扣类型：百分比折扣或固定金额折扣"
+          },
+          "value": {
+            "type": "string",
+            "description": "折扣值：百分比（例如 '20' 表示 20%）或最小单位的固定金额"
+          },
+          "max_uses": {
+            "type": "number",
+            "description": "此代码可使用的最大次数"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "过期日期，ISO 8601 格式"
+          }
+        },
+        "required": ["code", "type", "value"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="export_transactions">
+    ```json
+    {
+      "name": "export_transactions",
+      "description": "导出交易为 CSV 或 JSON，用于报告和分析",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "description": "导出格式（默认：csv）"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "pending", "failed"],
+            "description": "按交易状态过滤"
+          },
+          "from": {
+            "type": "string",
+            "description": "开始日期，ISO 8601 格式"
+          },
+          "to": {
+            "type": "string",
+            "description": "结束日期，ISO 8601 格式"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## 最佳实践
+
+<CardGroup cols={2}>
+  <Card title="对查询代理使用只读密钥" icon="eye">
+    只读取数据的 AI 代理（列出交易、查看分析）应使用具有**只读**权限的 API 密钥。这可以防止由于幻觉工具调用而意外地进行更改。
+  </Card>
+  <Card title="对行动代理使用写入密钥" icon="pen">
+    需要创建支付链接或管理资源的代理需要**读写** API 密钥。将它们限制为所需的最小权限。
+  </Card>
+  <Card title="始终验证金额" icon="calculator">
+    LLM 可能会幻觉数字。在执行涉及金额的工具调用之前，验证金额是否合理。考虑为超过阈值的金额添加确认步骤。
+  </Card>
+  <Card title="记录所有工具调用" icon="file-lines">
+    为了可审计性，记录每次工具调用及其结果。对于处理真实金钱的代理来说，这尤其重要。
+  </Card>
+</CardGroup>
+
+<Warning>
+  **绝对不要在客户端代码中或对最终用户可见的 AI 提示中暴露您的 API 密钥。** 使用服务器端代理代表您的 AI 代理进行 API 调用。如果使用 Claude 或 OpenAI 函数调用，API 密钥应仅存在于您的后端工具执行层中 -- 绝不在 LLM 系统提示中。
+</Warning>
+
+## 从 OpenAPI 生成工具定义
+
+您可以以编程方式将 OpenAPI 规范转换为任何 LLM 框架的工具定义：
+
+```typescript
+// 获取 OpenAPI 规范并转换为工具定义
+async function generateTools() {
+  const resp = await fetch(
+    "https://platform-api.anyspend.com/api/v1/openapi.json"
+  );
+  const spec = await resp.json();
+
+  const tools = [];
+
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, operation] of Object.entries(methods as Record<string, any>)) {
+      if (!operation.operationId) continue;
+
+      const tool = {
+        name: operation.operationId,
+        description: operation.summary || operation.description || "",
+        input_schema: operation.requestBody?.content?.["application/json"]?.schema || {
+          type: "object",
+          properties: {},
+        },
+      };
+
+      tools.push(tool);
+    }
+  }
+
+  return tools;
+}
+```
+
+这种方法可以保持您的工具定义与 API 的新端点添加同步。

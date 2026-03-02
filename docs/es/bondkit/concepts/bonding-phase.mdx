@@ -1,8 +1,6 @@
 ---
-title: Fase de vinculación
-description: >-
-  Cómo funciona la compra y venta durante la fase de vinculación, tarifas y
-  umbrales.
+title: Fase de Vinculación
+description: 'Cómo funciona la compra y venta durante la fase de enlace, tarifas y umbrales.'
 lang: es
 originalPath: bondkit/concepts/bonding-phase.mdx
 ---
@@ -20,17 +18,17 @@ stateDiagram-v2
     DEX --> [*]: Completamente Descentralizado
     
     note right of Bonding
-        - Comercio directo con contrato
-        - Precios algorítmicos
-        - Comisión de comercio del 5%
-        - Acumula liquidez
+        Comercio directo con contrato
+        Precios algorítmicos
+        5% de comisión por comercio
+        Acumula liquidez
     end note
     
     note right of DEX
-        - Comercio en Uniswap v4
-        - Precio impulsado por el mercado
-        - Comisiones estándar de LP
-        - Sin control administrativo
+        Comercio en Uniswap v4
+        Precio impulsado por el mercado
+        Comisiones LP estándar
+        Sin control administrativo
     end note
 ```
 
@@ -41,19 +39,19 @@ stateDiagram-v2
 Durante la vinculación, el contrato actúa como el único creador de mercado:
 
 1. **Sin Libro de Órdenes**: Precios determinados algorítmicamente
-2. **Liquidez Instantánea**: Siempre es posible comprar o vender
-3. **Independencia de Camino**: El precio depende solo de la oferta, no de la historia
-4. **Precios Automáticos**: No es necesario establecer precios manualmente
+2. **Liquidez Instantánea**: Siempre se puede comprar o vender
+3. **Independencia de Trayectoria**: El precio depende solo de la oferta, no de la historia
+4. **Precios Automáticos**: No se necesita establecer precios manualmente
 
 ## Operaciones de Comercio
 
-### Comprar Tokens
+### Comprando Tokens
 
 <Tabs>
   <Tab title="Cómo Funciona">
-    **Flujo del Proceso:**
-    1. El usuario envía ETH/B3 al contrato
-    2. El contrato calcula los tokens basado en la curva
+    **Flujo de Proceso:**
+    1. El usuario envía el token de comercio (B3/ETH) al contrato
+    2. El contrato calcula los tokens basados en la curva
     3. Se deduce una comisión del 5% y se envía al destinatario
     4. Se acuñan los tokens y se envían al comprador
     5. Se actualiza el estado de la curva
@@ -62,13 +60,13 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
     ```typescript
     // Obtener una cotización primero
     const quote = await token.getAmountOfTokensToBuy(
-      parseEther("1") // 1 ETH
+      parseEther("100") // 100 tokens de comercio
     );
     console.log(`Recibirá: ${formatEther(quote)} tokens`);
     
-    // Ejecutar compra con protección contra deslizamiento
+    // Ejecutar compra con protección contra deslizamiento  
     const minTokens = quote * 0.95n; // 5% de deslizamiento
-    await token.buy(minTokens, "1");
+    await token.buy(parseEther("100"), minTokens);
     ```
   </Tab>
   
@@ -76,7 +74,7 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
     | Parámetro | Tipo | Descripción |
     |-----------|------|-------------|
     | `minTokensOut` | uint256 | Tokens mínimos a recibir (protección contra deslizamiento) |
-    | `ethAmount` | string/uint256 | Cantidad de ETH a gastar |
+    | `tradingTokenAmount` | string/uint256 | Cantidad de token de comercio a gastar |
     
     **Notas Importantes:**
     - Establecer `minTokensOut` para protegerse contra el front-running
@@ -86,29 +84,29 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
   
   <Tab title="Casos Límite">
     **Desbordamiento del Objetivo:**
-    - Si la compra superara el objetivo, se reembolsa el exceso
-    - Ejemplo: El objetivo es 10 ETH, se han recaudado 9.5 ETH
-    - El usuario envía 1 ETH → Se usan 0.5 ETH, se reembolsan 0.5 ETH
+    - Si la compra excediera el objetivo, el exceso se reembolsa
+    - Ejemplo: El objetivo es 10 tokens de comercio, se han recaudado 9.5 tokens
+    - El usuario envía 1 token → Se usan 0.5 tokens, se reembolsan 0.5 tokens
     
     **Gas Insuficiente:**
     - Límite de gas recomendado: 200,000
-    - Los cálculos complejos pueden requerir más
+    - Cálculos complejos pueden requerir más
     
     **Cantidad Cero:**
-    - Las transacciones con 0 ETH se revertirán
+    - Las transacciones con 0 tokens de comercio se revertirán
   </Tab>
 </Tabs>
 
-### Vender Tokens
+### Vendiendo Tokens
 
 <Tabs>
   <Tab title="Cómo Funciona">
-    **Flujo del Proceso:**
+    **Flujo de Proceso:**
     1. El usuario aprueba el gasto de tokens
     2. El usuario llama a vender con la cantidad de tokens
-    3. El contrato calcula el ETH basado en la curva
+    3. El contrato calcula la cantidad de token de comercio basado en la curva
     4. Se deduce una comisión del 5% de los ingresos
-    5. Se envía el ETH al vendedor, los tokens se queman
+    5. El token de comercio se envía al vendedor, los tokens se queman
     6. Se actualiza el estado de la curva (el precio disminuye)
     
     **Ejemplo de Código:**
@@ -117,14 +115,14 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
     const balance = await token.balanceOf(userAddress);
     const sellAmount = balance / 2n; // Vender la mitad
     
-    const quote = await token.getAmountOfEthToReceive(
+    const quote = await token.getAmountOfTradingTokensToSell(
       sellAmount
     );
-    console.log(`Recibirá: ${formatEther(quote)} ETH`);
+    console.log(`Recibirá: ${formatEther(quote)} tokens de comercio`);
     
     // Ejecutar venta con protección contra deslizamiento
-    const minEth = quote * 0.95n; // 5% de deslizamiento
-    await token.sell(sellAmount, minEth);
+    const minTradingTokenOut = quote * 0.95n; // 5% de deslizamiento
+    await token.sell(sellAmount, minTradingTokenOut);
     ```
   </Tab>
   
@@ -132,12 +130,12 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
     | Parámetro | Tipo | Descripción |
     |-----------|------|-------------|
     | `tokenAmount` | uint256 | Cantidad de tokens a vender |
-    | `minEthOut` | uint256 | ETH mínimo a recibir (protección contra deslizamiento) |
+    | `minTradingTokenOut` | uint256 | Token de comercio mínimo a recibir (protección contra deslizamiento) |
     
     **Notas Importantes:**
-    - Requiere aprobación del token antes de vender
+    - Requiere aprobación de tokens antes de vender
     - El impacto en el precio puede ser significativo para ventas grandes
-    - No se pueden vender más tokens que el suministro circulante
+    - No se pueden vender más que el suministro circulante
   </Tab>
   
   <Tab title="Impacto del Precio">
@@ -145,7 +143,7 @@ Durante la vinculación, el contrato actúa como el único creador de mercado:
     
     Vender reduce la cantidad recaudada de la curva, causando que el precio baje:
     
-    | Tamaño de Venta | Impacto en el Precio | Recuperación Necesaria |
+    | Tamaño de Venta | Impacto del Precio | Recuperación Necesaria |
     |-----------|--------------|-----------------|
     | 1% del suministro | ~1-2% | Pequeña |
     | 5% del suministro | ~5-10% | Moderada |
@@ -172,45 +170,45 @@ graph LR
 
 <AccordionGroup>
   <Accordion title="Comisiones de Compra">
-    **En una compra de 1 ETH:**
-    - 0.95 ETH va a la curva de vinculación
-    - 0.05 ETH va al destinatario de la comisión
-    - Los tokens se calculan sobre el valor de 0.95 ETH
+    **En una compra de 1 token de comercio:**
+    - 0.95 tokens de comercio van a la curva de vinculación
+    - 0.05 tokens de comercio van al destinatario de la comisión
+    - Tokens calculados sobre el valor de 0.95 token de comercio
     
     **Ejemplo:**
     ```typescript
-    // El usuario envía 1 ETH
-    // Comisión: 0.05 ETH
-    // La curva recibe: 0.95 ETH
-    // Tokens acuñados basados en 0.95 ETH
+    // El usuario envía 1 token de comercio
+    // Comisión: 0.05 token de comercio
+    // La curva recibe: 0.95 token de comercio
+    // Tokens acuñados basados en 0.95 token de comercio
     ```
   </Accordion>
   
   <Accordion title="Comisiones de Venta">
-    **Al vender por un valor de 1 ETH:**
-    - El usuario recibe 0.95 ETH
-    - 0.05 ETH va al destinatario de la comisión
-    - La curva se reduce por el 1 ETH completo
+    **Al vender por valor de 1 token de comercio:**
+    - El usuario recibe 0.95 tokens de comercio
+    - 0.05 tokens de comercio van al destinatario de la comisión
+    - La curva se reduce por el total de 1 token de comercio
     
     **Ejemplo:**
     ```typescript
-    // Tokens valorados en 1 ETH en la curva
-    // Comisión: 0.05 ETH
-    // El usuario recibe: 0.95 ETH
-    // La curva baja por 1 ETH
+    // Tokens valorados en 1 token de comercio en la curva
+    // Comisión: 0.05 token de comercio
+    // El usuario recibe: 0.95 tokens de comercio
+    // La curva baja por 1 token de comercio
     ```
   </Accordion>
   
   <Accordion title="Distribución de Comisiones">
     **A dónde van las comisiones:**
-    - 100% a la dirección `feeRecipient` designada
-    - Puede ser el tesoro del proyecto, desarrollador, o DAO
-    - Establecido en la creación del token, no se puede cambiar
+    - 100% a la dirección de `feeRecipient` designada
+    - Puede ser tesorería del proyecto, desarrollador, o DAO
+    - Establecido al crear el token, no se puede cambiar
     
-    **Reclamación de comisiones:**
-    - Automática - no se necesita reclamar
-    - Enviadas directamente en cada comercio
-    - Sin acumulación en el contrato
+    **Reclamando comisiones:**
+    - Automático - no se necesita reclamar
+    - Enviado directamente en cada comercio
+    - No se acumula en el contrato
   </Accordion>
 </AccordionGroup>
 
@@ -218,23 +216,23 @@ graph LR
 
 | Volumen Diario | Ingresos por Comisiones | Ingresos Mensuales |
 |-------------|------------|----------------|
-| 10 ETH | 0.5 ETH | ~15 ETH |
-| 50 ETH | 2.5 ETH | ~75 ETH |
-| 100 ETH | 5 ETH | ~150 ETH |
-| 500 ETH | 25 ETH | ~750 ETH |
+| 10 tokens de comercio | 0.5 tokens de comercio | ~15 tokens de comercio |
+| 50 tokens de comercio | 2.5 tokens de comercio | ~75 tokens de comercio |
+| 100 tokens de comercio | 5 tokens de comercio | ~150 tokens de comercio |
+| 500 tokens de comercio | 25 tokens de comercio | ~750 tokens de comercio |
 
 ## Mecánica del Objetivo
 
 ### Entendiendo el Objetivo
 
-El objetivo es la cantidad de ETH/B3 que debe acumularse antes de la migración:
+El objetivo es la cantidad de token de comercio que debe acumularse antes de la migración:
 
 <Info>
   **Propósito del Objetivo:**
   - Asegura suficiente liquidez para Uniswap v4
   - Crea un objetivo claro para la comunidad
   - Previene la migración prematura
-  - Construye impulso durante la vinculación
+  - Construye momento durante la vinculación
 </Info>
 
 ### Acercándose al Objetivo
@@ -247,21 +245,21 @@ async function trackProgress(token: BondkitToken) {
   if (progress.progress < 0.5) {
     console.log("🌱 Etapa inicial - mejores precios disponibles");
   } else if (progress.progress < 0.8) {
-    console.log("🚀 Construyendo impulso - considere comprar");
+    console.log("🚀 Construyendo momento - considera comprar");
   } else if (progress.progress < 1.0) {
     console.log("🔥 Casi allí - migración inminente");
   } else {
     console.log("✅ Objetivo alcanzado - listo para migrar!");
   }
   
-  la remaining = progress.threshold - progress.raised;
-  console.log(`Necesita ${formatEther(remaining)} ETH más`);
+  la cantidadRestante = progress.threshold - progress.raised;
+  console.log(`Necesita ${formatEther(cantidadRestante)} más token de comercio`);
 }
 ```
 
-### Manejo de Excedentes
+### Manejo de Desbordamiento
 
-Cuando una compra superaría el objetivo:
+Cuando una compra excedería el objetivo:
 
 1. **Relleno Parcial**: Solo se acepta la cantidad necesaria
 2. **Reembolso Automático**: El exceso se devuelve en la misma transacción
@@ -269,14 +267,14 @@ Cuando una compra superaría el objetivo:
 
 **Escenario de Ejemplo:**
 ```
-Objetivo: 100 ETH
-Actual: 99.5 ETH
-Usuario envía: 2 ETH
+Objetivo: 100 tokens de comercio
+Actual: 99.5 tokens de comercio
+El usuario envía: 2 tokens de comercio
 
 Resultado:
-- 0.5 ETH aceptados (alcanza exactamente 100 ETH)
-- 1.5 ETH reembolsados
-- Usuario obtiene tokens por 0.5 ETH
+- 0.5 tokens de comercio aceptados (alcanza exactamente 100)
+- 1.5 tokens de comercio reembolsados
+- El usuario obtiene tokens por 0.5 tokens de comercio
 - Migración ahora disponible
 ```
 
@@ -314,7 +312,7 @@ Resultado:
   <Tab title="Evento de Venta">
     ```solidity
     event BondingCurveSell(
-        address indexed vendedor,
+        address indexed seller,
         uint256 tokensIn,
         uint256 tradingTokenOut,
         uint256 fee,
@@ -379,15 +377,15 @@ await monitor.start();
 ### Para Creadores de Tokens
 
 <CardGroup cols={2}>
-  <Card title="Construir Impulso" icon="chart-line">
+  <Card title="Construir Momento" icon="chart-line">
     - Comenzar con menor agresividad (30-50)
     - Establecer objetivos alcanzables
-    - Involucrar a la comunidad desde el principio
+    - Involucrar a la comunidad temprano
     - Proporcionar una hoja de ruta clara
   </Card>
   
   <Card title="Maximizar el Éxito" icon="trophy">
-    - Sembrar liquidez inicial usted mismo
+    - Sembrar liquidez inicial tú mismo
     - Crear incentivos de compra
     - Temporizar anuncios adecuadamente
     - Planificar para después de la migración
@@ -398,16 +396,16 @@ await monitor.start();
 
 <CardGroup cols={2}>
   <Card title="Estrategia de Entrada" icon="door-open">
-    - Comprar temprano para obtener los mejores precios
+    - Comprar temprano para mejores precios
     - Usar DCA para grandes cantidades
     - Monitorear el factor de agresividad
     - Verificar el progreso del objetivo
   </Card>
   
-  <Card title="Gestión de Riesgos" icon="shield">
+  <Card title="Gestión del Riesgo" icon="shield">
     - Siempre usar protección contra deslizamiento
     - Entender el impacto en el precio
-    - No dejarse llevar por el FOMO cerca del objetivo
+    - No dejarse llevar por FOMO cerca del objetivo
     - Planificar estrategia de salida
   </Card>
 </CardGroup>
@@ -421,7 +419,7 @@ await monitor.start();
   - ❌ Comercio en la curva de vinculación permanentemente deshabilitado
   - ❌ No más funciones de buy() o sell()
   - ✅ Todo el comercio se traslada a Uniswap v4
-  - ✅ Se aplican mecánicas estándar de AMM
+  - ✅ Se aplican mecánicas AMM estándar
   - ✅ Cualquiera puede proporcionar liquidez
   - ✅ Comercio completamente descentralizado
 </Warning>
@@ -435,7 +433,7 @@ await monitor.start();
   <Card title="Establecimiento de Objetivos" icon="bullseye" href="/bondkit/concepts/targets">
     Elegir el objetivo correcto
   </Card>
-  <Card title="Proceso de Migración" icon="rocket" href="/bondkit/guides/migration">
+  <Card title="Ciclo de Vida del Token" icon="rocket" href="/bondkit/guides/token-lifecycle">
     Aprender sobre la transición a DEX
   </Card>
 </CardGroup>

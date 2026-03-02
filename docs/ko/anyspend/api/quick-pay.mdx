@@ -1,0 +1,153 @@
+---
+title: 빠른 결제
+description: 인증 없이 즉시 결제 링크 생성
+lang: ko
+originalPath: anyspend/api/quick-pay.mdx
+---
+Quick Pay는 **API 키가 필요 없이** 결제 링크를 생성할 수 있는 단일 엔드포인트입니다. 이는 빠른 프로토타이핑, 일회성 인보이스, 팁 자, 기부 페이지에 적합하며 조직 생성 및 API 키 관리의 부담이 불필요한 경우에 설계되었습니다.
+
+<Info>
+Quick Pay는 **분당 IP 주소 당 5회 요청**으로 제한됩니다. 더 높은 처리량이나 분석, 웹훅, 맞춤형 양식에 접근하려면 [조직을 생성](/anyspend/api/sdk-client)하고 API 키를 사용하세요.
+</Info>
+
+## 엔드포인트
+
+```
+POST /api/v1/quick-pay
+```
+
+`Authorization` 헤더는 필요하지 않습니다.
+
+## 요청 본문
+
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|-----------|------|----------|---------|-------------|
+| `recipient_address` | `string` | 예 | -- | 결제를 받을 이더리움 주소 |
+| `amount` | `string` | 아니요 | -- | 최소 단위의 토큰 금액 (예: 1 USDC의 경우 `"1000000"`) |
+| `token_address` | `string` | 아니요 | USDC on Base | ERC-20 토큰 계약 주소 |
+| `chain_id` | `number` | 아니요 | `8453` (Base) | 대상 체인 ID |
+| `name` | `string` | 아니요 | -- | 링크에 대한 사람이 읽을 수 있는 이름 |
+| `description` | `string` | 아니요 | -- | 지불자에게 표시되는 설명 |
+| `expires_in` | `number` | 아니요 | `86400` (24시간) | 링크가 만료되기까지의 초. 최대는 `86400`. |
+
+## 응답
+
+성공적인 요청은 전체 `PaymentLink` 객체를 반환합니다:
+
+```json
+{
+  "id": "pl_abc123",
+  "url": "https://pay.anyspend.com/pl_abc123",
+  "recipient_address": "0x1234...abcd",
+  "amount": "1000000",
+  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "chain_id": 8453,
+  "name": "Coffee tip",
+  "description": null,
+  "status": "active",
+  "expires_at": "2025-06-02T12:00:00Z",
+  "created_at": "2025-06-01T12:00:00Z",
+  "org_id": "anonymous"
+}
+```
+
+누구나 `url`을 공유할 수 있으며 -- 지원되는 모든 체인의 지갑에서 결제할 수 있고 자금은 AnySpend를 통해 수령인에게 전달됩니다.
+
+## 예시
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "5000000",
+    "name": "Buy me a coffee",
+    "description": "Thanks for the help!"
+  }'
+```
+
+```typescript SDK
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+// quickPay는 정적 메소드입니다 -- API 키가 필요 없습니다
+const link = await AnySpendPlatformClient.quickPay({
+  recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "5000000",          // 5 USDC
+  name: "Buy me a coffee",
+  description: "Thanks for the help!",
+});
+
+console.log(link.url);
+// => https://pay.anyspend.com/pl_abc123
+```
+
+```python Python (requests)
+import requests
+
+resp = requests.post(
+    "https://platform-api.anyspend.com/api/v1/quick-pay",
+    json={
+        "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+        "amount": "5000000",
+        "name": "Buy me a coffee",
+    },
+)
+link = resp.json()
+print(link["url"])
+```
+
+</CodeGroup>
+
+## 사용 사례
+
+<CardGroup cols={2}>
+  <Card title="팁 자" icon="hand-holding-dollar">
+    블로그나 소셜 미디어 프로필에 Quick Pay 링크를 삽입하여 설정 없이 팁을 받으세요.
+  </Card>
+  <Card title="기부 페이지" icon="heart">
+    비영리 단체와 오픈 소스 프로젝트는 일회성 기부를 위해 즉석에서 링크를 생성할 수 있습니다.
+  </Card>
+  <Card title="빠른 인보이싱" icon="file-invoice-dollar">
+    프리랜서는 이메일이나 채팅을 통해 단일 인보이스에 대한 결제 링크를 보낼 수 있습니다.
+  </Card>
+  <Card title="프로토타이핑" icon="flask">
+    전체 API 키 설정에 앞서 통합 흐름을 테스트하세요.
+  </Card>
+</CardGroup>
+
+## 제한 사항
+
+<Warning>
+  Quick Pay 링크는 의도적으로 제한됩니다. 아래 기능이 필요한 경우, 조직을 생성하고 인증된 엔드포인트를 사용하세요.
+</Warning>
+
+| 기능 | Quick Pay | 인증된 API |
+|---------|-----------|-------------------|
+| 분석 및 방문자 추적 | 아니요 | 예 |
+| 웹훅 알림 | 아니요 | 예 |
+| 맞춤 체크아웃 양식 | 아니요 | 예 |
+| 배송 옵션 및 할인 코드 | 아니요 | 예 |
+| 맞춤 만료 (> 24시간) | 아니요 | 예 |
+| 생성 후 링크 편집 | 아니요 | 예 |
+| 조직 브랜딩 | 아니요 | 예 |
+| 요청 제한 | 5 req/min/IP | 100 req/min/key |
+
+## 오류 응답
+
+| 상태 | 코드 | 설명 |
+|--------|------|-------------|
+| `400` | `invalid_request` | `recipient_address`가 누락되었거나 파라미터가 유효하지 않음 |
+| `422` | `invalid_address` | `recipient_address`가 유효한 이더리움 주소가 아님 |
+| `429` | `rate_limit_exceeded` | 현재 분 창에서 5회 이상 요청함 |
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Try again in 45 seconds.",
+    "retry_after": 45
+  }
+}
+```

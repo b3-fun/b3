@@ -4,9 +4,9 @@ description: 'Lanza un token de bono ERC20 en minutos: Crear → Bonificar → M
 lang: es
 originalPath: bondkit/quickstart.mdx
 ---
-## Visión general
+## Resumen
 
-Esta guía rápida te llevará a través del ciclo de vida completo de un token BondKit en menos de 5 minutos. Aprenderás cómo:
+Esta guía rápida te guiará a través del ciclo de vida completo de un token BondKit en menos de 5 minutos. Aprenderás cómo:
 
 1. **Desplegar** un nuevo token de bono
 2. **Comerciar** durante la fase de vinculación
@@ -33,7 +33,7 @@ sequenceDiagram
     
     loop Fase de Vinculación
         Traders->>Token: buy()/sell()
-        Token-->>Traders: Tokens/ETH
+        Token-->>Traders: Tokens/Trading Token
     end
     
     User->>Token: Verificar progreso
@@ -71,15 +71,24 @@ const tokenAddress = await factory.deployBondkitToken({
   
   // Configuración de la curva de vinculación
   aggressivenessFactor: 35,  // 0-100, más alto = curva más empinada
-  targetEth: parseEther("10"), // Objetivo de 10 ETH para la migración
+  targetAmount: parseEther("10"), // 10 unidades del token de comercio objetivo para la migración
   
   // Configuración de tarifas
   feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Tu dirección
   lpSplitRatioFeeRecipientBps: 1000n, // 10% al receptor de la tarifa
   
-  // Configuración de migración
+  // Configuración de migración  
   migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
-  uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24" // Router V4
+  
+  // Configuración de Uniswap V4
+  bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+  v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+  v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+  v4PoolFee: 3000, // Nivel de tarifa del 0.3%
+  v4TickSpacing: 60,
+  
+  // Token de comercio (dirección del token B3 para la red principal de Base)  
+  tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
 });
 
 console.log("✅ Token desplegado en:", tokenAddress);
@@ -92,14 +101,14 @@ console.log("✅ Token desplegado en:", tokenAddress);
 </ParamField>
 
 <ParamField path="aggressivenessFactor" type="number" required>
-  Controla la empinadura de la curva de vinculación (0-100):
-  - **0-30**: Precios lineales, justo para todos los compradores
+  Controla la empinación de la curva de vinculación (0-100):
+  - **0-30**: Precios lineales, justos para todos los compradores
   - **30-60**: Curva moderada, enfoque equilibrado
-  - **60-100**: Agresivo, recompensa a los compradores tempranos
+  - **60-100**: Agresivo, recompensa a los primeros compradores
 </ParamField>
 
-<ParamField path="targetEth" type="bigint" required>
-  Cantidad de ETH necesaria para habilitar la migración. Usa `parseEther("10")` para 10 ETH.
+<ParamField path="targetAmount" type="bigint" required>
+  Cantidad del token de comercio necesaria para habilitar la migración. Usa `parseEther("10")` para 10 tokens (18 decimales).
 </ParamField>
 
 <ParamField path="feeRecipient" type="address" required>
@@ -118,29 +127,45 @@ console.log("✅ Token desplegado en:", tokenAddress);
 import { BondkitToken } from "@b3dotfun/sdk/bondkit";
 import { parseEther, formatEther } from "viem";
 
-// Conectar a tu token desplegado
+// Conectar con tu token desplegado
 const token = new BondkitToken(
   tokenAddress, 
   process.env.WALLET_PRIVATE_KEY
 );
 ```
 
+### Entendiendo los Tokens de Comercio
+
+Los tokens BondKit usan un sistema de **token de comercio configurable**. Verifica qué token se usa para el comercio:
+
+```typescript
+// Obtener los detalles del token de comercio
+const tradingTokenAddress = await token.getTradingTokenAddress();
+const tradingTokenSymbol = await token.getTradingTokenSymbol();
+
+console.log(`Comerciando con: ${tradingTokenSymbol} (${tradingTokenAddress})`);
+// Para la red principal de Base, típicamente es el token B3
+
+// Verificar si es ETH (dirección cero) o un token ERC20
+const isETH = tradingTokenAddress === "0x0000000000000000000000000000000000000000";
+```
+
 ### Comprar Tokens
 
 ```typescript
 // Obtener una cotización primero
-const ethAmount = parseEther("1"); // 1 ETH
-const expectedTokens = await token.getAmountOfTokensToBuy(ethAmount);
+const tradingTokenAmount = parseEther("100"); // 100 unidades del token de comercio
+const expectedTokens = await token.getAmountOfTokensToBuy(tradingTokenAmount);
 
-console.log(`1 ETH comprará: ${formatEther(expectedTokens)} tokens`);
+console.log(`${formatEther(tradingTokenAmount)} ${tradingTokenSymbol} comprará: ${formatEther(expectedTokens)} tokens`);
 
-// Ejecutar la compra
+// Ejecutar la compra (parámetros: minTokensOut, cantidad)
 const buyTx = await token.buy(
-  0n,    // minTokensOut (0 = aceptar cualquier cantidad, usar para protección de deslizamiento)
-  "1"    // Cantidad de ETH como cadena
+  tradingTokenAmount, // Cantidad del token de comercio a gastar  
+  0n                  // minTokensOut (0 = aceptar cualquier cantidad, usar para protección contra deslizamiento)
 );
 
-console.log("Compra completada! Tx:", buyTx);
+console.log("Compra completa! Tx:", buyTx);
 ```
 
 ### Vender Tokens
@@ -152,20 +177,20 @@ console.log(`Tu saldo: ${formatEther(balance)} tokens`);
 
 // Obtener cotización de venta
 const tokensToSell = parseEther("1000");
-const expectedEth = await token.getAmountOfEthToReceive(tokensToSell);
+const expectedTradingToken = await token.getAmountOfTradingTokensToSell(tokensToSell);
 
-console.log(`Vender 1000 tokens retornará: ${formatEther(expectedEth)} ETH`);
+console.log(`Vender 1000 tokens retornará: ${formatEther(expectedTradingToken)} ${tradingTokenSymbol}`);
 
 // Ejecutar la venta
 const sellTx = await token.sell(
-  tokensToSell,  // Cantidad de tokens a vender
-  0n             // Min ETH out (para protección de deslizamiento)
+  tokensToSell,         // Cantidad de tokens a vender
+  0n                    // Min trading token out (para protección contra deslizamiento)
 );
 
-console.log("Venta completada! Tx:", sellTx);
+console.log("Venta completa! Tx:", sellTx);
 ```
 
-### Monitoreando el Progreso
+### Monitorear el Progreso
 
 ```typescript
 // Verificar el progreso de vinculación
@@ -173,14 +198,14 @@ const progress = await token.getBondingProgress();
 
 console.log(`
   Progreso: ${(progress.progress * 100).toFixed(2)}%
-  Recaudado: ${formatEther(progress.raised)} ETH
-  Objetivo: ${formatEther(progress.threshold)} ETH
-  Restante: ${formatEther(progress.threshold - progress.raised)} ETH
+  Recaudado: ${formatEther(progress.raised)} ${tradingTokenSymbol}
+  Objetivo: ${formatEther(progress.threshold)} ${tradingTokenSymbol}
+  Restante: ${formatEther(progress.threshold - progress.raised)} ${tradingTokenSymbol}
 `);
 
-// Obtener precio actual del token
+// Obtener el precio actual del token
 const currentPrice = await token.getCurrentPrice();
-console.log(`Precio actual: ${formatEther(currentPrice)} ETH por token`);
+console.log(`Precio actual: ${formatEther(currentPrice)} ${tradingTokenSymbol} por token`);
 
 // Verificar si la migración está disponible
 const canMigrate = await token.canMigrate();
@@ -194,7 +219,7 @@ console.log(`Listo para migrar: ${canMigrate}`);
 token.onBuy((event) => {
   console.log("Nueva compra:", {
     comprador: event.buyer,
-    ethIn: formatEther(event.ethIn),
+    tradingTokenIn: formatEther(event.ethIn), // Nota: el nombre del campo es 'ethIn' pero representa el token de comercio
     tokensOut: formatEther(event.tokensOut)
   });
 });
@@ -204,7 +229,7 @@ token.onSell((event) => {
   console.log("Nueva venta:", {
     vendedor: event.seller,
     tokensIn: formatEther(event.tokensIn),
-    ethOut: formatEther(event.ethOut)
+    tradingTokenOut: formatEther(event.ethOut) // Nota: el nombre del campo es 'ethOut' pero representa el token de comercio
   });
 });
 ```
@@ -214,21 +239,21 @@ token.onSell((event) => {
 ### Verificar Preparación para la Migración
 
 ```typescript
-// Verificar que el objetivo se haya alcanzado
+// Verificar que el objetivo está alcanzado
 const progress = await token.getBondingProgress();
 
 if (progress.progress >= 1.0) {
-  console.log("✅ ¡Objetivo alcanzado! Listo para migrar.");
+  console.log("✅ Objetivo alcanzado! Listo para migrar.");
   
   // Obtener detalles de la migración
   const migrationData = await token.getMigrationData();
   console.log("La migración creará pool con:", {
-    ethLiquidity: formatEther(migrationData.ethForLp),
+    tradingTokenLiquidity: formatEther(migrationData.ethForLp), // Nota: nombre del campo 'ethForLp'
     tokenLiquidity: formatEther(migrationData.tokensForLp),
     initialPrice: formatEther(migrationData.sqrtPriceX96)
   });
 } else {
-  console.log(`⏳ Necesita ${formatEther(progress.threshold - progress.raised)} más ETH`);
+  console.log(`⏳ Necesita ${formatEther(progress.threshold - progress.raised)} más ${tradingTokenSymbol}`);
 }
 ```
 
@@ -247,7 +272,7 @@ if (await token.isMigrationAdmin(userAddress)) {
   
   if (receipt.status === "success") {
     console.log("✅ Migración completa!");
-    console.log("Dirección del pool en Uniswap v4:", await token.getPoolAddress());
+    console.log("Dirección del pool de Uniswap v4:", await token.getPoolAddress());
   }
 } else {
   console.log("❌ Solo el administrador de migración puede ejecutar la migración");
@@ -259,7 +284,7 @@ if (await token.isMigrationAdmin(userAddress)) {
   - La propiedad del contrato se renuncia automáticamente
   - El comercio de la curva de vinculación se deshabilita permanentemente
   - Todo el comercio se traslada a Uniswap v4
-  - No son posibles más acciones de administrador
+  - No son posibles más acciones de administración
 </Warning>
 
 ## Ejemplo Completo
@@ -286,11 +311,18 @@ async function launchToken() {
     symbol: "DEMO",
     finalTokenSupply: parseEther("1000000"),
     aggressivenessFactor: 50,
-    targetEth: parseEther("5"),
+    targetAmount: parseEther("5"),
     feeRecipient: process.env.WALLET_ADDRESS,
     lpSplitRatioFeeRecipientBps: 1000n,
     migrationAdminAddress: process.env.WALLET_ADDRESS,
-    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+    
+    // Configuración de Uniswap V4
+    bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+    v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+    v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+    v4PoolFee: 3000,
+    v4TickSpacing: 60,
+    tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
   });
   
   console.log("Token desplegado:", tokenAddress);
@@ -302,8 +334,8 @@ async function launchToken() {
   );
   
   // Comprar algunos tokens
-  await token.buy(0n, "0.5");
-  console.log("Comprados tokens con 0.5 ETH");
+  await token.buy(parseEther("50"), 0n); // 50 tokens de comercio, 0 min out
+  console.log("Tokens comprados con 50 tokens de comercio");
   
   // Verificar progreso
   const progress = await token.getBondingProgress();
@@ -315,7 +347,7 @@ async function launchToken() {
   // 4. Migrar cuando esté listo
   if (progress.progress >= 1.0) {
     await token.migrateToDex();
-    console.log("¡Migración completa! El token ahora está en Uniswap v4");
+    console.log("Migración completa! El token ahora está en Uniswap v4");
   }
 }
 
@@ -328,11 +360,11 @@ launchToken().catch(console.error);
   <Card title="Conceptos" icon="book" href="/bondkit/concepts/bonding-phase">
     Profundizar en curvas de vinculación y precios
   </Card>
-  <Card title="Referencia del SDK" icon="code" href="/bondkit/sdk/reference">
+  <Card title="Referencia SDK" icon="code" href="/bondkit/sdk/reference">
     Explorar todos los métodos disponibles
   </Card>
-  <Card title="Guías" icon="compass" href="/bondkit/guides/choose-quote-asset">
-    Aprender estrategias avanzadas
+  <Card title="Ciclo de Vida Completo" icon="compass" href="/bondkit/guides/token-lifecycle">
+    Guía de gestión de tokens de principio a fin
   </Card>
   <Card title="Aplicación Demo" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
     Ver una implementación completa

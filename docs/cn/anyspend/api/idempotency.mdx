@@ -1,0 +1,332 @@
+---
+title: 幂等性
+description: 使用幂等性键进行安全重试
+lang: cn
+originalPath: anyspend/api/idempotency.mdx
+---
+# 幂等性
+
+网络故障、超时和重试是与任何 API 工作时的现实。幂等性密钥确保重试请求永远不会创建重复资源或执行动作两次。
+
+## 工作原理
+
+当您在 `POST` 或 `PATCH` 请求上包含一个 `Idempotency-Key` 头时，API 会记住该密钥的响应。如果您使用相同的密钥和主体再次发送相同的请求，API 会返回缓存的响应，而不是再次处理请求。
+
+```
+POST /api/v1/payment-links
+Idempotency-Key: my-unique-key-12345
+Content-Type: application/json
+
+{ "name": "Premium Plan", ... }
+```
+
+<Steps>
+<Step title="首次请求">
+API 正常处理请求，创建资源，并缓存响应。响应与幂等性密钥和请求主体的 SHA-256 哈希关联。
+</Step>
+
+<Step title="使用相同密钥 + 相同主体重试">
+API 检测到重复密钥，验证主体哈希匹配，并立即返回带有 `Idempotent-Replayed: true` 头的缓存响应。不会创建新资源。
+</Step>
+
+<Step title="使用相同密钥 + 不同主体重试">
+API 检测到重复密钥但主体哈希不匹配。它返回一个 `409 Conflict` 错误，代码为 `idempotency_conflict`。这防止了密钥的意外误用。
+</Step>
+</Steps>
+
+## 缓存 TTL
+
+幂等性密钥从第一次请求开始缓存 **24 小时**。24 小时后，密钥过期并可以重用。
+
+<Info>
+  只有成功的响应（HTTP 2xx）被缓存。如果原始请求以 4xx 或 5xx 错误失败，密钥未被消耗，您可以使用相同的密钥重试。
+</Info>
+
+## 使用幂等性密钥
+
+### 使用 curl
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-premium-link-20240228-001" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+在首次请求时，您将获得标准的 `201 Created` 响应：
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+如果您重试完全相同的请求，您将获得带有重放头的缓存响应：
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+Idempotent-Replayed: true
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+`id` 是相同的 -- 没有创建重复项。
+
+### 使用 JavaScript / TypeScript
+
+```typescript
+import { randomUUID } from "crypto";
+
+async function createPaymentLinkSafe(data: PaymentLinkInput) {
+  const idempotencyKey = randomUUID();
+
+  const makeRequest = () =>
+    fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify(data),
+    });
+
+  // 首次尝试
+  let response = await makeRequest();
+
+  // 如果遇到超时或网络错误，安全重试
+  if (!response.ok && response.status >= 500) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    response = await makeRequest(); // 相同的幂等性密钥 = 安全重试
+  }
+
+  const body = await response.json();
+
+  // 检查这是否是重放响应
+  if (response.headers.get("Idempotent-Replayed") === "true") {
+    console.log("响应从缓存中重放（重复请求）。");
+  }
+
+  return body;
+}
+```
+
+### 使用 Python
+
+```python
+import uuid
+import requests
+import os
+
+def create_payment_link_safe(data: dict) -> dict:
+    idempotency_key = str(uuid.uuid4())
+
+    headers = {
+        "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotency_key,
+    }
+
+    # 使用相同的幂等性密钥重试最多 3 次
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                "https://platform-api.anyspend.com/api/v1/payment-links",
+                headers=headers,
+                json=data,
+                timeout=10,
+            )
+
+            if response.ok:
+                replayed = response.headers.get("Idempotent-Replayed") == "true"
+                if replayed:
+                    print("响应从缓存中重放。")
+                return response.json()
+
+            if response.status_code < 500:
+                # 客户端错误 -- 不重试
+                raise Exception(f"API 错误: {response.json()}")
+
+        except requests.exceptions.Timeout:
+            print(f"尝试 {attempt + 1} 超时，重试中...")
+
+        time.sleep(2 ** attempt)  # 指数退避
+
+    raise Exception("所有重试尝试失败")
+```
+
+## 冲突响应
+
+如果您使用**不同**请求主体重用幂等性密钥，API 将返回一个 `409` 错误：
+
+```bash
+# 原始请求
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan A", "amount": "10000000", ... }'
+
+# 相同密钥，不同主体 -- 冲突
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan B", "amount": "20000000", ... }'
+```
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "一个幂等性密钥被用于一个不同的请求主体。"
+  }
+}
+```
+
+这是一个安全机制。它防止了同一个密钥意外关联到两个不同操作的错误。
+
+## 哪些方法支持幂等性？
+
+| 方法   | 支持 Idempotency-Key | 备注 |
+|--------|---------------------|-------|
+| `POST` | 是 | 用于资源创建以防止重复。 |
+| `PATCH` | 是 | 用于更新以防止重复应用相同的更新。 |
+| `GET` | 不需要 | GET 请求本质上是幂等的（只读）。 |
+| `DELETE` | 不需要 | DELETE 请求本质上是幂等的（删除一个不存在的资源返回 404）。 |
+
+## 生成幂等性密钥
+
+幂等性密钥可以是任何长度达 256 个字符的字符串。这里有一些推荐的方法：
+
+<Tabs>
+<Tab title="UUID（推荐）">
+```typescript
+import { randomUUID } from "crypto";
+
+const key = randomUUID();
+// "550e8400-e29b-41d4-a716-446655440000"
+```
+
+UUIDs 是全局唯一的，对于大多数用例来说是最简单的选项。
+</Tab>
+
+<Tab title="确定性密钥">
+```typescript
+// 从操作上下文派生密钥
+const key = `create-link-${userId}-${productId}-${Date.now()}`;
+// "create-link-usr_123-prod_456-1709078400000"
+```
+
+当您希望同一个逻辑操作总是使用相同的密钥时，确定性密钥很有用 -- 例如，确保用户只能为特定产品创建一个支付链接。
+</Tab>
+
+<Tab title="请求哈希">
+```typescript
+import { createHash } from "crypto";
+
+const key = createHash("sha256")
+  .update(JSON.stringify({ endpoint: "/payment-links", body: data }))
+  .digest("hex")
+  .slice(0, 64);
+```
+
+哈希请求确保相同的请求总是产生相同的密钥。对于可能多次处理同一消息的队列系统来说很有用。
+</Tab>
+</Tabs>
+
+## 幂等性密钥作用域
+
+幂等性密钥限定于您的**组织**。两个不同的组织可以使用相同的密钥字符串而不冲突。在您的组织内，每个密钥在 24 小时窗口内只能使用一次。
+
+## 最佳实践
+
+<AccordionGroup>
+<Accordion title="对于与支付相关的操作，始终使用幂等性密钥">
+任何创建支付链接、结账会话或触发财务操作的请求都应包含幂等性密钥。这是防止重复的最重要的地方。
+</Accordion>
+
+<Accordion title="在第一次尝试前生成密钥">
+创建幂等性密钥一次，并在同一逻辑操作的所有重试尝试中重用它：
+
+```typescript
+// 正确：密钥生成一次，在重试中重用
+const key = randomUUID();
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": key },
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+
+// 错误：每次重试都使用新密钥（违背了初衷）
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": randomUUID() }, // 每次都是不同的密钥！
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+```
+</Accordion>
+
+<Accordion title="不要在不同操作中重用密钥">
+每个逻辑操作应该有自己的幂等性密钥。重用来自之前（不同）操作的密钥将导致来自旧操作的缓存响应或 `409` 冲突。
+</Accordion>
+
+<Accordion title="优雅地处理 409 冲突">
+如果您收到一个 `idempotency_conflict` 错误，这意味着密钥已经被用于一个不同的请求主体。生成一个新的密钥并重试：
+
+```typescript
+if (error.code === "idempotency_conflict") {
+  // 生成一个新的密钥并重试
+  return createPaymentLink(data, { idempotencyKey: randomUUID() });
+}
+```
+</Accordion>
+
+<Accordion title="检查 Idempotent-Replayed 头">
+当 `Idempotent-Replayed: true` 头存在时，响应是一个缓存重放。这对于记录和调试很有用，以区分新鲜和重放的响应。
+</Accordion>
+
+<Accordion title="对于精确一次语义使用确定性密钥">
+如果您的系统处理来自队列的事件（例如，Kafka、SQS、BullMQ），从事件 ID 或消息 ID 派生幂等性密钥。这确保处理同一个事件两次永远不会创建重复资源：
+
+```typescript
+async function handleOrderEvent(event: QueueEvent) {
+  const idempotencyKey = `order-event-${event.messageId}`;
+
+  await fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(eventToPaymentLink(event)),
+  });
+}
+```
+</Accordion>
+</AccordionGroup>

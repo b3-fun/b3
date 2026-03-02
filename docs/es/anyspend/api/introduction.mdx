@@ -1,0 +1,247 @@
+---
+title: API de la plataforma
+description: >-
+  Acceso programático a AnySpend - crear enlaces de pago, gestionar productos,
+  rastrear transacciones y más
+lang: es
+originalPath: anyspend/api/introduction.mdx
+---
+# API de la plataforma
+
+La API de la plataforma AnySpend te brinda control programático completo sobre tu infraestructura de pagos. Construye integraciones, automatiza flujos de trabajo y deja que agentes de IA gestionen tu pila de comercio electrónico, todo a través de una API REST al estilo de Stripe.
+
+## ¿Para quién es esto?
+
+- **Desarrolladores** que construyen integraciones personalizadas con AnySpend
+- **Agentes de IA** que crean enlaces de pago, gestionan productos o extraen análisis
+- **Plataformas de automatización** que orquestan flujos de trabajo de comercio (Zapier, n8n, scripts personalizados)
+- **Servicios de backend** que necesitan crear sesiones de pago o rastrear transacciones programáticamente
+
+## Inicio rápido
+
+Crea un enlace de pago en 3 líneas:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+La API devuelve una respuesta al estilo de Stripe con el recurso creado:
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "short_code": "xK9mQ2",
+  "amount": "10000000",
+  "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "chain_id": 8453,
+  "recipient_address": "0xYourAddress...",
+  "url": "https://platform-api.anyspend.com/pay/xK9mQ2",
+  "is_active": true,
+  "items": [],
+  "created_at": 1709078400000,
+  "updated_at": 1709078400000
+}
+```
+
+## Asociar pagos con clientes
+
+Hay dos patrones para vincular los pagos de AnySpend con tus usuarios:
+
+### Patrón 1: Parámetros URL (simple)
+
+Añade `client_reference_id` y `metadata` a la URL de tu enlace de pago:
+
+```
+https://anyspend.com/pay/xK9mQ2?client_reference_id=order_123&metadata[user_id]=clerk_abc
+```
+
+Estos valores se transmiten automáticamente a tu webhook `payment.completed`.
+
+### Patrón 2: Sesiones del lado del servidor (empresa)
+
+Crea una sesión de pago en tu backend con todo el contexto del cliente:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/checkout-sessions \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123def456",
+    "client_reference_id": "order_456",
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "metadata": { "user_id": "clerk_abc", "plan": "pro" },
+    "success_url": "https://example.com/success?session_id={SESSION_ID}"
+  }'
+```
+
+La respuesta incluye un campo `url` -- redirige a tu cliente allí para pagar. Todos los datos se incluyen en el webhook cuando el pago se completa.
+
+<Tip>
+  Consulta la [Guía de Webhooks](/anyspend/api/webhooks-guide#reconciling-payments-with-your-system) para ejemplos completos de cómo reconciliar pagos en tu manejador de webhook.
+</Tip>
+
+## URL base
+
+Todas las solicitudes a la API se hacen a:
+
+```
+https://platform-api.anyspend.com/api/v1
+```
+
+## Niveles de autenticación
+
+La API utiliza tres niveles de autenticación dependiendo del punto final:
+
+| Nivel | Autenticación requerida | Límite de tasa | Caso de uso |
+|------|------------------------|----------------|-------------|
+| **Open** | Ninguna (limitación de tasa basada en IP) | 5 solicitudes/min por IP | Quick Pay -- pagos de una sola vez sin necesidad de cuenta |
+| **API Key** | clave `asp_xxx` vía encabezado | 120 solicitudes/min por clave | Todas las operaciones estándar de la API -- CRUD en enlaces de pago, productos, transacciones, etc. |
+| **JWT** | token de sesión del Dashboard | Límites de sesión estándar | Rutas solo para el Dashboard (gestionadas automáticamente por la aplicación web) |
+
+La mayoría de los desarrolladores utilizarán la autenticación API Key. Consulta la página de [Autenticación](/anyspend/api/authentication) para detalles sobre la creación y gestión de claves.
+
+## Formato de respuesta
+
+Cada respuesta de la API sigue un formato consistente al estilo de Stripe.
+
+### Recurso único
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "amount": "10000000",
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+El campo `object` te indica el tipo de recurso. El campo `id` es un identificador único.
+
+### Lista de recursos
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+Consulta la página de [Paginación y filtrado](/anyspend/api/pagination) para detalles sobre cómo navegar respuestas de listas.
+
+### Respuesta de error
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "El campo 'name' es requerido.",
+    "param": "name"
+  }
+}
+```
+
+Consulta la página de [Errores](/anyspend/api/errors) para la taxonomía completa de errores.
+
+### Recurso eliminado
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "deleted": true
+}
+```
+
+## Límites de tasa
+
+Los límites de tasa varían según el nivel de autenticación. Cuando excedes el límite, la API devuelve un estado `429` con un `rate_limit_error`:
+
+| Nivel | Límite | Ventana |
+|-------|--------|---------|
+| Open (Quick Pay) | 5 solicitudes | 1 minuto |
+| API Key | 120 solicitudes | 1 minuto |
+
+Los encabezados de respuesta incluyen información sobre el límite de tasa:
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 117
+X-RateLimit-Reset: 1709078460
+```
+
+## Idempotencia
+
+Para reintentos seguros en solicitudes `POST` y `PATCH`, incluye un encabezado `Idempotency-Key`. Solicitudes duplicadas con la misma clave y cuerpo devuelven la respuesta almacenada en caché. Consulta la página de [Idempotencia](/anyspend/api/idempotency) para detalles.
+
+## Recursos disponibles
+
+<CardGroup cols={2}>
+<Card title="Autenticación" icon="key" href="/anyspend/api/authentication">
+  Crea y gestiona claves de API, entiende los niveles de permiso y sigue las mejores prácticas de seguridad.
+</Card>
+
+<Card title="Enlaces de Pago" icon="link" href="/anyspend/api/payment-links">
+  Crea, actualiza y gestiona enlaces de pago con ítems, estadísticas, sesiones y seguimiento de visitantes.
+</Card>
+
+<Card title="Productos" icon="box" href="/anyspend/api/products">
+  Gestiona tu catálogo de productos -- crea productos que pueden adjuntarse a enlaces de pago.
+</Card>
+
+<Card title="Sesiones de Pago" icon="credit-card" href="/anyspend/api/checkout-sessions-api">
+  Crea y rastrea sesiones de pago, monitorea el estado de los pagos y maneja las completaciones.
+</Card>
+
+<Card title="Transacciones" icon="arrow-right-arrow-left" href="/anyspend/api/transactions">
+  Consulta el historial de transacciones, filtra por estado y extrae detalles de liquidación.
+</Card>
+
+<Card title="Clientes" icon="users" href="/anyspend/api/customers">
+  Rastrea carteras de clientes, ve el historial de compras y gestiona registros de clientes.
+</Card>
+
+<Card title="Webhooks" icon="bell" href="/anyspend/api/webhooks-api">
+  Registra puntos finales de webhook para recibir notificaciones en tiempo real de eventos de pago.
+</Card>
+
+<Card title="Códigos de Descuento" icon="tag" href="/anyspend/api/discount-codes">
+  Crea y gestiona códigos de descuento para tus enlaces de pago.
+</Card>
+</CardGroup>
+
+## Próximos pasos
+
+<Steps>
+<Step title="Obtén tu clave de API">
+  Ve a tu [Dashboard de AnySpend](https://anyspend.com/dashboard) bajo **Configuración > Claves de API** y crea una clave con los permisos que necesitas.
+</Step>
+
+<Step title="Realiza tu primera solicitud">
+  Usa el ejemplo de curl arriba o tu cliente HTTP preferido para crear un enlace de pago.
+</Step>
+
+<Step title="Configura webhooks">
+  Registra un punto final de webhook para recibir notificaciones en tiempo real cuando los pagos se completen.
+</Step>
+</Steps>

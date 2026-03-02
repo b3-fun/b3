@@ -1,0 +1,215 @@
+---
+title: Exportação de Dados
+description: Exporte dados de transação e cliente em formato CSV ou JSON
+lang: pt-BR
+originalPath: anyspend/api/export.mdx
+---
+A API da Plataforma AnySpend oferece endpoints de exportação para baixar seus dados de transações e clientes em massa. As exportações suportam formatos CSV e JSON com filtragem opcional.
+
+<Info>
+  Ambos os endpoints de exportação requerem uma chave de API com permissão de **leitura**.
+</Info>
+
+## Endpoints
+
+| Endpoint | Descrição |
+|----------|-------------|
+| `GET /api/v1/transactions/export` | Exportar transações |
+| `GET /api/v1/customers/export` | Exportar clientes |
+
+## Exportação de Transações
+
+Exporte registros de transações com filtros opcionais para status, intervalo de datas e formato.
+
+### Parâmetros
+
+| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | Não | `csv` | Formato de saída: `csv` ou `json` |
+| `status` | `string` | Não | all | Filtrar por status: `completed`, `pending`, `failed` |
+| `from` | `string` | Não | -- | Data de início (ISO 8601, ex. `2025-01-01T00:00:00Z`) |
+| `to` | `string` | Não | -- | Data de término (ISO 8601) |
+
+### Saída CSV
+
+As exportações CSV incluem uma linha de cabeçalho seguida por uma linha por transação:
+
+```csv
+id,payment_link_id,amount,token_address,chain_id,sender_address,recipient_address,tx_hash,status,created_at,completed_at
+txn_abc123,pl_def456,50000000,0x833589...02913,8453,0xSender...,0xRecipient...,0xTxHash...,completed,2025-06-01T10:00:00Z,2025-06-01T10:00:30Z
+txn_ghi789,pl_def456,25000000,0x833589...02913,8453,0xSender2...,0xRecipient...,0xTxHash2...,completed,2025-06-01T11:00:00Z,2025-06-01T11:00:15Z
+```
+
+### Saída JSON
+
+As exportações JSON retornam um array de objetos de transação:
+
+```json
+[
+  {
+    "id": "txn_abc123",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xSenderAddress",
+    "recipient_address": "0xRecipientAddress",
+    "tx_hash": "0xTransactionHash",
+    "status": "completed",
+    "created_at": "2025-06-01T10:00:00Z",
+    "completed_at": "2025-06-01T10:00:30Z"
+  }
+]
+```
+
+### Exemplos
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o transactions.csv \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2025-01-01T00:00:00Z&to=2025-06-30T23:59:59Z" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o transactions.json \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-06-30T23:59:59Z",
+});
+
+writeFileSync("transactions.csv", csv);
+console.log("Exported transactions to transactions.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const transactions = await platform.transactions.export({
+  format: "json",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+});
+
+console.log(`Exported ${transactions.length} transactions`);
+
+// Process in-memory
+for (const txn of transactions) {
+  console.log(txn.id, txn.amount, txn.completed_at);
+}
+```
+
+</CodeGroup>
+
+## Exportação de Clientes
+
+Exporte todos os registros de clientes associados à sua organização.
+
+### Parâmetros
+
+| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | Não | `csv` | Formato de saída: `csv` ou `json` |
+
+### Saída CSV
+
+```csv
+id,wallet_address,email,name,total_spent,transaction_count,first_seen,last_seen
+cust_abc123,0xWalletAddress,alice@example.com,Alice,150000000,3,2025-03-15T08:00:00Z,2025-06-01T10:00:00Z
+cust_def456,0xWalletAddress2,,Bob,50000000,1,2025-05-20T14:00:00Z,2025-05-20T14:00:00Z
+```
+
+### Saída JSON
+
+```json
+[
+  {
+    "id": "cust_abc123",
+    "wallet_address": "0xWalletAddress",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "total_spent": "150000000",
+    "transaction_count": 3,
+    "first_seen": "2025-03-15T08:00:00Z",
+    "last_seen": "2025-06-01T10:00:00Z"
+  }
+]
+```
+
+### Exemplos
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o customers.csv \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o customers.json \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.customers.export({ format: "csv" });
+writeFileSync("customers.csv", csv);
+console.log("Exported customers to customers.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const customers = await platform.customers.export({ format: "json" });
+
+console.log(`Exported ${customers.length} customers`);
+for (const c of customers) {
+  console.log(c.name, c.wallet_address, c.total_spent);
+}
+```
+
+</CodeGroup>
+
+## Dicas
+
+<CardGroup cols={2}>
+  <Card title="Agende exportações regulares" icon="calendar">
+    Configure um trabalho cron ou função programada para exportar dados diariamente ou semanalmente para backup e reconciliação.
+  </Card>
+  <Card title="Use filtros de data para grandes conjuntos de dados" icon="filter">
+    Se você tem milhares de transações, use os parâmetros `from` e `to` para exportar em intervalos de datas menores para evitar timeouts.
+  </Card>
+  <Card title="CSV para planilhas" icon="table">
+    As exportações CSV são abertas diretamente no Excel, Google Sheets e outras ferramentas de planilha para análise rápida.
+  </Card>
+  <Card title="JSON para uso programático" icon="code">
+    As exportações JSON são ideais para alimentar dados em pipelines de análise, bancos de dados ou dashboards personalizados.
+  </Card>
+</CardGroup>
+
+<Warning>
+  As exportações estão sujeitas a limitação de taxa. Grandes exportações (acima de 10.000 registros) podem levar vários segundos para serem geradas. A solicitação será bloqueada até que a exportação esteja completa -- planeje adequadamente para conjuntos de dados muito grandes.
+</Warning>

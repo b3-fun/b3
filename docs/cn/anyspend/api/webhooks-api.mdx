@@ -1,0 +1,417 @@
+---
+title: Webhooks
+description: 配置 webhook 端点以获取实时事件通知
+lang: cn
+originalPath: anyspend/api/webhooks-api.mdx
+---
+Webhooks 允许您在您的 AnySpend 账户中发生事件时接收实时的 HTTP POST 通知。配置端点，选择要订阅的事件，并监控传送历史。
+
+<Info>
+  所有 webhook 管理端点都需要 **admin** 权限，除非另有说明。只读端点（list、get、deliveries）需要 **read** 权限。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 列出 Webhooks
+
+<ParamField path="GET /webhooks" type="read">
+  返回为您的账户配置的所有 webhook 端点。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const webhooks = await client.webhooks.list();
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wh_abc123",
+      "url": "https://myapp.com/webhooks/anyspend",
+      "events": ["payment.completed", "payment.failed"],
+      "is_active": true,
+      "success_count": 142,
+      "failure_count": 3,
+      "last_triggered_at": "2026-02-27T10:30:00Z",
+      "created_at": "2026-01-15T08:00:00Z",
+      "updated_at": "2026-02-27T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 创建 Webhook
+
+<ParamField path="POST /webhooks" type="admin">
+  创建一个新的 webhook 端点。响应包括一个用于验证 webhook 签名的 `secret` 字段。请安全存储此字段——它仅在创建时返回一次。
+</ParamField>
+
+<ParamField path="url" type="string" required>
+  将接收 webhook POST 请求的 HTTPS URL。
+</ParamField>
+
+<ParamField path="events" type="string[]" required>
+  要订阅的事件类型数组。请参阅下面的 [支持的事件](#supported-events)。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://myapp.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed", "checkout.completed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.create({
+      url: "https://myapp.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed", "checkout.completed"],
+    });
+
+    // 安全地存储 webhook.secret —— 仅在创建时返回
+    console.log("签名密钥:", webhook.secret);
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wh_abc123",
+    "url": "https://myapp.com/webhooks/anyspend",
+    "events": ["payment.completed", "payment.failed", "checkout.completed"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "is_active": true,
+    "success_count": 0,
+    "failure_count": 0,
+    "last_triggered_at": null,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+<Warning>
+  `secret` 字段仅包含在创建响应中。立即复制它并将其存储在您的环境变量或密钥管理器中。
+</Warning>
+
+---
+
+### 获取 Webhook
+
+<ParamField path="GET /webhooks/:id" type="read">
+  通过 ID 检索单个 webhook 端点。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.get("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 更新 Webhook
+
+<ParamField path="PATCH /webhooks/:id" type="admin">
+  更新现有的 webhook 端点。所有字段都是可选的。
+</ParamField>
+
+<ParamField path="url" type="string">
+  更新的 HTTPS 端点 URL。
+</ParamField>
+
+<ParamField path="events" type="string[]">
+  更新的订阅事件类型列表。完全替换现有列表。
+</ParamField>
+
+<ParamField path="is_active" type="boolean">
+  设置为 `false` 以暂停传送而不删除端点。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "events": ["payment.completed", "checkout.completed"],
+        "is_active": false
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.webhooks.update("wh_abc123", {
+      events: ["payment.completed", "checkout.completed"],
+      is_active: false,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 删除 Webhook
+
+<ParamField path="DELETE /webhooks/:id" type="admin">
+  永久移除 webhook 端点。待处理的传送将被取消。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.webhooks.delete("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 发送测试 Webhook
+
+<ParamField path="POST /webhooks/:id/test" type="admin">
+  向 webhook URL 发送测试事件，以便您可以验证您的端点是否正确接收和处理事件。测试负载使用 `test.ping` 事件类型。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.test("wh_abc123");
+    // result.delivery_id 可用于检查传送状态
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz789",
+    "status": "sent",
+    "response_code": 200
+  }
+}
+```
+
+---
+
+### 列出传送历史
+
+<ParamField path="GET /webhooks/:id/deliveries" type="read">
+  查看 webhook 端点的传送日志。返回最近的传送尝试，包括状态码和响应时间。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deliveries = await client.webhooks.listDeliveries("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "del_xyz789",
+      "event_type": "payment.completed",
+      "status": "success",
+      "response_code": 200,
+      "response_time_ms": 245,
+      "attempts": 1,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "del_xyz790",
+      "event_type": "payment.failed",
+      "status": "failed",
+      "response_code": 500,
+      "response_time_ms": 3012,
+      "attempts": 3,
+      "created_at": "2026-02-27T09:15:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 重试失败的传送
+
+<ParamField path="POST /webhooks/:id/deliveries/:did/retry" type="admin">
+  手动重试失败的 webhook 传送。传送必须具有 `failed` 状态。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_xyz790/retry \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.retryDelivery("wh_abc123", "del_xyz790");
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz790",
+    "status": "sent",
+    "response_code": 200,
+    "attempts": 4
+  }
+}
+```
+
+---
+
+## Webhook 对象
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `id` | `string` | 唯一的 webhook 标识符（例如，`wh_abc123`） |
+| `url` | `string` | HTTPS 端点 URL |
+| `events` | `string[]` | 订阅的事件类型 |
+| `secret` | `string` | 签名密钥（仅在创建时返回） |
+| `is_active` | `boolean` | webhook 当前是否处于活动状态 |
+| `success_count` | `number` | 总成功传送次数 |
+| `failure_count` | `number` | 总失败传送次数 |
+| `last_triggered_at` | `string \| null` | 最后一次传送尝试的 ISO 8601 时间戳 |
+| `created_at` | `string` | ISO 8601 创建时间戳 |
+| `updated_at` | `string` | ISO 8601 最后更新时间戳 |
+
+## 支持的事件
+
+| 事件类型 | 描述 |
+|------------|-------------|
+| `payment.completed` | 一笔支付成功处理 |
+| `payment.failed` | 一次支付尝试失败 |
+| `checkout.completed` | 一个结账会话完成（包括表单数据、运输、折扣信息） |
+
+## 验证 Webhook 签名
+
+每个 webhook 请求都包括一个在 `X-AnySpend-Signature` 头中的签名。使用您的 webhook 密钥验证它，以确保请求是真实的。
+
+```typescript
+import crypto from "crypto";
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// 在您的 webhook 处理程序中
+app.post("/webhooks/anyspend", (req, res) => {
+  const signature = req.headers["x-anyspend-signature"];
+  const isValid = verifyWebhookSignature(
+    JSON.stringify(req.body),
+    signature,
+    process.env.ANYSPEND_WEBHOOK_SECRET
+  );
+
+  if (!isValid) {
+    return res.status(401).json({ error: "无效的签名" });
+  }
+
+  // 处理事件
+  const { type, data } = req.body;
+  switch (type) {
+    case "payment.completed":
+      // 处理成功的支付
+      break;
+    case "payment.failed":
+      // 处理失败的支付
+      break;
+  }
+
+  res.status(200).json({ received: true });
+});
+```
+
+<Note>
+  总是在 30 秒内返回一个 `2xx` 状态码。失败的传送将会被重试多达 3 次，采用指数退避。
+</Note>

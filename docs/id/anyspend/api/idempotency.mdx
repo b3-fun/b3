@@ -1,0 +1,332 @@
+---
+title: Idempotensi
+description: Pengulangan yang aman dengan kunci idempotensi
+lang: id
+originalPath: anyspend/api/idempotency.mdx
+---
+# Idempotensi
+
+Kegagalan jaringan, timeout, dan pengulangan permintaan adalah kenyataan saat bekerja dengan API apapun. Kunci idempotensi memastikan bahwa mengulangi permintaan tidak pernah menciptakan sumber daya duplikat atau melakukan aksi dua kali.
+
+## Cara Kerjanya
+
+Ketika Anda menyertakan header `Idempotency-Key` pada permintaan `POST` atau `PATCH`, API akan mengingat respons untuk kunci tersebut. Jika Anda mengirim permintaan yang sama lagi dengan kunci dan badan yang sama, API mengembalikan respons yang disimpan di cache alih-alih memproses permintaan lagi.
+
+```
+POST /api/v1/payment-links
+Idempotency-Key: my-unique-key-12345
+Content-Type: application/json
+
+{ "name": "Premium Plan", ... }
+```
+
+<Steps>
+<Step title="Permintaan Pertama">
+API memproses permintaan secara normal, menciptakan sumber daya, dan menyimpan respons di cache. Respons ini dikaitkan dengan kunci idempotensi dan hash SHA-256 dari badan permintaan.
+</Step>
+
+<Step title="Ulangi dengan kunci yang sama + badan yang sama">
+API mendeteksi kunci duplikat, memverifikasi hash badan cocok, dan langsung mengembalikan respons yang disimpan di cache dengan header `Idempotent-Replayed: true`. Tidak ada sumber daya baru yang diciptakan.
+</Step>
+
+<Step title="Ulangi dengan kunci yang sama + badan yang berbeda">
+API mendeteksi kunci duplikat tetapi hash badan tidak cocok. Ini mengembalikan kesalahan `409 Conflict` dengan kode `idempotency_conflict`. Ini mencegah penyalahgunaan kunci secara tidak sengaja.
+</Step>
+</Steps>
+
+## TTL Cache
+
+Kunci idempotensi disimpan di cache selama **24 jam** dari permintaan pertama. Setelah 24 jam, kunci tersebut kedaluwarsa dan dapat digunakan kembali.
+
+<Info>
+  Hanya respons yang berhasil (HTTP 2xx) yang disimpan di cache. Jika permintaan awal gagal dengan kesalahan 4xx atau 5xx, kunci tidak digunakan dan Anda dapat mencoba lagi dengan kunci yang sama.
+</Info>
+
+## Menggunakan kunci idempotensi
+
+### Dengan curl
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-premium-link-20240228-001" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+Pada permintaan pertama, Anda mendapatkan respons `201 Created` standar:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+Jika Anda mengulangi permintaan yang sama, Anda mendapatkan respons yang disimpan di cache dengan header replay:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+Idempotent-Replayed: true
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+`id` identik -- tidak ada duplikat yang dibuat.
+
+### Dengan JavaScript / TypeScript
+
+```typescript
+import { randomUUID } from "crypto";
+
+async function createPaymentLinkSafe(data: PaymentLinkInput) {
+  const idempotencyKey = randomUUID();
+
+  const makeRequest = () =>
+    fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify(data),
+    });
+
+  // Percobaan pertama
+  let response = await makeRequest();
+
+  // Jika terjadi timeout atau kesalahan jaringan, coba ulangi dengan aman
+  if (!response.ok && response.status >= 500) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    response = await makeRequest(); // Kunci idempotensi yang sama = pengulangan aman
+  }
+
+  const body = await response.json();
+
+  // Periksa apakah ini adalah respons yang diulang
+  if (response.headers.get("Idempotent-Replayed") === "true") {
+    console.log("Respons diulang dari cache (permintaan duplikat).");
+  }
+
+  return body;
+}
+```
+
+### Dengan Python
+
+```python
+import uuid
+import requests
+import os
+
+def create_payment_link_safe(data: dict) -> dict:
+    idempotency_key = str(uuid.uuid4())
+
+    headers = {
+        "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotency_key,
+    }
+
+    # Coba ulangi hingga 3 kali dengan kunci idempotensi yang sama
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                "https://platform-api.anyspend.com/api/v1/payment-links",
+                headers=headers,
+                json=data,
+                timeout=10,
+            )
+
+            if response.ok:
+                replayed = response.headers.get("Idempotent-Replayed") == "true"
+                if replayed:
+                    print("Respons diulang dari cache.")
+                return response.json()
+
+            if response.status_code < 500:
+                # Kesalahan klien -- jangan coba ulangi
+                raise Exception(f"Kesalahan API: {response.json()}")
+
+        except requests.exceptions.Timeout:
+            print(f"Percobaan {attempt + 1} timeout, mencoba lagi...")
+
+        time.sleep(2 ** attempt)  # Backoff eksponensial
+
+    raise Exception("Semua percobaan pengulangan gagal")
+```
+
+## Respons Konflik
+
+Jika Anda menggunakan kunci idempotensi dengan badan permintaan **berbeda**, API mengembalikan kesalahan `409`:
+
+```bash
+# Permintaan asli
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan A", "amount": "10000000", ... }'
+
+# Kunci yang sama, badan berbeda -- KONFLIK
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan B", "amount": "20000000", ... }'
+```
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "Sebuah kunci idempotensi digunakan dengan badan permintaan yang berbeda."
+  }
+}
+```
+
+Ini adalah mekanisme keamanan. Ini mencegah bug di mana kunci yang sama secara tidak sengaja dikaitkan dengan dua operasi berbeda.
+
+## Metode yang mendukung idempotensi?
+
+| Metode | Idempotency-Key didukung | Catatan |
+|--------|--------------------------|-------|
+| `POST` | Ya | Gunakan untuk pembuatan sumber daya untuk mencegah duplikat. |
+| `PATCH` | Ya | Gunakan untuk pembaruan untuk mencegah penerapan pembaruan yang sama dua kali. |
+| `GET` | Tidak perlu | Permintaan GET secara inheren idempoten (hanya baca). |
+| `DELETE` | Tidak perlu | Permintaan DELETE secara inheren idempoten (menghapus sumber daya yang tidak ada mengembalikan 404). |
+
+## Menghasilkan kunci idempotensi
+
+Kunci idempotensi bisa berupa string hingga 256 karakter. Berikut adalah beberapa pendekatan yang direkomendasikan:
+
+<Tabs>
+<Tab title="UUID (direkomendasikan)">
+```typescript
+import { randomUUID } from "crypto";
+
+const key = randomUUID();
+// "550e8400-e29b-41d4-a716-446655440000"
+```
+
+UUID adalah unik secara global dan opsi termudah untuk kebanyakan kasus penggunaan.
+</Tab>
+
+<Tab title="Kunci Deterministik">
+```typescript
+// Turunkan kunci dari konteks operasi
+const key = `create-link-${userId}-${productId}-${Date.now()}`;
+// "create-link-usr_123-prod_456-1709078400000"
+```
+
+Kunci deterministik berguna ketika Anda ingin operasi logis yang sama selalu menggunakan kunci yang sama -- misalnya, memastikan pengguna hanya dapat membuat satu tautan pembayaran untuk produk tertentu.
+</Tab>
+
+<Tab title="Hash Permintaan">
+```typescript
+import { createHash } from "crypto";
+
+const key = createHash("sha256")
+  .update(JSON.stringify({ endpoint: "/payment-links", body: data }))
+  .digest("hex")
+  .slice(0, 64);
+```
+
+Hashing permintaan memastikan permintaan identik selalu menghasilkan kunci yang sama. Berguna untuk sistem berbasis antrian di mana pesan yang sama mungkin diproses beberapa kali.
+</Tab>
+</Tabs>
+
+## Ruang Lingkup Kunci Idempotensi
+
+Kunci idempotensi dibatasi pada **organisasi** Anda. Dua organisasi berbeda dapat menggunakan string kunci yang sama tanpa konflik. Dalam organisasi Anda, setiap kunci hanya dapat digunakan sekali per jendela 24 jam.
+
+## Praktik Terbaik
+
+<AccordionGroup>
+<Accordion title="Selalu gunakan kunci idempotensi untuk operasi terkait pembayaran">
+Setiap permintaan yang menciptakan tautan pembayaran, sesi checkout, atau memicu aksi keuangan harus menyertakan kunci idempotensi. Ini adalah tempat paling penting untuk mencegah duplikat.
+</Accordion>
+
+<Accordion title="Hasilkan kunci sebelum percobaan pertama">
+Buat kunci idempotensi sekali dan gunakan kembali di semua percobaan pengulangan untuk operasi logis yang sama:
+
+```typescript
+// Benar: kunci dihasilkan sekali, digunakan kembali pada pengulangan
+const key = randomUUID();
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": key },
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+
+// Salah: kunci baru pada setiap pengulangan (mengalahkan tujuan)
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": randomUUID() }, // Kunci berbeda setiap kali!
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+```
+</Accordion>
+
+<Accordion title="Jangan gunakan kembali kunci di operasi yang berbeda">
+Setiap operasi logis harus memiliki kunci idempotensinya sendiri. Menggunakan kembali kunci dari operasi sebelumnya (yang berbeda) akan menghasilkan respons yang disimpan dari operasi lama atau konflik `409`.
+</Accordion>
+
+<Accordion title="Tangani konflik 409 dengan anggun">
+Jika Anda menerima kesalahan `idempotency_conflict`, itu berarti kunci sudah digunakan dengan badan permintaan yang berbeda. Hasilkan kunci baru dan coba lagi:
+
+```typescript
+if (error.code === "idempotency_conflict") {
+  // Hasilkan kunci baru dan coba lagi
+  return createPaymentLink(data, { idempotencyKey: randomUUID() });
+}
+```
+</Accordion>
+
+<Accordion title="Periksa header Idempotent-Replayed">
+Ketika header `Idempotent-Replayed: true` hadir, respons adalah ulangan yang disimpan di cache. Ini bisa berguna untuk pencatatan dan debugging untuk membedakan antara respons segar dan yang diulang.
+</Accordion>
+
+<Accordion title="Gunakan kunci deterministik untuk semantik tepat-sekali">
+Jika sistem Anda memproses event dari antrian (mis., Kafka, SQS, BullMQ), turunkan kunci idempotensi dari ID event atau ID pesan. Ini memastikan bahwa memproses event yang sama dua kali tidak pernah menciptakan sumber daya duplikat:
+
+```typescript
+async function handleOrderEvent(event: QueueEvent) {
+  const idempotencyKey = `order-event-${event.messageId}`;
+
+  await fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(eventToPaymentLink(event)),
+  });
+}
+```
+</Accordion>
+</AccordionGroup>

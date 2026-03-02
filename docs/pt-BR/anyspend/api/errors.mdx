@@ -1,0 +1,379 @@
+---
+title: Erros
+description: Tratamento de erros para a API da Plataforma AnySpend
+lang: pt-BR
+originalPath: anyspend/api/errors.mdx
+---
+# Erros
+
+A API da Plataforma AnySpend utiliza um formato de erro consistente e estruturado em todos os endpoints. Os erros seguem a convenção do Stripe -- um objeto JSON com uma chave `error` contendo o tipo, código, mensagem legível por humanos e (quando aplicável) o parâmetro que causou o erro.
+
+## Formato de resposta de erro
+
+Toda resposta de erro tem esta estrutura:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "O campo 'name' é obrigatório.",
+    "param": "name"
+  }
+}
+```
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `type` | `string` | A categoria do erro. Use isso para lógica de tratamento de erro ampla. |
+| `code` | `string` | Um código de erro legível por máquina. Use isso para tratamento de erro específico. |
+| `message` | `string` | Uma descrição legível por humanos do que deu errado. Seguro para mostrar aos desenvolvedores (mas não aos usuários finais). |
+| `param` | `string` ou ausente | O parâmetro da solicitação que causou o erro, se aplicável. |
+
+## Tipos de erro
+
+Os tipos de erro agrupam erros em categorias amplas. Use estes para tratamento de erro de nível superior.
+
+| Tipo | Status HTTP | Descrição |
+|------|-------------|-------------|
+| `invalid_request_error` | `400` | A solicitação foi malformada ou continha parâmetros inválidos. Verifique o campo `param` para saber qual campo causou o problema. |
+| `authentication_error` | `401` | A chave da API está faltando, é inválida, expirou ou foi revogada. |
+| `permission_error` | `403` | A chave da API é válida, mas não possui o nível de permissão necessário para a operação solicitada. |
+| `not_found_error` | `404` | O recurso solicitado não existe ou não pertence à sua organização. |
+| `rate_limit_error` | `429` | Você excedeu o limite de taxa para o seu nível de autenticação. |
+| `idempotency_error` | `409` | Uma chave de idempotência foi reutilizada com um corpo de solicitação diferente. |
+| `api_error` | `500` | Ocorreu um erro interno inesperado de nosso lado. Estes são raros e são automaticamente reportados. |
+
+## Códigos de erro
+
+Os códigos de erro fornecem identificadores específicos e legíveis por máquina para cada condição de erro.
+
+### Erros de validação de solicitação
+
+| Código | Tipo | HTTP | Descrição |
+|------|------|------|-------------|
+| `missing_required_field` | `invalid_request_error` | `400` | Um campo obrigatório não foi incluído no corpo da solicitação. O campo `param` indica qual campo está faltando. |
+| `invalid_field_value` | `invalid_request_error` | `400` | Um campo foi incluído, mas seu valor é inválido (tipo errado, formato ou fora do intervalo). |
+| `invalid_address` | `invalid_request_error` | `400` | Um campo de endereço Ethereum não é um endereço válido `0x` + 40 caracteres hexadecimais. |
+| `no_updates_provided` | `invalid_request_error` | `400` | Uma solicitação `PATCH` foi enviada sem campos válidos para atualizar. |
+| `invalid_status_transition` | `invalid_request_error` | `400` | A mudança de status solicitada não é permitida (por exemplo, completar uma sessão já expirada). |
+| `duplicate_resource` | `invalid_request_error` | `409` | Um recurso com um campo único conflitante já existe. |
+
+### Erros de autenticação e autorização
+
+| Código | Tipo | HTTP | Descrição |
+|------|------|------|-------------|
+| `key_missing` | `authentication_error` | `401` | Nenhuma chave da API foi encontrada no cabeçalho `Authorization` ou `X-API-Key`. |
+| `key_invalid` | `authentication_error` | `401` | A chave da API fornecida não corresponde a nenhuma chave no sistema. |
+| `key_expired` | `authentication_error` | `401` | A chave da API passou do seu timestamp `expires_at`. Crie uma nova chave ou estenda a expiração. |
+| `key_revoked` | `authentication_error` | `401` | A chave da API foi explicitamente revogada. Crie uma nova chave. |
+| `insufficient_permissions` | `permission_error` | `403` | A chave da API não tem o nível de permissão necessário para esta operação (por exemplo, uma chave `read` tentando um `POST`). |
+
+### Erros de recurso
+
+| Código | Tipo | HTTP | Descrição |
+|------|------|------|-------------|
+| `resource_not_found` | `not_found_error` | `404` | O recurso solicitado não existe, ou pertence a uma organização diferente. |
+
+### Erros de limitação de taxa e idempotência
+
+| Código | Tipo | HTTP | Descrição |
+|------|------|------|-------------|
+| `rate_limit_exceeded` | `rate_limit_error` | `429` | Muitas solicitações na janela de tempo atual. A mensagem de erro inclui o atraso para nova tentativa. |
+| `idempotency_conflict` | `idempotency_error` | `409` | Um cabeçalho `Idempotency-Key` foi reutilizado com um corpo de solicitação diferente do pedido original. |
+
+### Erros do servidor
+
+| Código | Tipo | HTTP | Descrição |
+|------|------|------|-------------|
+| `internal_error` | `api_error` | `500` | Um erro de servidor inesperado. Estes são automaticamente rastreados. Se isso persistir, entre em contato com o suporte. |
+
+## Códigos de status HTTP
+
+| Status | Significado |
+|--------|---------|
+| `200` | Sucesso -- o recurso foi recuperado ou atualizado |
+| `201` | Criado -- um novo recurso foi criado com sucesso |
+| `400` | Solicitação Inválida -- a solicitação foi inválida |
+| `401` | Não Autorizado -- a autenticação falhou |
+| `403` | Proibido -- a chave da API não possui a permissão necessária |
+| `404` | Não Encontrado -- o recurso não existe |
+| `409` | Conflito -- conflito de idempotência ou recurso duplicado |
+| `429` | Muitas Solicitações -- limite de taxa excedido |
+| `500` | Erro Interno do Servidor -- algo deu errado do nosso lado |
+
+## Exemplos de respostas de erro
+
+### Campo obrigatório ausente
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": "10000000" }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "O campo 'name' é obrigatório.",
+    "param": "name"
+  }
+}
+```
+
+### Endereço Ethereum inválido
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Link",
+    "token_address": "not-an-address",
+    "chain_id": 8453,
+    "recipient_address": "0xabc123..."
+  }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "invalid_address",
+    "message": "O campo 'token_address' deve ser um endereço Ethereum válido (0x + 40 caracteres hexadecimais).",
+    "param": "token_address"
+  }
+}
+```
+
+### Falha de autenticação
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_expired_key..."
+```
+
+```json
+{
+  "error": {
+    "type": "authentication_error",
+    "code": "key_expired",
+    "message": "Esta chave da API expirou."
+  }
+}
+```
+
+### Permissões insuficientes
+
+```bash
+# Uma chave somente leitura tentando criar um recurso
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_readonly_key..." \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Test" }'
+```
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "Esta chave da API não tem permissão de 'escrita'."
+  }
+}
+```
+
+### Recurso não encontrado
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links/pl_nonexistent \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+```json
+{
+  "error": {
+    "type": "not_found_error",
+    "code": "resource_not_found",
+    "message": "Nenhum payment_link encontrado com o id 'pl_nonexistent'."
+  }
+}
+```
+
+### Limite de taxa excedido
+
+```json
+{
+  "error": {
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "Limite de taxa excedido. Tente novamente após 42 segundos."
+  }
+}
+```
+
+### Conflito de idempotência
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "Uma chave de idempotência foi usada com um corpo de solicitação diferente."
+  }
+}
+```
+
+## Tratando erros no código
+
+### TypeScript / JavaScript
+
+```typescript
+async function createPaymentLink(data: PaymentLinkInput) {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    const error = body.error;
+
+    switch (error.type) {
+      case "invalid_request_error":
+        // Corrija a solicitação -- verifique error.param para o campo problemático
+        console.error(`Solicitação inválida: ${error.message} (campo: ${error.param})`);
+        break;
+
+      case "authentication_error":
+        // Verifique sua chave da API -- ela pode ter expirado ou sido revogada
+        console.error(`Falha na autenticação: ${error.message}`);
+        break;
+
+      case "permission_error":
+        // Atualize as permissões da chave da API
+        console.error(`Permissões insuficientes: ${error.message}`);
+        break;
+
+      case "rate_limit_error":
+        // Recue e tente novamente
+        console.warn(`Limite de taxa atingido: ${error.message}`);
+        await sleep(5000);
+        return createPaymentLink(data); // tentar novamente
+        break;
+
+      case "not_found_error":
+        console.error(`Não encontrado: ${error.message}`);
+        break;
+
+      case "idempotency_error":
+        // A chave de idempotência foi reutilizada com dados diferentes
+        console.error(`Conflito de idempotência: ${error.message}`);
+        break;
+
+      case "api_error":
+        // Erro do servidor -- tente novamente com recuo exponencial
+        console.error(`Erro do servidor: ${error.message}`);
+        break;
+    }
+
+    throw new Error(`Erro da API AnySpend: ${error.code} - ${error.message}`);
+  }
+
+  return body;
+}
+```
+
+### Python
+
+```python
+import requests
+import time
+
+def create_payment_link(data: dict) -> dict:
+    response = requests.post(
+        "https://platform-api.anyspend.com/api/v1/payment-links",
+        headers={
+            "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+            "Content-Type": "application/json",
+        },
+        json=data,
+    )
+
+    body = response.json()
+
+    if not response.ok:
+        error = body["error"]
+        error_type = error["type"]
+
+        if error_type == "rate_limit_error":
+            time.sleep(5)
+            return create_payment_link(data)  # tentar novamente
+
+        if error_type == "authentication_error":
+            raise PermissionError(f"Falha na autenticação: {error['message']}")
+
+        if error_type == "invalid_request_error":
+            raise ValueError(
+                f"Solicitação inválida no campo '{error.get('param', 'desconhecido')}': "
+                f"{error['message']}"
+            )
+
+        raise Exception(f"Erro da API AnySpend: {error['code']} - {error['message']}")
+
+    return body
+```
+
+## Melhores práticas
+
+<AccordionGroup>
+<Accordion title="Sempre verifique o tipo de erro primeiro">
+Use `error.type` para controle de fluxo amplo (por exemplo, tente novamente em `rate_limit_error`, falhe rapidamente em `authentication_error`). Use `error.code` para tratamento específico dentro de um tipo.
+</Accordion>
+
+<Accordion title="Use o campo param para construir validação de formulário">
+Quando `error.param` está presente, você pode mapeá-lo diretamente para um campo de formulário para mostrar erros de validação em linha na sua UI.
+</Accordion>
+
+<Accordion title="Implemente lógica de tentativa para erros transitórios">
+`rate_limit_error` e `api_error` (500) são transitórios. Use recuo exponencial ao tentar novamente:
+
+```typescript
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const isRetryable =
+        err.status === 429 || err.status === 500;
+
+      if (!isRetryable || attempt === maxRetries) throw err;
+
+      const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Inalcançável");
+}
+```
+</Accordion>
+
+<Accordion title="Nunca tente novamente erros 4xx (exceto 429)">
+Erros do cliente como `400`, `401`, `403` e `404` não serão resolvidos em uma nova tentativa. Corrija a solicitação ou as credenciais antes de tentar novamente.
+</Accordion>
+
+<Accordion title="Registre o objeto de erro completo para depuração">
+Sempre registre `error.type`, `error.code`, `error.message` e `error.param` juntos. Isso lhe dá uma visão completa ao depurar problemas de produção.
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,432 @@
+---
+title: Solana 快速入门
+description: 使用 AnySpend X402 在 Solana 上接受和进行支付，支持 USDC 和 SPL 代币
+lang: cn
+originalPath: anyspend/x402-quickstart-solana.mdx
+---
+<Note>
+**立即尝试！** 在 Solana 上体验 X402，请访问 [x402-demo.anyspend.com](https://x402-demo.anyspend.com/) 或探索 [GitHub 上的源代码](https://github.com/b3-fun/anyspend-x402-demo)。
+</Note>
+
+<CardGroup cols={3}>
+<Card title="GitHub 仓库" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  查看源代码和示例
+</Card>
+
+<Card title="npm 包" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+
+<Card title="在线演示" icon="rocket" href="https://github.com/b3-fun/anyspend-x402-demo">
+  完整的 Solana 演示应用程序
+</Card>
+</CardGroup>
+
+## 概览
+
+本指南展示了如何在 **Solana** 上使用 **AnySpend X402**，适用于服务器端（接受支付）和客户端（进行支付）应用程序。Solana 上的 AnySpend X402 通过使用交易签名实现无需支付燃料费的 SPL 代币支付，非常适合付费 API、AI 代理和高级服务。
+
+**关键特性：**
+- **无需支付燃料费的交易** - 由促进者赞助所有交易费用
+- **支持 SPL 代币** - 在 Solana 上使用 USDC 和其他 SPL 代币支付
+- **浏览器钱包集成** - 支持 Phantom、Solflare、Ledger 等
+- **对 AI 代理友好** - 简单的 fetch 封装，用于自动支付
+
+## 先决条件
+
+- 已安装 **Node.js 18+**
+- 拥有一些 USDC 的 **Solana 钱包**（用于测试）
+- 对 Solana 或 Express.js 有**基本了解**（取决于您的用例）
+
+## 服务器设置
+
+仅需几行代码即可接受 Solana USDC 支付。
+
+### 安装
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+### 基本服务器示例
+
+```typescript
+import express from 'express';
+import { paymentMiddleware } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+const FACILITATOR_URL = 'https://mainnet.anyspend.com/x402';
+
+// 您的 Solana 钱包地址
+const SOLANA_PAYTO_ADDRESS = 'YourSolanaWalletAddress...';
+
+// 配置支付端点
+app.use(
+  paymentMiddleware(
+    SOLANA_PAYTO_ADDRESS,
+    {
+      "POST /api/solana/premium": {
+        price: {
+          amount: '10000', // 0.01 USDC (6 decimals)
+          asset: {
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // Solana 上的 USDC
+            decimals: 6,
+          },
+        },
+        network: 'solana',
+        config: {
+          description: '通过 USDC 支付访问高级数据',
+          mimeType: 'application/json',
+        },
+      },
+    },
+    {
+      url: FACILITATOR_URL,
+    },
+  ),
+);
+
+// 您的受保护路由
+app.post('/api/solana/premium', (req, res) => {
+  res.json({
+    message: '支付成功！',
+    data: '您的高级 Solana 数据在这里',
+  });
+});
+
+app.listen(3001, () => {
+  console.log('Solana X402 服务器在端口 3001 上运行');
+});
+```
+
+**这样做的目的：**
+1. 客户端请求端点
+2. 中间件返回 `402 Payment Required` 并提供 Solana 支付详情
+3. 客户端签署一个带有 USDC 转账的 Solana 交易
+4. 促进者验证并提交交易（无需支付燃料费）
+5. 在支付确认后执行您的路由处理程序
+
+---
+
+## 客户端设置
+
+根据您的用例，有两种在 Solana 上进行支付的方法。
+
+### 选项 1：使用 fetch（AI 代理和后端）
+
+非常适合 Node.js 脚本、AI 代理和服务器端应用程序。
+
+#### 安装
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### 示例脚本
+
+```typescript
+import {
+  createSigner,
+  wrapFetchWithPayment,
+} from "@b3dotfun/anyspend-x402-fetch";
+
+const privateKey = process.env.SOLANA_PRIVATE_KEY; // Base58 私钥
+const url = "https://api.example.com/api/solana/premium";
+
+async function main() {
+  // 从私钥创建 Solana 签名者
+  const signer = await createSigner("solana", privateKey);
+
+  // 用支付支持包装 fetch
+  const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+  // 发起支付请求
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+
+  // 检查支付响应
+  const paymentHeader = response.headers.get("x-payment-response");
+  if (paymentHeader) {
+    const payment = JSON.parse(atob(paymentHeader));
+    // 交易可在：https://solscan.io/tx/${payment.transaction} 查看
+  }
+}
+
+main();
+```
+
+**关键点：**
+- 使用 base58 编码的私钥（来自 Solana 密钥对）
+- 自动处理 402 响应和支付流程
+- 在 `x-payment-response` 头部返回交易哈希
+
+---
+
+### 选项 2：使用浏览器钱包（React/Next.js）
+
+适用于使用 Phantom、Solflare、Ledger 或其他 Solana 钱包的 Web 应用程序。
+
+#### 安装
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### React 组件示例
+
+```tsx
+import {
+  createWalletAdapterSigner,
+  useWallet,
+  WalletMultiButton,
+} from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { wrapFetchWithPayment } from "@b3dotfun/anyspend-x402-fetch";
+
+function PremiumDataFetcher() {
+  const { publicKey, signAllTransactions, connected } = useWallet();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    try {
+      // 从钱包适配器创建签名者
+      const signer = createWalletAdapterSigner(
+        publicKey.toBase58(),
+        signAllTransactions
+      );
+
+      // 用支付支持包装 fetch
+      const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+      // 发起付费请求
+      const response = await fetchWithPayment(
+        "https://api.example.com/api/solana/premium",
+        { method: "POST" }
+      );
+
+      const result = await response.json();
+      setData(result);
+
+      // 获取交易哈希
+      const paymentHeader = response.headers.get("x-payment-response");
+      if (paymentHeader) {
+        const payment = JSON.parse(atob(paymentHeader));
+        // 交易可在：https://solscan.io/tx/${payment.transaction} 查看
+      }
+    } catch (error) {
+      // 处理支付错误
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <WalletMultiButton />
+      <button onClick={fetchPremiumData} disabled={!connected || loading}>
+        {loading ? "处理中..." : "获取高级数据 (0.01 USDC)"}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+#### 应用程序包装器设置
+
+使用钱包提供者包装您的应用程序：
+
+```tsx
+import { WalletProvider } from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { clusterApiUrl } from "@solana/web3.js";
+
+function App() {
+  const endpoint = clusterApiUrl("mainnet-beta");
+
+  return (
+    <WalletProvider endpoint={endpoint} autoConnect>
+      <PremiumDataFetcher />
+    </WalletProvider>
+  );
+}
+```
+
+**关键点：**
+- 支持 Phantom、Solflare、Ledger、Trust Wallet 等
+- 提示用户批准交易签名
+- 完全无需支付燃料费 - 用户仅需签名，促进者支付费用
+- 将 Solana Wallet Adapter v1 与 X402 v2 签名桥接
+
+---
+
+## 配置
+
+### 支持的网络
+
+- **`solana`** - Solana mainnet-beta
+- **`solana-devnet`** - Solana devnet（用于测试）
+
+### 代币配置
+
+Solana 上最常见的 SPL 代币是 USDC：
+
+```typescript
+{
+  address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC 铸币地址
+  decimals: 6,
+}
+```
+
+对于其他 SPL 代币，请指定铸币地址和小数位数。
+
+### 促进者 URL
+
+生产环境：`https://mainnet.anyspend.com/x402`
+
+促进者负责：
+- 交易验证
+- 链上提交
+- 燃料费赞助
+- 支付结算
+
+---
+
+## 测试
+
+### 获取测试 USDC
+
+用于 Solana devnet 测试：
+
+1. 从 [Solana Faucet](https://faucet.solana.com/) 获取 devnet SOL
+2. 使用 devnet USDC 铸币地址：`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
+3. 在您的配置中将网络设置为 `solana-devnet`
+
+### 测试您的集成
+
+```typescript
+// 服务器 - 使用 devnet
+network: 'solana-devnet'
+
+// 客户端 - 使用 devnet RPC
+const endpoint = 'https://api.devnet.solana.com';
+```
+
+---
+
+## 常见代币地址
+
+| 代币 | 铸币地址 | 小数位数 | 网络 |
+|-------|--------------|----------|---------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | mainnet-beta |
+| USDC | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | devnet |
+
+---
+
+## 错误处理
+
+```typescript
+try {
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+} catch (error) {
+  if (error.message.includes("Insufficient funds")) {
+    // 钱包中 USDC 不足
+  } else if (error.message.includes("User rejected")) {
+    // 用户取消交易
+  } else {
+    // 处理支付错误
+  }
+}
+```
+
+---
+
+## 下一步
+
+<CardGroup cols={2}>
+<Card title="X402 概览" icon="book" href="/anyspend/x402-overview">
+  了解 AnySpend X402 的工作原理
+</Card>
+
+<Card title="网络支持" icon="globe" href="/anyspend/x402-network-support">
+  查看所有支持的链和代币
+</Card>
+
+<Card title="签名方法" icon="signature" href="/anyspend/x402-signature-methods">
+  深入了解 Solana 交易签名
+</Card>
+
+<Card title="买家指南" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  EVM 客户端设置指南
+</Card>
+</CardGroup>
+
+---
+
+## 故障排除
+
+<AccordionGroup>
+<Accordion title="交易签名验证失败">
+检查：
+- 您的钱包是否有足够的 USDC 进行支付
+- 您是否在正确的网络上（mainnet vs devnet）
+- 促进者 URL 是否正确
+</Accordion>
+
+<Accordion title="钱包适配器不工作">
+确保：
+- 您已使用 `WalletProvider` 包装您的应用程序
+- 已安装钱包扩展（Phantom、Solflare 等）
+- 您正在使用正确的 RPC 端点
+</Accordion>
+
+<Accordion title="支付成功但未返回数据">
+验证：
+- 服务器端点是否配置正确
+- 支付金额是否符合服务器期望
+- 检查服务器日志是否有错误
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 获取帮助
+
+- **在线演示**：在 [x402-demo.anyspend.com](https://x402-demo.anyspend.com/) 上亲自尝试
+- **演示源代码**：[github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)
+- **Discord**：加入我们的 [Discord 社区](https://discord.gg/b3dotfun)
+- **GitHub**：[github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **示例**：在 [仓库](https://github.com/b3-fun/anyspend-x402/tree/main/examples/typescript) 中查看完整示例

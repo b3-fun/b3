@@ -1,0 +1,513 @@
+---
+title: x402 加密广告
+description: 在加密货币网站上使用 x402 免费投放广告，零 gas 费用
+lang: cn
+originalPath: anyspend/marketplace-ads.mdx
+---
+[查看 x402 广告市场（UI）](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+# x402 广告市场
+
+使用 USDC 在 100 多个加密内容网站上购买广告位，得益于 x402 无气费支付，**零气费**。
+
+<CardGroup cols={2}>
+  <Card title="无气费" icon="gas-pump">
+    只支付广告价格 - 零交易费
+  </Card>
+  <Card title="即时预订" icon="bolt">
+    一次签名，即刻上线
+  </Card>
+  <Card title="100+ 网站" icon="globe">
+    从加密新闻、DeFi、NFT 网站中选择
+  </Card>
+  <Card title="AI 驱动内容" icon="brain">
+    提交经 AI 验证和生成的文章
+  </Card>
+  <Card title="真实分析" icon="chart-line">
+    购买前查看流量数据
+  </Card>
+  <Card title="跟踪一切" icon="list-check">
+    实时监控您的广告和文章请求
+  </Card>
+</CardGroup>
+
+## 快速开始
+
+<Tabs>
+  <Tab title="展示广告">
+    <Steps>
+      <Step title="连接钱包">
+        访问 [x402 广告市场](https://explorer.b3.fun/apps/x402-ad-marketplace) 并在 Base 网络上连接您的钱包
+      </Step>
+      <Step title="浏览网站">
+        探索带有流量统计的网站，挑选您的目标受众
+      </Step>
+      <Step title="选择格式和时间">
+        选择广告格式（横幅/侧边栏/领导者榜）和时间段
+      </Step>
+      <Step title="上传广告">
+        提供图片 URL 和落地页
+      </Step>
+      <Step title="签名和支付">
+        一次签名用 USDC - 零气费 - 即时确认
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="文章提交">
+    <Steps>
+      <Step title="连接钱包">
+        访问 [x402 广告市场](https://explorer.b3.fun/apps/x402-ad-marketplace) 并在 Base 网络上连接您的钱包
+      </Step>
+      <Step title="选择目标网站">
+        从接受文章提交的加密新闻网站中选择
+      </Step>
+      <Step title="提交您的想法">
+        提供推文 URL、主题或完整的文章标题
+      </Step>
+      <Step title="AI 验证">
+        获取即时 AI 反馈，包括分数（0-100）和建议
+      </Step>
+      <Step title="审核和提交">
+        如果获批（分数 ≥70），则用一个 x402 签名提交
+      </Step>
+      <Step title="跟踪进度">
+        监控状态并在发布时获得通知
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>
+  需要在 Base 上使用 USDC 吗？使用 [Base Bridge](https://bridge.base.org) 从以太坊桥接
+</Note>
+
+## 广告格式和定价
+
+<Tabs>
+  <Tab title="宽幅横幅">
+    **970×250 像素** - 宽幅横幅格式
+    
+    **价格：**1 USDC/小时
+    
+    最适合成本效益高且可见性好的活动
+  </Tab>
+  <Tab title="侧边栏">
+    **300×600 像素** - 垂直侧放置
+    
+    **价格：**2 USDC/小时
+    
+    最适合用户滚动时持续可见
+  </Tab>
+  <Tab title="领导者榜">
+    **728×90 像素** - 顶部横幅位置
+    
+    **价格：**3 USDC/小时
+    
+    最适合最大化可见性和品牌意识
+  </Tab>
+</Tabs>
+
+**持续时间：**最少 1 小时，最多 7 天（168 小时）
+
+## 文章提交
+
+向加密内容网站提交文章想法。AI 验证您的主题并生成优化的标题和描述。
+
+### 如何操作
+
+<Steps>
+  <Step title="提交主题或推文">
+    提供推文 URL、主题想法或完整的文章标题
+  </Step>
+  <Step title="AI 验证（免费）">
+    AI 对您的内容进行评分（0-100）并在需要时生成建议
+  </Step>
+  <Step title="获得批准">
+    - **分数 ≥80：**您的输入完美，按原样接受
+    - **分数 70-79：**获批，AI 提供改进建议
+    - **分数 &lt;70：**被拒绝 - 尝试不同的主题
+  </Step>
+  <Step title="提交和支付">
+    一次 x402 签名提交您的文章请求
+  </Step>
+  <Step title="发布">
+    网站发布您的文章，并您会收到现场 URL
+  </Step>
+</Steps>
+
+### 定价
+
+价格因网站而异，通常为 **每篇文章 3-50 USDC**。每个网站根据流量和受众设定自己的费率。
+
+<Note>
+  验证是免费的！在承诺付款之前，您可以验证尽可能多的想法。
+</Note>
+
+## API 参考
+
+### 网络和支付详情
+
+<ParamField path="网络" type="Base">
+  链 ID：8453
+</ParamField>
+
+<ParamField path="支付代币" type="USDC">
+  6 位小数
+</ParamField>
+
+<ParamField path="协议" type="x402">
+  ERC-20 Permit 签名
+</ParamField>
+
+<ParamField path="最高价格" type="$1000">
+  每次预订的最高价格
+</ParamField>
+
+### 购买广告位（x402 支付）
+
+```bash
+POST https://x402.anyspend.com/ads/buy
+```
+
+使用 x402 无气费支付以编程方式购买广告位。此端点需要 x402 支付授权。
+
+**请求正文：**
+
+<CodeGroup>
+```json 请求
+{
+  "productId": "slot_abc123",
+  "buyerAddress": "0x742d35Cc6...",
+  "startTime": "2025-01-15T14:00:00Z",
+  "endTime": "2025-01-15T18:00:00Z",
+  "adContent": {
+    "imageUrl": "https://...",
+    "linkUrl": "https://...",
+    "altText": "Alt 文本",
+    "title": "广告标题",
+    "description": "描述"
+  }
+}
+```
+
+```json 成功响应（200）
+{
+  "success": true,
+  "data": {
+    "purchaseId": "purch_123...",
+    "bookingId": "booking_456...",
+    "totalPrice": "5000000",
+    "status": "confirmed"
+  }
+}
+```
+
+```json 错误响应（400）
+{
+  "success": false,
+  "error": "该时间段已被预订"
+}
+```
+</CodeGroup>
+
+**参数：**
+- `productId`（必填）- 广告位 ID，来自 `/ads/slots`
+- `buyerAddress`（必填）- 您的钱包地址
+- `startTime`（必填）- 开始时间，ISO 8601 格式
+- `endTime`（必填）- 结束时间，ISO 8601 格式
+- `adContent.imageUrl`（必填）- 广告图片的直接 URL
+- `adContent.linkUrl`（必填）- 落地页 URL
+- `adContent.altText`（必填）- 图片替代文本
+- `adContent.title`（可选）- 广告标题
+- `adContent.description`（可选）- 广告描述
+
+**JavaScript/TypeScript 示例：**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// 创建钱包客户端
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+// 用 x402 支付包装 fetch
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // 最大 1000 USDC
+);
+
+// 购买广告位
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/ads/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'slot_abc123',
+      buyerAddress: '0x742d35Cc6...',
+      startTime: '2025-01-15T14:00:00Z',
+      endTime: '2025-01-15T18:00:00Z',
+      adContent: {
+        imageUrl: 'https://example.com/ad.jpg',
+        linkUrl: 'https://example.com',
+        altText: '我的广告',
+        title: '看看我们的产品！',
+        description: '限时优惠'
+      }
+    })
+  }
+);
+
+const result = await response.json();
+console.log('预订 ID:', result.data.bookingId);
+```
+
+<Note>
+  有关使用 `wrapFetchWithPayment` 的更多详情，请参阅 [x402 SDK 文档](/anyspend/x402-overview)。
+</Note>
+
+### 浏览网站（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+列出所有可用的网站，支持分页。此端点免费调用。
+
+查询参数：
+- `page` - 页码（默认：1）
+- `limit` - 每页结果数（默认：20，最大：100）
+- `search` - 按名称/域名/关键词搜索
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?search=defi&limit=10"
+```
+
+```javascript JavaScript
+const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
+  .then(r => r.json());
+```
+
+```json 响应
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "abc123",
+      "siteName": "每日加密新闻",
+      "siteUrl": "https://cryptonews.example.com",
+      "siteDomain": "cryptonews.com",
+      "description": "每日加密新闻和分析",
+      "keywords": ["加密", "比特币", "defi"],
+      "availableSlots": ["leaderboard", "sidebar", "banner"],
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+### 列出所有广告位（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/slots
+```
+
+列出所有网站上所有可用的广告位。此端点免费调用。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots"
+```
+
+```javascript JavaScript
+const slots = await fetch('https://x402.anyspend.com/ads/slots')
+  .then(r => r.json());
+```
+
+```json 响应
+{
+  "success": true,
+  "data": [
+    {
+      "slotId": "slot_abc123",
+      "siteId": "site_123",
+      "slotType": "leaderboard",
+      "pricePerHour": "5000000"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### 获取广告位详情（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId
+```
+
+返回包括定价、格式和关联网站详情的静态广告位信息。此端点免费调用。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123"
+```
+
+```json 响应
+{
+  "success": true,
+  "data": {
+    "slot": {
+      "slotId": "slot_banner_abc123",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "pricePerHour": "1000000",
+      "available": true
+    },
+    "site": {
+      "siteName": "每日加密新闻",
+      "siteUrl": "https://cryptonews.example.com"
+    }
+  }
+}
+```
+</CodeGroup>
+
+### 检查当前广告（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
+```
+
+返回此广告位当前正在运行的广告，或指示该广告位是否可用。此端点免费调用。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123/current-ad"
+```
+
+```json 广告运行中
+{
+  "success": true,
+  "data": {
+    "type": "paid",
+    "ad": {
+      "imageUrl": "https://example.com/ad.png",
+      "linkUrl": "https://example.com/landing"
+    },
+    "booking": {
+      "bookingId": "booking_xyz789",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z"
+    }
+  }
+}
+```
+
+```json 广告位可用
+{
+  "success": true,
+  "data": {
+    "type": "empty"
+  }
+}
+```
+</CodeGroup>
+
+### 查看您的广告活动（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/bookings/buyer/:address
+```
+
+跟踪您所有的广告预订 - 活动中、待定和已完成。此端点免费调用。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourAddress"
+```
+
+```json 响应
+{
+  "success": true,
+  "data": [
+    {
+      "bookingId": "booking_xyz789",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z",
+      "adContent": {
+        "imageUrl": "https://mysite.com/ad.png",
+        "linkUrl": "https://mysite.com/landing"
+      },
+      "totalPrice": "3000000",
+      "status": "active",
+      "paymentTxHash": "0xabcdef...",
+      "createdAt": "2024-01-22T16:30:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**状态值：**
+- `active` - 当前运行中
+- `pending` - 预定未来
+- `completed` - 活动结束
+
+<Info>
+  API 响应中的价格以 USDC wei（6 位小数）表示。除以 1,000,000 以获得 USDC 金额。
+</Info>
+
+---
+
+## 文章提交端点
+
+### 验证文章想法（免费）
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+验证文章想法并获取 AI 生成的标题和描述。此端点免费调用 - 无需支付。
+
+**请求正文：**
+
+<CodeGroup>
+```json 请求
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "如何在您的 DApp 中使用 Base Pay 为创作者支付"
+}
+```
+
+```json 批准响应（分数 ≥70）
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 92,
+    "reasoning": "极佳的主题匹配 Base 生态系统内容",
+    "estimatedPrice": "15000000",
+    "suggestedTitle": "如何在您的 DApp 中使用 Base Pay 为创作者支付",
+    "suggestedDescription": "学习如何集成 Base Pay...",
+    "userProvidedTitle": true,
+    "message": "您的输入按原样获批"
+  }
+}
+```
+
+```json

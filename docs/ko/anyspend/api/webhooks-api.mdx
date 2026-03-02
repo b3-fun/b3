@@ -1,0 +1,417 @@
+---
+title: Webhooks
+description: 실시간 이벤트 알림을 위한 웹훅 엔드포인트 구성
+lang: ko
+originalPath: anyspend/api/webhooks-api.mdx
+---
+Webhooks를 사용하면 AnySpend 계정에서 이벤트가 발생할 때 실시간 HTTP POST 알림을 받을 수 있습니다. 엔드포인트를 구성하고, 구독할 이벤트를 선택하고, 배달 기록을 모니터링하세요.
+
+<Info>
+  모든 웹훅 관리 엔드포인트는 **admin** 권한이 필요합니다. 읽기 전용 엔드포인트(list, get, deliveries)는 **read** 권한이 필요합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 웹훅 목록
+
+<ParamField path="GET /webhooks" type="read">
+  계정에 구성된 모든 웹훅 엔드포인트를 반환합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const webhooks = await client.webhooks.list();
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wh_abc123",
+      "url": "https://myapp.com/webhooks/anyspend",
+      "events": ["payment.completed", "payment.failed"],
+      "is_active": true,
+      "success_count": 142,
+      "failure_count": 3,
+      "last_triggered_at": "2026-02-27T10:30:00Z",
+      "created_at": "2026-01-15T08:00:00Z",
+      "updated_at": "2026-02-27T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 웹훅 생성
+
+<ParamField path="POST /webhooks" type="admin">
+  새 웹훅 엔드포인트를 생성합니다. 응답에는 웹훅 서명을 검증하는 데 사용되는 `secret` 필드가 포함됩니다. 이를 안전하게 저장하세요 -- 생성 시에만 반환됩니다.
+</ParamField>
+
+<ParamField path="url" type="string" required>
+  웹훅 POST 요청을 받을 HTTPS URL입니다.
+</ParamField>
+
+<ParamField path="events" type="string[]" required>
+  구독할 이벤트 유형의 배열입니다. 아래 [지원되는 이벤트](#supported-events)를 참조하세요.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://myapp.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed", "checkout.completed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.create({
+      url: "https://myapp.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed", "checkout.completed"],
+    });
+
+    // 웹훅.secret을 안전하게 저장하세요 -- 생성 시에만 반환됩니다
+    console.log("서명 비밀:", webhook.secret);
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wh_abc123",
+    "url": "https://myapp.com/webhooks/anyspend",
+    "events": ["payment.completed", "payment.failed", "checkout.completed"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "is_active": true,
+    "success_count": 0,
+    "failure_count": 0,
+    "last_triggered_at": null,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+<Warning>
+  `secret` 필드는 생성 응답에만 포함됩니다. 즉시 복사하여 환경 변수나 비밀 관리자에 저장하세요.
+</Warning>
+
+---
+
+### 웹훅 가져오기
+
+<ParamField path="GET /webhooks/:id" type="read">
+  ID로 단일 웹훅 엔드포인트를 검색합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.get("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 웹훅 업데이트
+
+<ParamField path="PATCH /webhooks/:id" type="admin">
+  기존 웹훅 엔드포인트를 업데이트합니다. 모든 필드는 선택 사항입니다.
+</ParamField>
+
+<ParamField path="url" type="string">
+  업데이트된 HTTPS 엔드포인트 URL입니다.
+</ParamField>
+
+<ParamField path="events" type="string[]">
+  구독된 이벤트 유형의 업데이트된 목록입니다. 기존 목록을 전체적으로 대체합니다.
+</ParamField>
+
+<ParamField path="is_active" type="boolean">
+  엔드포인트를 삭제하지 않고 배달을 일시 중지하려면 `false`로 설정하세요.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "events": ["payment.completed", "checkout.completed"],
+        "is_active": false
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.webhooks.update("wh_abc123", {
+      events: ["payment.completed", "checkout.completed"],
+      is_active: false,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 웹훅 삭제
+
+<ParamField path="DELETE /webhooks/:id" type="admin">
+  웹훅 엔드포인트를 영구적으로 제거합니다. 보류 중인 배달은 취소됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.webhooks.delete("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 테스트 웹훅 보내기
+
+<ParamField path="POST /webhooks/:id/test" type="admin">
+  엔드포인트가 이벤트를 올바르게 수신하고 처리하는지 확인하기 위해 웹훅 URL로 테스트 이벤트를 보냅니다. 테스트 페이로드는 `test.ping` 이벤트 유형을 사용합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.test("wh_abc123");
+    // result.delivery_id는 배달 상태를 확인하는 데 사용할 수 있습니다
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz789",
+    "status": "sent",
+    "response_code": 200
+  }
+}
+```
+
+---
+
+### 배달 기록 목록
+
+<ParamField path="GET /webhooks/:id/deliveries" type="read">
+  웹훅 엔드포인트의 배달 로그를 확인합니다. 최근 배달 시도의 상태 코드와 응답 시간을 반환합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deliveries = await client.webhooks.listDeliveries("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "del_xyz789",
+      "event_type": "payment.completed",
+      "status": "success",
+      "response_code": 200,
+      "response_time_ms": 245,
+      "attempts": 1,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "del_xyz790",
+      "event_type": "payment.failed",
+      "status": "failed",
+      "response_code": 500,
+      "response_time_ms": 3012,
+      "attempts": 3,
+      "created_at": "2026-02-27T09:15:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 실패한 배달 재시도
+
+<ParamField path="POST /webhooks/:id/deliveries/:did/retry" type="admin">
+  실패한 웹훅 배달을 수동으로 재시도합니다. 배달은 `failed` 상태여야 합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_xyz790/retry \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.retryDelivery("wh_abc123", "del_xyz790");
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz790",
+    "status": "sent",
+    "response_code": 200,
+    "attempts": 4
+  }
+}
+```
+
+---
+
+## 웹훅 객체
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `id` | `string` | 고유 웹훅 식별자 (예: `wh_abc123`) |
+| `url` | `string` | HTTPS 엔드포인트 URL |
+| `events` | `string[]` | 구독된 이벤트 유형 |
+| `secret` | `string` | 서명 비밀 (생성 시에만 반환됨) |
+| `is_active` | `boolean` | 웹훅이 현재 활성 상태인지 여부 |
+| `success_count` | `number` | 총 성공 배달 수 |
+| `failure_count` | `number` | 총 실패 배달 수 |
+| `last_triggered_at` | `string \| null` | 마지막 배달 시도의 ISO 8601 타임스탬프 |
+| `created_at` | `string` | ISO 8601 생성 타임스탬프 |
+| `updated_at` | `string` | ISO 8601 마지막 업데이트 타임스탬프 |
+
+## 지원되는 이벤트
+
+| 이벤트 유형 | 설명 |
+|------------|-------------|
+| `payment.completed` | 결제가 성공적으로 처리됨 |
+| `payment.failed` | 결제 시도 실패 |
+| `checkout.completed` | 체크아웃 세션이 완료됨 (양식 데이터, 배송, 할인 정보 포함) |
+
+## 웹훅 서명 검증
+
+각 웹훅 요청에는 `X-AnySpend-Signature` 헤더에 서명이 포함됩니다. 웹훅 비밀을 사용하여 요청이 인증되었는지 확인하세요.
+
+```typescript
+import crypto from "crypto";
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// 웹훅 핸들러에서
+app.post("/webhooks/anyspend", (req, res) => {
+  const signature = req.headers["x-anyspend-signature"];
+  const isValid = verifyWebhookSignature(
+    JSON.stringify(req.body),
+    signature,
+    process.env.ANYSPEND_WEBHOOK_SECRET
+  );
+
+  if (!isValid) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  // 이벤트 처리
+  const { type, data } = req.body;
+  switch (type) {
+    case "payment.completed":
+      // 성공적인 결제 처리
+      break;
+    case "payment.failed":
+      // 실패한 결제 처리
+      break;
+  }
+
+  res.status(200).json({ received: true });
+});
+```
+
+<Note>
+  30초 이내에 `2xx` 상태 코드를 항상 반환하세요. 실패한 배달은 지수 백오프를 사용하여 최대 3회까지 재시도됩니다.
+</Note>

@@ -1,0 +1,233 @@
+---
+title: 이벤트
+description: API 감사 추적 및 이벤트 로그
+lang: ko
+originalPath: anyspend/api/events.mdx
+---
+이벤트 엔드포인트는 계정에서 수행된 모든 API 작업의 감사 추적을 제공합니다. 생성, 업데이트 및 삭제 작업은 요청 방법, 경로, IP 주소 및 상태 코드를 포함한 메타데이터와 함께 기록됩니다.
+
+<Info>
+  이벤트 엔드포인트는 **읽기** 권한이 필요합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 이벤트 목록
+
+<ParamField path="GET /events" type="read">
+  선택적 필터링으로 API 이벤트를 나열합니다. 결과는 역순으로 반환됩니다(최신 순).
+</ParamField>
+
+<ParamField path="type" type="string" query>
+  이벤트 유형별 필터링 (예: `payment_link.created`, `webhook.updated`, `discount_code.deleted`).
+</ParamField>
+
+<ParamField path="resource_type" type="string" query>
+  리소스 유형별 필터링 (예: `payment_link`, `webhook`, `discount_code`, `widget`, `notification`).
+</ParamField>
+
+<ParamField path="from" type="string" query>
+  ISO 8601 타임스탬프. 이 시간 이후에 생성된 이벤트만 반환합니다.
+</ParamField>
+
+<ParamField path="to" type="string" query>
+  ISO 8601 타임스탬프. 이 시간 이전에 생성된 이벤트만 반환합니다.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  페이지 번호로 페이지네이션 (기본값: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  페이지 당 결과 수 (기본값: `20`, 최대: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.created&from=2026-02-01T00:00:00Z&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const events = await client.events.list({
+      type: "payment_link.created",
+      from: "2026-02-01T00:00:00Z",
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "evt_abc123",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz789",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "evt_abc124",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz790",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-25T14:15:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 2,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+## 이벤트 객체
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `id` | `string` | 고유 이벤트 식별자 (예: `evt_abc123`) |
+| `event_type` | `string` | 발생한 작업 유형 ([이벤트 유형](#event-types) 참조) |
+| `resource_type` | `string` | 영향을 받은 리소스의 유형 |
+| `resource_id` | `string` | 영향을 받은 리소스의 ID |
+| `ip_address` | `string` | API 호출자의 IP 주소 |
+| `request_method` | `string` | 사용된 HTTP 메소드 (`GET`, `POST`, `PATCH`, `DELETE`) |
+| `request_path` | `string` | 호출된 API 경로 |
+| `status_code` | `number` | 반환된 HTTP 상태 코드 |
+| `created_at` | `string` | 이벤트가 기록된 ISO 8601 타임스탬프 |
+
+## 이벤트 유형
+
+이벤트는 `{resource_type}.{action}` 패턴을 따릅니다:
+
+| 이벤트 유형 | 설명 |
+|------------|-------------|
+| `payment_link.created` | 결제 링크가 생성됨 |
+| `payment_link.updated` | 결제 링크가 업데이트됨 |
+| `payment_link.deleted` | 결제 링크가 삭제됨 |
+| `product.created` | 제품이 생성됨 |
+| `product.updated` | 제품이 업데이트됨 |
+| `product.deleted` | 제품이 삭제됨 |
+| `webhook.created` | 웹훅 엔드포인트가 생성됨 |
+| `webhook.updated` | 웹훅 엔드포인트가 업데이트됨 |
+| `webhook.deleted` | 웹훅 엔드포인트가 삭제됨 |
+| `discount_code.created` | 할인 코드가 생성됨 |
+| `discount_code.updated` | 할인 코드가 업데이트됨 |
+| `discount_code.deleted` | 할인 코드가 삭제됨 |
+| `widget.created` | 위젯이 생성됨 |
+| `widget.updated` | 위젯이 업데이트됨 |
+| `widget.deleted` | 위젯이 삭제됨 |
+| `notification.updated` | 알림 설정이 업데이트됨 |
+| `api_key.created` | API 키가 생성됨 |
+| `api_key.revoked` | API 키가 취소됨 |
+
+## 리소스 유형
+
+| 리소스 유형 | 설명 |
+|---------------|-------------|
+| `payment_link` | 결제 링크 리소스 |
+| `product` | 제품 카탈로그 항목 |
+| `webhook` | 웹훅 엔드포인트 구성 |
+| `discount_code` | 할인 코드 항목 |
+| `widget` | 위젯 구성 |
+| `notification` | 알림 설정 |
+| `api_key` | API 키 관리 |
+
+---
+
+## 필터링 예시
+
+### 특정 날짜 범위의 이벤트
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?from=2026-02-01T00:00:00Z&to=2026-02-28T23:59:59Z" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      from: "2026-02-01T00:00:00Z",
+      to: "2026-02-28T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### 모든 웹훅 관련 이벤트
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?resource_type=webhook&limit=50" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      resource_type: "webhook",
+      limit: 50,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### 삭제 감사
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.deleted" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deletions = await client.events.list({
+      type: "payment_link.deleted",
+    });
+
+    deletions.data.forEach((event) => {
+      console.log(
+        `${event.resource_id} deleted from ${event.ip_address} at ${event.created_at}`
+      );
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  이벤트는 90일 동안 보관됩니다. 더 긴 보관을 위해서는 날짜 범위 필터를 사용하여 주기적으로 이벤트를 내보내십시오.
+</Note>

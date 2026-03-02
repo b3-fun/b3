@@ -1,0 +1,481 @@
+---
+title: Integração de IA & Agente
+description: Utilize a API da Plataforma AnySpend com agentes de IA e LLMs
+lang: pt-BR
+originalPath: anyspend/api/ai-integration.mdx
+---
+A Plataforma AnySpend API é projetada com **integração AI-first** em mente. Cada endpoint possui um `operationId` único, esquemas JSON detalhados e convenções consistentes que tornam seu uso direto com chamadas de função LLM, agentes autônomos e frameworks de orquestração de IA.
+
+## Especificação OpenAPI
+
+A especificação completa OpenAPI 3.1 está disponível em:
+
+```
+GET /api/v1/openapi.json
+```
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/openapi.json -o openapi.json
+```
+
+A especificação inclui:
+- Um `operationId` único para cada endpoint (ex.: `createPaymentLink`, `listTransactions`)
+- Esquemas JSON detalhados de solicitação e resposta com descrições
+- Requisitos de autenticação
+- Esquemas de resposta de erro
+
+<Tip>
+  Use a especificação OpenAPI para gerar automaticamente definições de ferramentas para seu LLM. A maioria dos frameworks de IA pode converter operações OpenAPI em definições de função/ferramenta programaticamente.
+</Tip>
+
+## Chamada de Função LLM
+
+### Claude (Anthropic)
+
+Converta operações OpenAPI em definições de ferramentas Claude. Aqui está um exemplo de definição de ferramenta para criar um link de pagamento:
+
+```json
+{
+  "name": "create_payment_link",
+  "description": "Crie um novo link de pagamento que pode ser compartilhado com clientes para coletar pagamentos em cripto. Retorna o objeto do link de pagamento incluindo a URL compartilhável.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Nome legível por humanos para o link de pagamento (ex.: 'Plano Pro Mensal')"
+      },
+      "amount": {
+        "type": "string",
+        "description": "Quantia de pagamento na menor unidade do token. Para USDC (6 decimais), '1000000' = 1 USDC."
+      },
+      "recipient_address": {
+        "type": "string",
+        "description": "Endereço Ethereum (prefixado com 0x, 42 caracteres) que receberá o pagamento"
+      },
+      "token_address": {
+        "type": "string",
+        "description": "Endereço do contrato do token ERC-20. Padrão para USDC na Base se omitido."
+      },
+      "chain_id": {
+        "type": "number",
+        "description": "ID da cadeia alvo. Padrão para 8453 (Base)."
+      },
+      "description": {
+        "type": "string",
+        "description": "Descrição opcional mostrada ao pagador na página de checkout"
+      }
+    },
+    "required": ["name", "amount", "recipient_address"]
+  }
+}
+```
+
+### OpenAI
+
+A definição de função equivalente para a chamada de função da OpenAI:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "create_payment_link",
+    "description": "Crie um novo link de pagamento que pode ser compartilhado com clientes para coletar pagamentos em cripto. Retorna o objeto do link de pagamento incluindo a URL compartilhável.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome legível por humanos para o link de pagamento"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Quantia de pagamento na menor unidade (ex.: '1000000' para 1 USDC)"
+        },
+        "recipient_address": {
+          "type": "string",
+          "description": "Endereço Ethereum para receber o pagamento"
+        },
+        "token_address": {
+          "type": "string",
+          "description": "Endereço do contrato do token ERC-20 (padrão: USDC na Base)"
+        },
+        "chain_id": {
+          "type": "number",
+          "description": "ID da cadeia alvo (padrão: 8453 / Base)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Descrição mostrada na página de checkout"
+        }
+      },
+      "required": ["name", "amount", "recipient_address"]
+    }
+  }
+}
+```
+
+## Exemplo: Fluxo de Conversa
+
+Aqui está como um assistente de IA poderia usar as ferramentas AnySpend em uma conversa:
+
+<Steps>
+  <Step title="Usuário pede para criar um link de pagamento">
+    **Usuário:** "Crie um link de pagamento de 50 USDC para a assinatura do plano Pro"
+
+    A IA decide chamar a ferramenta `create_payment_link`.
+  </Step>
+  <Step title="IA chama a ferramenta">
+    ```json
+    {
+      "name": "create_payment_link",
+      "input": {
+        "name": "Assinatura do Plano Pro",
+        "amount": "50000000",
+        "recipient_address": "0xSeuEndereçoConfigurado",
+        "description": "Assinatura mensal do plano Pro"
+      }
+    }
+    ```
+  </Step>
+  <Step title="Ferramenta retorna o resultado">
+    ```json
+    {
+      "id": "pl_abc123",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "name": "Assinatura do Plano Pro",
+      "amount": "50000000",
+      "status": "ativo"
+    }
+    ```
+  </Step>
+  <Step title="IA responde ao usuário">
+    "Eu criei um link de pagamento de 50 USDC para a Assinatura do Plano Pro. Aqui está o link: https://pay.anyspend.com/pl_abc123"
+  </Step>
+</Steps>
+
+## Construindo um Agente de Pagamento de IA
+
+Abaixo está um exemplo completo de um agente de IA que pode gerenciar pagamentos usando Claude e o AnySpend SDK:
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const anthropic = new Anthropic();
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Defina as ferramentas que o agente pode usar
+const tools: Anthropic.Tool[] = [
+  {
+    name: "create_payment_link",
+    description: "Crie um link de pagamento para coletar pagamentos em cripto",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "Nome para o link" },
+        amount: { type: "string", description: "Quantia na menor unidade" },
+        recipient_address: { type: "string", description: "Endereço ETH do destinatário" },
+      },
+      required: ["name", "amount", "recipient_address"],
+    },
+  },
+  {
+    name: "list_recent_transactions",
+    description: "Listar transações recentes com filtro de status opcional",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: { type: "string", enum: ["completed", "pending", "failed"] },
+        limit: { type: "number", description: "Máximo de resultados (padrão 10)" },
+      },
+    },
+  },
+  {
+    name: "get_transaction_stats",
+    description: "Obter estatísticas agregadas de transações",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+];
+
+// Valide campos de string obrigatórios da entrada de ferramenta LLM
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`Campo faltando ou inválido: ${key}`);
+  }
+  return value;
+}
+
+// Execute uma chamada de ferramenta
+async function executeTool(name: string, input: Record<string, unknown>) {
+  switch (name) {
+    case "create_payment_link":
+      return await platform.paymentLinks.create({
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
+      });
+
+    case "list_recent_transactions":
+      return await platform.transactions.list({
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
+      });
+
+    case "get_transaction_stats":
+      return await platform.transactions.stats();
+
+    default:
+      throw new Error(`Ferramenta desconhecida: ${name}`);
+  }
+}
+
+const SYSTEM_PROMPT =
+  "Você é um assistente de gerenciamento de pagamentos. Use as ferramentas fornecidas para ajudar os usuários a criar links de pagamento, visualizar transações e gerenciar sua conta AnySpend. As quantias estão na menor unidade do token -- para USDC com 6 decimais, 1 USDC = 1000000.";
+
+// Execute o loop do agente
+async function chat(userMessage: string) {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  let response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    tools,
+    messages,
+    system: SYSTEM_PROMPT,
+  });
+
+  // Trate o uso de ferramentas em um loop
+  while (response.stop_reason === "tool_use") {
+    const toolUseBlocks = response.content.filter(
+      (b): b is Anthropic.ContentBlock & { type: "tool_use" } =>
+        b.type === "tool_use"
+    );
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolUseBlocks) {
+      const result = await executeTool(
+        block.name,
+        block.input as Record<string, unknown>
+      );
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
+    }
+
+    messages.push({ role: "assistant", content: response.content });
+    messages.push({ role: "user", content: toolResults });
+
+    response = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 1024,
+      tools,
+      messages,
+      system: SYSTEM_PROMPT,
+    });
+  }
+
+  // Extraia a resposta em texto
+  const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock?.type === "text" ? textBlock.text : "";
+}
+
+// Uso
+const reply = await chat("Crie um link de pagamento de 25 USDC para um pedido de camiseta");
+console.log(reply);
+```
+
+## Servidor MCP (Em Breve)
+
+<Info>
+  Estamos construindo um servidor Model Context Protocol (MCP) que exporá a API completa da Plataforma AnySpend como ferramentas MCP. Isso permitirá que qualquer cliente de IA compatível com MCP (Claude Desktop, Cursor, Windsurf, etc.) interaja diretamente com sua conta AnySpend.
+
+  Junte-se à [lista de espera](https://anyspend.com/mcp-waitlist) para obter acesso antecipado.
+</Info>
+
+O servidor MCP suportará:
+- Todas as operações CRUD para links de pagamento, produtos, clientes e webhooks
+- Consulta e exportação de transações
+- Análises e estatísticas
+- Gerenciamento de sessão de checkout
+
+## Definições de Ferramentas Adicionais
+
+Aqui estão mais definições de ferramentas que você pode adicionar ao seu agente para cobertura abrangente:
+
+<AccordionGroup>
+  <Accordion title="list_payment_links">
+    ```json
+    {
+      "name": "list_payment_links",
+      "description": "Listar todos os links de pagamento, opcionalmente filtrados por status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "disabled"],
+            "description": "Filtrar por status do link"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Máximo de resultados a retornar (padrão 20, máximo 100)"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="get_analytics_overview">
+    ```json
+    {
+      "name": "get_analytics_overview",
+      "description": "Obter visão geral de análises de alto nível incluindo volume total, contagem de transações e principais links de pagamento",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Data de início no formato ISO 8601"
+          },
+          "to": {
+            "type": "string",
+            "description": "Data de término no formato ISO 8601"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="create_discount_code">
+    ```json
+    {
+      "name": "create_discount_code",
+      "description": "Criar um código de desconto que os clientes podem aplicar no checkout",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A string do código de desconto (ex.: 'VERAO20')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"],
+            "description": "Tipo de desconto: porcentagem de desconto ou valor fixo de desconto"
+          },
+          "value": {
+            "type": "string",
+            "description": "Valor do desconto: porcentagem (ex.: '20' para 20%) ou valor fixo na menor unidade"
+          },
+          "max_uses": {
+            "type": "number",
+            "description": "Número máximo de vezes que este código pode ser usado"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "Data de expiração no formato ISO 8601"
+          }
+        },
+        "required": ["code", "type", "value"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="export_transactions">
+    ```json
+    {
+      "name": "export_transactions",
+      "description": "Exportar transações como CSV ou JSON para relatórios e análises",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "description": "Formato de exportação (padrão: csv)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "pending", "failed"],
+            "description": "Filtrar por status da transação"
+          },
+          "from": {
+            "type": "string",
+            "description": "Data de início no formato ISO 8601"
+          },
+          "to": {
+            "type": "string",
+            "description": "Data de término no formato ISO 8601"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Melhores Práticas
+
+<CardGroup cols={2}>
+  <Card title="Use chaves somente-leitura para agentes de consulta" icon="eye">
+    Agentes de IA que apenas leem dados (listar transações, visualizar análises) devem usar chaves de API com permissão **somente-leitura**. Isso impede mutações acidentais de chamadas de ferramentas alucinadas.
+  </Card>
+  <Card title="Use chaves de escrita para agentes de ação" icon="pen">
+    Agentes que precisam criar links de pagamento ou gerenciar recursos precisam de chaves de API **leitura-escrita**. Limite-as às permissões mínimas necessárias.
+  </Card>
+  <Card title="Sempre valide quantias" icon="calculator">
+    LLMs podem alucinar números. Antes de executar uma chamada de ferramenta que envolve uma quantia, valide se a quantia é razoável. Considere adicionar uma etapa de confirmação para quantias acima de um limiar.
+  </Card>
+  <Card title="Registre todas as chamadas de ferramentas" icon="file-lines">
+    Registre cada chamada de ferramenta e seu resultado para auditabilidade. Isso é especialmente importante para agentes que lidam com dinheiro real.
+  </Card>
+</CardGroup>
+
+<Warning>
+  **Nunca exponha sua chave de API em código do lado do cliente ou em prompts de IA visíveis para os usuários finais.** Use um proxy do lado do servidor para fazer chamadas de API em nome do seu agente de IA. Se usando chamadas de função Claude ou OpenAI, a chave de API deve existir apenas na sua camada de execução de ferramentas de backend -- nunca no prompt do sistema LLM.
+</Warning>
+
+## Gerando Definições de Ferramentas a partir do OpenAPI
+
+Você pode converter programaticamente a especificação OpenAPI em definições de ferramentas para qualquer framework LLM:
+
+```typescript
+// Busque a especificação OpenAPI e converta para definições de ferramentas
+async function generateTools() {
+  const resp = await fetch(
+    "https://platform-api.anyspend.com/api/v1/openapi.json"
+  );
+  const spec = await resp.json();
+
+  const tools = [];
+
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, operation] of Object.entries(methods as Record<string, any>)) {
+      if (!operation.operationId) continue;
+
+      const tool = {
+        name: operation.operationId,
+        description: operation.summary || operation.description || "",
+        input_schema: operation.requestBody?.content?.["application/json"]?.schema || {
+          type: "object",
+          properties: {},
+        },
+      };
+
+      tools.push(tool);
+    }
+  }
+
+  return

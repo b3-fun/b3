@@ -1,0 +1,290 @@
+---
+title: 인증
+description: AnySpend 플랫폼 API를 위한 API 키 인증
+lang: ko
+originalPath: anyspend/api/authentication.mdx
+---
+# 인증
+
+AnySpend 플랫폼 API는 인증을 위해 API 키를 사용합니다. 각 키는 단일 조직에 할당되며 특정 권한 세트를 가집니다.
+
+## API 키 생성
+
+<Steps>
+<Step title="AnySpend 대시보드 열기">
+  [anyspend.com/dashboard](https://anyspend.com/dashboard)로 이동하여 계정에 로그인하세요.
+</Step>
+
+<Step title="설정 > API 키로 이동">
+  사이드바에서 **설정**을 클릭한 다음 **API 키** 탭을 선택하세요.
+</Step>
+
+<Step title="새 키 생성">
+  **API 키 생성**을 클릭하고, 설명이 포함된 이름(예: "프로덕션 백엔드" 또는 "CI/CD 파이프라인")을 입력하고 권한 수준을 선택하세요.
+</Step>
+
+<Step title="키 복사 및 저장">
+  전체 키는 생성 시 **한 번만** 표시됩니다. 즉시 복사하여 안전한 위치(예: 환경 변수, 비밀 관리자)에 저장하세요.
+</Step>
+</Steps>
+
+<Warning>
+  API 키는 생성될 때 한 번만 표시됩니다. 분실한 경우 이전 키를 취소하고 새로운 키를 생성해야 합니다.
+</Warning>
+
+## API 키 형식
+
+모든 AnySpend API 키는 접두사 `asp_`로 시작합니다:
+
+```
+asp_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+```
+
+접두사를 사용하면 코드베이스에서 AnySpend 키를 쉽게 식별할 수 있으며 다른 서비스의 키를 실수로 사용하는 것을 방지합니다.
+
+## API 키 전달
+
+두 가지 헤더 중 하나를 사용하여 요청을 인증할 수 있습니다:
+
+<Tabs>
+<Tab title="Authorization 헤더(권장)">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_a1b2c3d4e5..."
+```
+</Tab>
+
+<Tab title="X-API-Key 헤더">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "X-API-Key: asp_live_a1b2c3d4e5..."
+```
+</Tab>
+</Tabs>
+
+`Authorization: Bearer` 방식이 OAuth 2.0 규약을 따르며 대부분의 HTTP 클라이언트 및 API 테스트 도구에서 지원되므로 선호됩니다.
+
+## 권한 수준
+
+각 API 키에는 하나 이상의 권한이 할당됩니다. 권한은 상위 수준이 모든 하위 수준 기능을 포함하는 계층 구조를 따릅니다.
+
+| 권한 | 접근 권한 | 사용 사례 |
+|-----------|-----------------|----------|
+| **read** | 모든 리소스에 대한 `GET` -- 결제 링크, 제품, 거래, 고객, 분석 목록 및 검색 | 대시보드, 보고 도구, 읽기 전용 통합 |
+| **write** | `read`에 있는 모든 것 + 모든 리소스에 대한 `POST`, `PATCH`, `DELETE` -- 결제 링크 생성, 제품 업데이트, 웹훅 관리 | 백엔드 서비스, 자동화, 표준 통합 |
+| **admin** | `write`에 있는 모든 것 + API 키, 조직 설정, 결제 관리 | 인프라 관리, CI/CD, 관리 도구 |
+
+<Info>
+  권한 계층 구조는 **write** 권한이 있는 키가 자동으로 **read** 접근 권한을 가진다는 것을 의미합니다. **admin** 권한이 있는 키는 **write** 및 **read** 접근 권한을 모두 가집니다.
+</Info>
+
+### 권한 계층 구조
+
+```
+admin
+  |-- write
+  |     |-- read
+```
+
+### 예시: 권한 확인
+
+경로가 `write` 권한을 요구하고 귀하의 키가 `read`만 가지고 있다면, `403` 오류를 받게 됩니다:
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "This API key does not have 'write' permission."
+  }
+}
+```
+
+## API를 통한 API 키 생성
+
+`admin` 권한이 있는 키를 가지고 있다면, 새 키를 프로그래밍 방식으로 생성할 수 있습니다:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Backend Service - Production",
+    "permissions": ["read", "write"],
+    "expires_at": 1735689600000
+  }'
+```
+
+응답:
+
+```json
+{
+  "object": "api_key",
+  "id": "ak_abc123def456",
+  "name": "Backend Service - Production",
+  "key": "asp_live_x9y8z7w6v5u4t3s2r1q0...",
+  "key_prefix": "asp_live_x9y8",
+  "permissions": ["read", "write"],
+  "expires_at": 1735689600000,
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+<Warning>
+  `key` 필드는 생성 응답에서만 반환됩니다. 안전하게 저장하세요 -- 다시 검색할 수 없습니다.
+</Warning>
+
+## 키 목록 및 취소
+
+### 모든 키 목록
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+목록 응답에는 메타데이터가 포함되지만 전체 키는 포함되지 않으며 식별을 위해서만 `key_prefix`가 포함됩니다:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "api_key",
+      "id": "ak_abc123def456",
+      "name": "Backend Service - Production",
+      "key_prefix": "asp_live_x9y8",
+      "permissions": ["read", "write"],
+      "last_used_at": 1709164800000,
+      "expires_at": 1735689600000,
+      "is_active": true,
+      "created_at": 1709078400000
+    }
+  ],
+  "has_more": false,
+  "total_count": 1,
+  "url": "/api/v1/api-keys"
+}
+```
+
+### 키 취소
+
+```bash
+curl -X DELETE https://platform-api.anyspend.com/api/v1/api-keys/ak_abc123def456 \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+응답:
+
+```json
+{
+  "object": "api_key_revoked",
+  "id": "ak_abc123def456",
+  "revoked": true
+}
+```
+
+취소된 키는 즉시 작동을 멈춥니다. 취소된 키로 인증된 진행 중인 요청은 `401` 오류를 받게 됩니다.
+
+## 빠른 결제 -- 인증 없는 오픈 계층
+
+빠른 결제 엔드포인트는 인증을 요구하지 않습니다. AnySpend 계정이 필요 없는 일회성 결제에 적합합니다:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "1000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xRecipient..."
+  }'
+```
+
+빠른 결제는 **IP 주소당 분당 5회 요청**으로 제한됩니다. API 키가 필요하지 않습니다.
+
+## 키 회전 모범 사례
+
+API 키를 주기적으로 회전하면 자격 증명이 침해될 위험을 줄일 수 있습니다. 여기에 권장되는 접근 방식이 있습니다:
+
+<Steps>
+<Step title="새 키 생성">
+  대시보드 또는 API를 사용하여 회전되는 키와 동일한 권한을 가진 새 키를 생성하세요.
+</Step>
+
+<Step title="애플리케이션 업데이트">
+  새 키를 애플리케이션의 환경 변수나 비밀 관리자에 배포하세요.
+</Step>
+
+<Step title="새 키가 작동하는지 확인">
+  `last_used_at` 타임스탬프를 확인하여 애플리케이션이 새 키로 성공적으로 요청을 하고 있는지 확인하세요.
+</Step>
+
+<Step title="이전 키 취소">
+  새 키가 모든 곳에서 사용되고 있다고 확신하면 이전 키를 취소하세요.
+</Step>
+</Steps>
+
+<Tip>
+  키를 생성할 때 선택적 `expires_at` 필드를 사용하여 자동 만료를 적용하세요. 회전을 잊었을 경우를 대비한 안전망을 추가합니다.
+</Tip>
+
+## 보안 모범 사례
+
+<AccordionGroup>
+<Accordion title="클라이언트 측 코드에 키 노출 금지">
+API 키는 서버 측 코드(백엔드 서비스, 서버리스 함수, CI/CD 파이프라인)에서만 사용해야 합니다. 다음에 포함하지 마세요:
+
+- 프론트엔드 자바스크립트 번들
+- 모바일 앱 소스 코드
+- 공개 GitHub 저장소
+- 브라우저에서 접근 가능한 구성 파일
+
+프론트엔드에서 AnySpend와 상호 작용해야 하는 경우, 안전한 체크아웃 세션을 통해 인증을 처리하는 [SDK 컴포넌트](/anyspend/components)를 사용하세요.
+</Accordion>
+
+<Accordion title="환경 변수 사용">
+하드코딩하는 대신 환경 변수에 API 키를 저장하세요:
+
+```bash
+# .env (이 파일을 절대 커밋하지 마세요)
+ANYSPEND_API_KEY=asp_live_a1b2c3d4e5...
+```
+
+```typescript
+// server.ts
+const apiKey = process.env.ANYSPEND_API_KEY;
+```
+
+실수로 커밋되는 것을 방지하기 위해 `.env`를 `.gitignore`에 추가하세요.
+</Accordion>
+
+<Accordion title="최소 권한 권한 사용">
+필요한 권한만 가진 키를 생성하세요:
+
+- 보고 대시보드는 **read**만 필요
+- 결제 링크를 생성하는 백엔드는 **write**가 필요
+- 인프라 도구만 **admin**을 사용해야 함
+</Accordion>
+
+<Accordion title="키 사용 모니터링">
+정기적으로 `last_used_at`을 확인하여 취소해야 하는 미사용 키를 식별하세요. 미사용 활성 키는 보안 위험입니다.
+</Accordion>
+
+<Accordion title="만료 날짜 설정">
+임시 통합, CI/CD 토큰 또는 계약자 접근의 경우, 키가 자동으로 비활성화되도록 항상 `expires_at` 타임스탬프를 설정하세요.
+</Accordion>
+</AccordionGroup>
+
+## 인증 오류 코드
+
+| HTTP 상태 | 코드 | 의미 |
+|------------|------|---------|
+| `401` | `key_missing` | 요청 헤더에 API 키가 제공되지 않았습니다 |
+| `401` | `key_invalid` | API 키가 활성 키와 일치하지 않습니다 |
+| `401` | `key_expired` | API 키가 `expires_at` 타임스탬프를 지났습니다 |
+| `401` | `key_revoked` | API 키가 명시적으로 취소되었습니다 |
+| `403` | `insufficient_permissions` | API 키가 필요한 권한 수준을 가지고 있지 않습니다 |
+
+전체 오류 참조는 [오류](/anyspend/api/errors) 페이지를 참조하세요.

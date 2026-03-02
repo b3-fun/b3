@@ -1,0 +1,432 @@
+---
+title: AnySpend 중개자
+description: x402 다중 토큰 결제를 위한 결제 처리기
+lang: ko
+originalPath: anyspend/x402-facilitator.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub 저장소" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  소스 코드, 예제 보기 및 기여하기
+</Card>
+
+<Card title="npm 패키지" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402 패키지 설치하기
+</Card>
+</CardGroup>
+
+## 개요
+
+AnySpend x402 Facilitator는 x402 프로토콜을 위한 다중 토큰, 크로스 체인 결제를 처리합니다. 토큰 스왑, 크로스 체인 브리징 및 결제를 처리하여 개발자가 원하는 토큰으로 결제를 받을 수 있도록 지원하면서도 선호하는 화폐로 수령할 수 있습니다.
+
+**프로덕션 엔드포인트:** `https://mainnet.anyspend.com/x402`
+
+## 주요 기능
+
+### 다중 토큰 결제 처리
+
+EIP-2612(permit) 또는 EIP-3009(transferWithAuthorization)을 지원하는 모든 ERC-20 토큰으로 결제를 수락합니다:
+
+- **스테이블코인**: USDC, USDT (지원되는 체인에서)
+- **네이티브 토큰**: ETH, SOL, BNB, MATIC
+- **커스텀 토큰**: permit 지원을 포함한 모든 토큰, 예를 들어 B3 같은 프로젝트 토큰
+- **19개 이상의 네트워크**: EVM 체인(Base, Ethereum, Arbitrum 등) 및 SVM(Solana) 지원
+
+### 크로스 체인 라우팅
+
+다른 블록체인 네트워크 간의 결제를 자동으로 처리합니다:
+
+- **동일 체인 결제**: 최소한의 오버헤드로 직접 토큰 전송
+- **크로스 체인 결제**: 네트워크 간 자동 브리징(예: ETH → Base)
+- **크로스 VM 결제**: Solana ↔ EVM 전송 실험 지원
+- **최적 라우팅**: 최상의 실행을 위한 스마트 라우트 선택
+
+### 자동 토큰 변환
+
+지원되는 모든 토큰 간 변환:
+
+- **구매자 유연성**: 사용자는 보유한 토큰으로 결제
+- **판매자 선호도**: 판매자는 선택한 결제 화폐를 수령
+- **최적 가격**: 최적 DEX 유동성 소스를 통한 라우팅
+- **슬리피지 보호**: 가격 영향에 대한 자동 안전장치
+
+### 가스 비용 없는 결제
+
+사용자는 가스 비용을 지불하지 않습니다:
+
+- Facilitator가 모든 온체인 가스 비용을 부담
+- 사용자는 EIP-712 메시지만 서명
+- 가스를 위한 네이티브 토큰 보유 필요 없음
+- 모든 체인에서 원활한 사용자 경험
+
+## 표준 준수
+
+### x402 프로토콜 준수
+
+AnySpend Facilitator는 x402 사양 전체를 구현합니다:
+
+- `402 Payment Required` 상태를 통한 HTTP 기반 결제
+- 표준 헤더(`X-PAYMENT`, `X-PAYMENT-RESPONSE`, `X-PREFERRED-TOKEN`)
+- 수령인 및 금액 검증을 포함한 정확한 결제 방식
+- 서명 기반 인증(EIP-712, EIP-2612, EIP-3009)
+- 신뢰할 수 있는 제3자 없이 암호학적 검증
+
+### 대체 가능
+
+x402 구현과 완전히 호환 가능:
+
+- **클라이언트 호환성**: 모든 x402 호환 클라이언트와 작동
+- **서버 호환성**: 모든 x402 미들웨어와 사용 가능
+- **벤더 종속성 없음**: 표준 HTTP API, 언제든지 facilitator 전환 가능
+- **상호 운용성**: Coinbase CDP x402, PayAI 등과 통합
+
+## 아키텍처
+
+### 결제 흐름
+
+```
+┌──────────────┐
+│    클라이언트    │  결제 승인 서명
+│  (모든 토큰) │  preferredToken: USDT
+└──────┬───────┘
+       │
+       │ X-PAYMENT 헤더
+       ▼
+┌──────────────────────────┐
+│   리소스 서버        │
+│   (당신의 API)             │
+│                          │
+│  AnySpend 미들웨어     │
+│  • 요청 가로채기    │
+│  • 견적 받기            │
+│  • 402 반환           │
+└──────┬───────────────────┘
+       │
+       │ /verify, /settle
+       ▼
+┌──────────────────────────┐
+│  AnySpend Facilitator    │
+│  mainnet.anyspend.com    │
+│                          │
+│  • 서명 검증   │
+│  • 토큰 스왑 실행   │
+│  • 판매자에게 결제     │
+└──────┬───────────────────┘
+       │
+       │ 온체인 txs
+       ▼
+┌──────────────────────────┐
+│      블록체인          │
+│  • 결제 수령       │
+│  • 필요시 토큰 스왑 │
+│  • 판매자에게 결제    │
+└──────────────────────────┘
+```
+
+### 인프라 구성 요소
+
+**API 레이어**
+- 결제 검증 및 결제를 위한 RESTful HTTP API
+- 실시간 결제 상태 업데이트를 위한 WebSocket 지원
+- 속도 제한 및 DDoS 보호
+- 99.9% 가동 시간 SLA
+
+**스왑 엔진**
+- 여러 DEX에서 유동성 집계
+- 최적 실행 가격을 위한 최적 라우팅
+- 슬리피지 보호 및 MEV 저항
+- 크로스 체인 브리징 통합
+
+**결제 시스템**
+- 병렬 거래 처리
+- 자동 nonce 관리
+- 실패한 거래 복구
+- 실시간 결제 확인
+
+**보안**
+- EIP-712 서명 검증
+- 재생 공격 방지(nonce 추적)
+- 마감 시간 집행
+- 스마트 계약 감사
+
+## API 엔드포인트
+
+### POST /verify
+
+온체인 실행 없이 결제 서명을 검증합니다.
+
+**목적:**
+- 빠른 검증(100ms 미만)
+- 서명 진위성 확인
+- 마감 시간이 만료되지 않았는지 확인
+- 가스 비용 없음
+
+**요청:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": {
+    "scheme": "exact",
+    "network": "base-mainnet",
+    "amount": "1000000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "recipient": "0xMerchantAddress..."
+  }
+}
+```
+
+**응답:**
+```json
+{
+  "valid": true
+}
+```
+
+---
+
+### POST /settle
+
+온체인 결제를 실행하고 거래 증명을 반환합니다.
+
+**목적:**
+- 결제 승인 실행
+- 필요한 경우 토큰 스왑(구매자 토큰 → 판매자 토큰)
+- 리소스 서버에 결제
+- 검증을 위한 거래 해시 반환
+
+**요청:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": { /* ... */ }
+}
+```
+
+**응답:**
+```json
+{
+  "txHash": "0xabc123...",
+  "network": "base-mainnet",
+  "metadata": {
+    "receiptTxHash": "0x...",
+    "swapTxHash": "0x...",
+    "settlementTxHash": "0x..."
+  }
+}
+```
+
+---
+
+### POST /quote
+
+다중 토큰 결제를 위한 토큰 변환율을 가져옵니다.
+
+**목적:**
+- 결제를 위한 정확한 토큰 양 계산
+- 현재 환율 얻기
+- 스왑 실행 시간 추정
+
+**요청:**
+```json
+{
+  "usdcAmount": "1000000",        // 목표 금액 (1 USDC)
+  "paymentToken": "0xfde4...",    // USDT 주소
+  "network": "base-mainnet"
+}
+```
+
+**응답:**
+```json
+{
+  "tokenAmount": "1000000",  // 필요한 1.0 USDT
+  "exchangeRate": "1.0",
+  "deadline": 1730000000,
+  "route": {
+    "srcToken": "0xfde4...",
+    "dstToken": "0x8335...",
+    "path": ["USDT", "USDC"]
+  }
+}
+```
+
+---
+
+### GET /supported
+
+지원되는 결제 방식과 네트워크를 나열합니다.
+
+**응답:**
+```json
+{
+  "schemes": [{
+    "scheme": "exact",
+    "networks": [
+      "base",
+      "ethereum",
+      "arbitrum",
+      "optimism",
+      "polygon",
+      "bsc",
+      "avalanche",
+      "solana"
+    ]
+  }]
+}
+```
+
+## 통합
+
+### 서버 측 (Express)
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/premium': {
+    amount: '1.00',
+    asset: 'USD'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourAddress...',
+  endpointConfig,
+  facilitator  // 기본적으로 mainnet.anyspend.com/x402로 구성됨
+));
+```
+
+### 서버 측 (사용자 정의)
+
+```typescript
+import { X402Facilitator } from '@b3dotfun/anyspend-x402';
+
+const facilitator = new X402Facilitator({
+  url: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.ANYSPEND_API_KEY  // 선택사항
+});
+
+// 결제 검증
+const { valid } = await facilitator.verify(paymentHeader, requirements);
+
+// 결제 처리
+const { txHash } = await facilitator.settle(paymentHeader, requirements);
+```
+
+### 클라이언트 측
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  facilitatorUrl: 'https://mainnet.anyspend.com/x402'  // 선택사항, 기본적으로 이 주소 사용
+});
+
+const response = await client.request('https://api.example.com/premium');
+```
+
+## 보안
+
+### 서명 검증
+
+모든 결제는 EIP-712 타입 데이터 서명을 사용하여 검증됩니다:
+
+- **USDC**: EIP-3009 `transferWithAuthorization`
+- **기타 토큰**: EIP-2612 `permit`
+
+온체인 실행 전에 서명이 검증됩니다.
+
+### 재생 방지
+
+**랜덤 Nonce (USDC):**
+- 각 서명에는 고유한 bytes32 nonce 포함
+- nonce는 주소당 한 번만 사용 가능
+- 순서 의존성 없음
+
+**순차적 Nonce (Permit):**
+- 토큰 계약은 nonce 카운터를 유지
+- 각 permit 실행마다 자동 증가
+- 순서가 엉키는 실행 방지
+
+### 마감 시간 집행
+
+모든 서명에는 만료 타임스탬프 포함:
+- 기본값: 서명 시간으로부터 5분
+- 오래된 결제 승인 방지
+- 만료된 서명 자동 거부
+
+### 개인 키 접근 없음
+
+facilitator는 **절대** 사용자의 개인 키에 접근하지 않습니다:
+- 사용자가 클라이언트 측에서 메시지에 서명
+- 서명만 전송됨
+- 비보관 아키텍처
+
+## 성능
+
+### 속도
+
+- **검증**: 서명 검증에 100ms 미만
+- **동일 체인 결제**: 평균 2-10초
+- **크로스 체인 결제**: 2-5분(브리징에 따라 다름)
+- **견적 생성**: 200ms 미만
+
+### 확장성
+
+- 1000개 이상의 동시 결제 처리
+- 높은 처리량을 위한 수평 확장
+- 병렬 거래 처리
+- 여러 노드에 걸친 로드 밸런싱
+
+### 신뢰성
+
+- 99.9% 가동 시간 보장
+- 자동 장애 조치 및 중복성
+- 실패한 거래 재시도 로직
+- 24/7 모니터링 및 알림
+
+## 네트워크 지원
+
+### EVM 메인넷 네트워크 (12)
+
+Abstract, Arbitrum, Avalanche, B3, Base, BNB Chain, Ethereum, IoTeX, Optimism, Peaq, Polygon, Sei
+
+### EVM 테스트넷 (5)
+
+Abstract Testnet, Avalanche Fuji, Base Sepolia, Polygon Amoy, Sei Testnet
+
+### SVM 네트워크 (2)
+
+Solana Mainnet, Solana Devnet
+
+전체 세부 정보는 [네트워크 지원](/anyspend/x402-network-support)을 참조하십시오.
+
+## 시작하기
+
+<CardGroup cols={2}>
+<Card title="판매자를 위한 퀵스타트" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  API에서 다중 토큰 결제를 시작하기
+</Card>
+
+<Card title="구매자를 위한 퀵스타트" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  AnySpend 클라이언트를 사용하여 모든 토큰으로 결제하기
+</Card>
+
+<Card title="네트워크 지원" icon="network-wired" href="/anyspend/x402-network-support">
+  지원되는 모든 네트워크와 토큰 보기
+</Card>
+
+<Card title="개요" icon="book" href="/anyspend/x402-overview">
+  AnySpend x402 작동 방식 알아보기
+</Card>
+</CardGroup>
+
+## 지원
+
+Facilitator에 대한 도움이 필요하십니까?
+
+- **Discord**: [discord.gg/b3dotfun](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **이메일**: support@b3.fun
+- **문서**: [docs.b3.fun](https://docs.b3.fun)

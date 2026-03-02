@@ -1,0 +1,386 @@
+---
+title: 거래
+description: '거래 내역, 통계 보기 및 데이터 내보내기'
+lang: ko
+originalPath: anyspend/api/transactions.mdx
+---
+거래는 결제 링크와 체크아웃 세션을 통해 완료되거나 진행 중인 결제를 나타냅니다. 거래 API는 읽기 전용입니다 -- 고객이 체크아웃 흐름을 통해 결제할 때 거래가 자동으로 생성됩니다.
+
+<Info>
+  거래 금액은 토큰의 최소 단위(예: USDC의 경우 6자리 소수)로 저장됩니다. `amount_usd` 필드는 거래 시점의 USD 환산액을 제공합니다.
+</Info>
+
+## 거래 객체
+
+<ResponseField name="id" type="string">
+  거래의 고유 식별자(예: `tx_abc123`).
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  거래의 현재 상태. `pending`, `confirming`, `completed`, `failed` 중 하나입니다.
+</ResponseField>
+
+<ResponseField name="amount" type="string">
+  토큰의 최소 단위로 표시된 거래 금액.
+</ResponseField>
+
+<ResponseField name="amount_usd" type="string">
+  결제 시점의 거래 금액 USD 환산액.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  받은 토큰의 계약 주소.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  결제가 수신된 체인 ID.
+</ResponseField>
+
+<ResponseField name="tx_hash" type="string | null">
+  온체인 거래 해시. `pending` 동안은 Null.
+</ResponseField>
+
+<ResponseField name="payer_address" type="string">
+  지불자의 지갑 주소.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  결제를 받은 지갑 주소.
+</ResponseField>
+
+<ResponseField name="customer_id" type="string | null">
+  지불자가 알려진 고객인 경우 관련 고객 ID.
+</ResponseField>
+
+<ResponseField name="payment_link_id" type="string | null">
+  이 거래를 생성한 결제 링크.
+</ResponseField>
+
+<ResponseField name="session_id" type="string | null">
+  이 거래를 생성한 체크아웃 세션.
+</ResponseField>
+
+<ResponseField name="source_chain_id" type="number | null">
+  지불자가 다른 체인에서 결제한 경우, 그들이 결제한 체인입니다.
+</ResponseField>
+
+<ResponseField name="source_token_address" type="string | null">
+  지불자가 다른 토큰으로 결제한 경우, 그들이 결제한 토큰입니다.
+</ResponseField>
+
+<ResponseField name="source_amount" type="string | null">
+  지불자가 보낸 금액(스왑/브리지 전), 소스 토큰의 최소 단위로.
+</ResponseField>
+
+<ResponseField name="fee_amount" type="string | null">
+  받은 토큰의 최소 단위로 표시된 플랫폼 수수료 금액.
+</ResponseField>
+
+<ResponseField name="form_data" type="object | null">
+  체크아웃 중 고객이 제출한 사용자 정의 양식 데이터.
+</ResponseField>
+
+<ResponseField name="shipping_address" type="object | null">
+  고객이 제공한 배송 주소.
+  <Expandable title="배송 주소 필드">
+    <ResponseField name="name" type="string">수령인 이름.</ResponseField>
+    <ResponseField name="line1" type="string">주소 첫 번째 줄.</ResponseField>
+    <ResponseField name="line2" type="string | null">주소 두 번째 줄.</ResponseField>
+    <ResponseField name="city" type="string">도시.</ResponseField>
+    <ResponseField name="state" type="string">주 또는 지방.</ResponseField>
+    <ResponseField name="postal_code" type="string">우편번호 또는 ZIP 코드.</ResponseField>
+    <ResponseField name="country" type="string">두 글자 국가 코드.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_option" type="object | null">
+  선택된 배송 옵션.
+  <Expandable title="배송 옵션 필드">
+    <ResponseField name="id" type="string">배송 옵션 ID.</ResponseField>
+    <ResponseField name="name" type="string">배송 옵션 이름.</ResponseField>
+    <ResponseField name="amount" type="string">배송 비용.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  체크아웃 세션에서의 메타데이터.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  거래가 시작된 ISO 8601 타임스탬프.
+</ResponseField>
+
+<ResponseField name="confirmed_at" type="string | null">
+  거래가 `confirming` 상태에 도달한 ISO 8601 타임스탬프.
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  거래가 `completed` 상태에 도달한 ISO 8601 타임스탬프.
+</ResponseField>
+
+### 거래 상태
+
+| 상태 | 설명 |
+|--------|-------------|
+| `pending` | 거래가 시작되었으며, 온체인 제출을 기다리고 있습니다. |
+| `confirming` | 거래가 온체인에 제출되었으며, 블록 확인을 기다리고 있습니다. |
+| `completed` | 거래가 확인되었으며, 수령인에게 결제가 완료되었습니다. |
+| `failed` | 되돌림, 시간 초과 또는 자금 부족으로 인해 거래가 실패했습니다. |
+
+---
+
+## 거래 목록
+
+선택적 필터를 사용하여 페이지별로 거래 목록을 검색합니다.
+
+<ParamField query="status" type="string">
+  상태별로 필터링: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="customer_id" type="string">
+  고객 ID별로 필터링.
+</ParamField>
+
+<ParamField query="payment_link_id" type="string">
+  결제 링크 ID별로 필터링.
+</ParamField>
+
+<ParamField query="from" type="string">
+  이 ISO 8601 날짜(예: `2026-01-01`) 이후에 생성된 거래를 필터링합니다.
+</ParamField>
+
+<ParamField query="to" type="string">
+  이 ISO 8601 날짜(예: `2026-02-28`) 이전에 생성된 거래를 필터링합니다.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  페이지 번호를 위한 페이징.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  페이지 당 결과 수(최대 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions?status=completed&from=2026-02-01&to=2026-02-28&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.transactions.list({
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "source_chain_id": 8453,
+          "source_token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "source_amount": "50000000",
+          "fee_amount": "500000",
+          "form_data": {
+            "company_name": "Acme Inc."
+          },
+          "shipping_address": null,
+          "shipping_option": null,
+          "metadata": null,
+          "created_at": "2026-02-25T08:15:00Z",
+          "confirmed_at": "2026-02-25T08:15:45Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 156,
+        "total_pages": 8,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 거래 검색
+
+<ParamField path="id" type="string" required>
+  거래 ID(예: `tx_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/tx_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const transaction = await anyspend.transactions.retrieve("tx_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    전체 [거래 객체](#the-transaction-object)를 반환합니다.
+  </Tab>
+</Tabs>
+
+---
+
+## 거래 통계 가져오기
+
+모든 거래에 걸쳐 집계 통계를 검색합니다.
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/stats" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const stats = await anyspend.transactions.stats();
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "total_transactions": 1250,
+      "completed_transactions": 1180,
+      "failed_transactions": 45,
+      "pending_transactions": 25,
+      "total_volume_usd": "58750.00",
+      "last_24h": {
+        "transactions": 18,
+        "completed": 17,
+        "volume_usd": "920.00"
+      },
+      "status_breakdown": {
+        "pending": 15,
+        "confirming": 10,
+        "completed": 1180,
+        "failed": 45
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 거래 내보내기
+
+CSV 또는 JSON 형식으로 거래 데이터를 내보냅니다. 응답은 파일 다운로드로 스트리밍됩니다.
+
+<ParamField query="format" type="string" required>
+  내보낼 형식. `csv`, `json` 중 하나입니다.
+</ParamField>
+
+<ParamField query="status" type="string">
+  상태별로 필터링: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="from" type="string">
+  이 ISO 8601 날짜 이후에 생성된 거래를 필터링합니다.
+</ParamField>
+
+<ParamField query="to" type="string">
+  이 ISO 8601 날짜 이전에 생성된 거래를 필터링합니다.
+</ParamField>
+
+<Info>
+  내보내기는 50,000개의 기록으로 제한됩니다. 더 큰 데이터셋의 경우, 날짜 범위 필터를 사용하여 내보내기를 더 작은 청크로 나눕니다.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# 2026년 2월에 완료된 거래를 CSV로 내보내기
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2026-02-01&to=2026-02-28" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.csv
+
+# JSON으로 내보내기
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.json
+```
+
+```typescript SDK
+// CSV 스트림으로 내보내기
+const csvStream = await anyspend.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+});
+
+// JSON 배열로 내보내기
+const transactions = await anyspend.transactions.export({
+  format: "json",
+  status: "completed",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,status,amount,amount_usd,token_address,chain_id,tx_hash,payer_address,recipient_address,customer_id,payment_link_id,created_at,completed_at
+    tx_abc123,completed,50000000,50.00,0xA0b8...eB48,1,0x9f8e...1f0e,0xaabb...5678,0x1234...5678,cust_abc123,pl_abc123,2026-02-25T08:15:00Z,2026-02-25T08:16:30Z
+    tx_def456,completed,25000000,25.00,0xA0b8...eB48,1,0x1a2b...3c4d,0xccdd...9012,0x1234...5678,cust_def456,pl_abc123,2026-02-24T12:00:00Z,2026-02-24T12:01:15Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "total": 1180
+    }
+    ```
+  </Tab>
+</Tabs>

@@ -1,0 +1,130 @@
+---
+title: 存款
+description: 允许用户从任何支持的链向钱包地址存入代币
+lang: cn
+originalPath: anyspend/deposit.mdx
+---
+## 它的作用
+
+一个托管的存款页面，用户可以向特定的钱包地址发送代币。他们连接自己的钱包，选择一个代币，AnySpend处理跨链路由。你生成一个URL，他们点击它。
+
+## 如何工作
+
+1. **你的应用生成一个存款URL**，包含接收者地址、链和代币。
+2. **用户连接他们的钱包**（MetaMask、Coinbase、Rainbow、Rabby、Trust Wallet）。
+3. **用户从他们可用的余额中选择一个代币**。
+4. **AnySpend处理支付**，如有需要进行跨链转换至目标代币。
+5. **完成** -- 可选地将用户重定向回你的应用。
+
+## URL参数
+
+存款页面接受以下URL参数：
+
+| 参数 | 必需 | 描述 |
+|-----------|----------|-------------|
+| `recipientAddress` | 是 | 接收存款的钱包地址（有效的EVM地址） |
+| `toChainId` | 是* | 目标链ID（例如，对于Base是8453） |
+| `toCurrency` | 是* | 目标链上的代币合约地址 |
+| `amount` | 否 | 以wei/最小单位固定金额。提供时，用户无法更改金额 |
+| `redirect_url` | 否 | 完成后重定向的HTTPS URL |
+| `redirect_label` | 否 | 重定向按钮的自定义标签 |
+| `partner` | 否 | 自定义配置的合作伙伴ID |
+
+\* 对于Hyperliquid链不需要，其中USDC是默认代币。
+
+## 示例URL
+
+**基础存款至Base USDC:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**固定金额存款:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**带重定向的:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Return+to+App
+```
+
+## 支持的钱包
+
+开箱即用支持：
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+对于之前已连接过钱包的返回用户启用自动连接。
+
+## 特殊链支持
+
+### Hyperliquid
+
+Hyperliquid获得特殊处理：
+
+- USDC使用特殊的34字符地址格式（`0x00000000000000000000000000000000`）
+- 当`toChainId`设置为Hyperliquid时，如果未指定`toCurrency`，默认为USDC
+- 零地址会自动更正为Hyperliquid USDC格式
+
+## 合作伙伴集成
+
+合作伙伴可以配置自定义设置：
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // 默认重定向URL
+  customRecipientLabel?: string; // 接收者的自定义标签
+  returnHomeLabel?: string;      // 返回按钮的自定义标签
+}
+```
+
+要注册为合作伙伴，请联系AnySpend团队添加您的配置。
+
+## 安全性
+
+- 只允许HTTPS重定向URL（防止开放重定向攻击）
+- 金额必须是有效的正整数（wei）
+- 在处理前验证地址
+
+## 常见用例
+
+- **Telegram机器人** -- 通过可分享链接为机器人钱包充值
+- **游戏** -- 向游戏账户存入代币
+- **市场** -- 为托管地址充值
+- **打赏** -- 让用户通过存款链接给创作者打赏
+
+## 集成示例
+
+在你的应用中生成一个存款链接：
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```

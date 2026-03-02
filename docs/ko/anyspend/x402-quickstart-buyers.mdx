@@ -1,0 +1,390 @@
+---
+title: 구매자를 위한 퀵스타트
+description: AnySpend x402 Client SDK를 사용하여 모든 토큰으로 유료 API 및 서비스에 대한 비용을 지불하세요
+lang: ko
+originalPath: anyspend/x402-quickstart-buyers.mdx
+---
+## 개요
+
+이 가이드는 **AnySpend x402 Client SDK**를 사용하여 EIP-2612 또는 EIP-3009 지원과 호환되는 토큰으로 유료 리소스를 결제하는 방법을 보여줍니다. SDK는 서명 생성 및 재시도 로직을 포함한 전체 결제 흐름을 자동으로 처리합니다.
+
+이 클라이언트를 사용하여 AnySpend을 사용하는 것뿐만 아니라 x402를 활성화한 모든 서비스에 대해 결제할 수 있습니다.
+
+<Card title="토큰 호환성 검사기" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  19개 이상의 네트워크에서 EIP-2612 또는 EIP-3009 지원을 가진 호환 토큰을 검색하세요
+</Card>
+
+## 사전 요구 사항
+
+시작하기 전에 다음이 있는지 확인하세요:
+
+- **Node.js 18+** 또는 호환 가능한 JavaScript 런타임
+- **암호화 지갑** (USDC, DAI 또는 기타 EIP-2612/EIP-3009 토큰과 호환)
+- **지갑 라이브러리** [viem](https://viem.sh) 또는 [ethers.js](https://docs.ethers.org) 같은
+- **x402 활성화된 서비스에 대한 접근** (유료 API와 같은)
+
+<Note>
+**중요**: EIP-2612(Permit) 또는 EIP-3009(TransferWithAuthorization) 지원이 있는 토큰만 AnySpend x402와 호환되어 가스 없는 결제가 가능합니다. [토큰 호환성 검사기](https://anyspend.com/x402-tokens)를 사용하여 토큰이 지원되는지 확인하세요.
+</Note>
+
+## 설치
+
+x402 클라이언트 SDK 설치:
+
+<CodeGroup>
+```bash npm
+npm install anyspend-x402-client viem
+```
+
+```bash yarn
+yarn add anyspend-x402-client viem
+```
+
+```bash pnpm
+pnpm add anyspend-x402-client viem
+```
+</CodeGroup>
+
+SDK는 지갑 작업 및 서명 생성을 위해 [viem](https://viem.sh)을 사용합니다.
+
+## 기본 사용법
+
+### 1. 지갑 클라이언트 생성
+
+먼저 viem을 사용하여 지갑 클라이언트를 설정하세요:
+
+```typescript
+import { createWalletClient, custom } from 'viem';
+import { base } from 'viem/chains';
+
+// MetaMask 또는 기타 지갑 확장 프로그램이 있는 브라우저용
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// 사용자의 주소 가져오기
+const [address] = await walletClient.getAddresses();
+```
+
+### 2. x402 클라이언트 초기화
+
+x402 클라이언트의 인스턴스를 생성하세요:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const x402Client = new X402Client({
+  walletClient,           // viem 지갑 클라이언트
+  preferredToken: '0x...', // 선택 사항: 기본 결제 토큰
+  autoRetry: true          // 402 응답 자동 처리 (기본값: true)
+});
+```
+
+### 3. 유료 요청하기
+
+클라이언트를 사용하여 유료 리소스에 접근하세요:
+
+```typescript
+try {
+  const response = await x402Client.request(
+    'https://api.example.com/premium-data',
+    {
+      method: 'GET',
+    }
+  );
+
+  console.log('Data:', response.data);
+  console.log('Payment TX:', response.paymentResponse?.txHash);
+} catch (error) {
+  console.error('Payment failed:', error);
+}
+```
+
+**무슨 일이 일어나나요:**
+
+1. 클라이언트가 초기 요청을 합니다
+2. API는 결제 세부 정보와 함께 `402 Payment Required`를 반환합니다
+3. X402Client가 자동으로 결제 승인을 서명합니다
+4. 클라이언트가 결제와 함께 요청을 재시도합니다
+5. API는 결제를 검증하고 정산합니다
+6. 클라이언트는 요청한 데이터를 받습니다
+
+## 고급 사용법
+
+### 결제 토큰 지정
+
+결제할 토큰을 지정하는 두 가지 방법이 있습니다:
+
+#### 옵션 1: X402Client 사용
+
+`preferredToken`을 설정하여 특정 토큰으로 결제하세요:
+
+```typescript
+const response = await x402Client.request(
+  'https://ai-agent-api.com/inference',
+  {
+    method: 'POST',
+    body: { prompt: 'Generate an image of a cat' },
+    preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // Base에서의 USDC
+  }
+);
+```
+
+#### 옵션 2: wrapFetchWithPayment 사용 (고급)
+
+더 많은 제어가 필요한 경우, 하위 수준의 `wrapFetchWithPayment` 함수를 사용하세요:
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base에서의 USDC
+const selectedChain = 8453; // Base
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // 또는 getNetworkName(selectedChain) 사용
+};
+
+// 자동 결제 처리를 위해 fetch를 wrap
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // 최대 결제 금액 (6자리 소수점으로 1 USDC)
+  undefined, // 기본 결제 요구 사항 선택기 사용
+  undefined, // 기본 설정 사용
+  paymentPreferences, // 선호하는 토큰과 네트워크 지정
+);
+
+// 일반 fetch처럼 wrap된 fetch 사용
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**`wrapFetchWithPayment`의 이점:**
+- 기존 `fetch` 기반 코드와 함께 작동합니다
+- 결제 동작에 대한 더 세밀한 제어를 제공합니다
+- 최대 결제 금액을 지정할 수 있습니다
+- 사용자 정의 결제 요구 사항 선택기
+- 다중 네트워크 서명자 지원
+
+리소스 서버가 AnySpend 미들웨어를 지원하는 경우, USDC 대신 선호하는 토큰으로 동등한 금액을 지불하게 됩니다.
+
+### 결제 선호도를 위한 HTTP 헤더 사용
+
+<Note>
+**X402의 새로운 기능**: 이제 직접 HTTP 요청을 할 때 또는 기존 HTTP 클라이언트와 통합할 때 유용하게 결제 선호도를 HTTP 헤더를 사용하여 지정할 수 있습니다.
+</Note>
+
+X402 활성화된 서비스에 요청을 할 때, 이러한 HTTP 헤더를 사용하여 선호하는 결제 토큰과 네트워크를 지정할 수 있습니다:
+
+```bash
+curl -X GET https://api.example.com/premium-data \
+  -H "X-PREFERRED-TOKEN: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+**일반 토큰 주소:**
+- **Base에서의 USDC**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **Base에서의 USDT**: `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2`
+
+**네트워크 식별자:**
+- `base-mainnet` - Base 메인넷
+- `ethereum-mainnet` - 이더리움 메인넷
+- `arbitrum-mainnet` - Arbitrum One
+- `optimism-mainnet` - Optimism 메인넷
+- `polygon-mainnet` - Polygon PoS
+
+이 헤더들은 모든 HTTP 클라이언트와 함께 작동하며, AnySpend 미들웨어를 사용하는 X402 활성화된 리소스 서버에서 자동으로 적용됩니다. 헤더가 제공되지 않으면 서버는 기본적으로 USDC를 사용합니다.
+
+#### X402Client와 함께 헤더 사용
+
+X402Client는 구성에 따라 이러한 헤더를 모든 요청에 자동으로 추가합니다:
+
+```typescript
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
+  network: 'base-mainnet'
+});
+
+// 모든 요청에 자동으로 헤더 추가
+const response = await x402Client.request('https://api.example.com/data');
+```
+
+#### fetch와 함께 헤더 사용
+
+네이티브 `fetch` API나 다른 HTTP 클라이언트를 사용할 때 이러한 헤더를 수동으로 추가할 수도 있습니다:
+
+```typescript
+const response = await fetch('https://api.example.com/premium-data', {
+  headers: {
+    'X-PREFERRED-TOKEN': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    'X-PREFERRED-NETWORK': 'base-mainnet'
+  }
+});
+
+// 필요한 경우 402 응답 처리
+if (response.status === 402) {
+  // X402Client 또는 wrapFetchWithPayment를 사용하여 결제 처리
+}
+```
+
+### 본문이 있는 POST 요청
+
+유료 POST 요청을 만드세요:
+
+```typescript
+const response = await x402Client.request(
+  'https://api.example.com/compute',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: 'Hello!' }]
+    }
+  }
+);
+```
+
+### 수동 결제 흐름
+
+더 많은 제어를 위해 결제 흐름을 수동으로 처리하세요:
+
+```typescript
+// 1. 초기 요청을 합니다
+const initialResponse = await fetch('https://api.example.com/premium-data');
+
+if (initialResponse.status === 402) {
+  // 2. 결제 요구 사항을 파싱합니다
+  const paymentRequired = await initialResponse.json();
+  const requirements = paymentRequired.requirements[0];
+
+  console.log('Payment required:', {
+    amount: requirements.amount,
+    token: requirements.asset,
+    recipient: requirements.recipient
+  });
+
+  // 3. 결제 승인을 서명합니다
+  const paymentHeader = await x402Client.signPayment(requirements);
+
+  // 4. 결제와 함께 재시도합니다
+  const paidResponse = await fetch('https://api.example.com/premium-data', {
+    headers: {
+      'X-PAYMENT': paymentHeader
+    }
+  });
+
+  const data = await paidResponse.json();
+  const paymentResponse = paidResponse.headers.get('X-PAYMENT-RESPONSE');
+
+  console.log('Payment successful!', JSON.parse(atob(paymentResponse)));
+}
+```
+
+## 구성 옵션
+
+### X402ClientOptions
+
+```typescript
+interface X402ClientOptions {
+  walletClient: WalletClient;        // viem 지갑 클라이언트 (필수)
+  network?: string;                   // 기본 네트워크 (예: 'base-mainnet')
+  preferredToken?: string;            // 선호하는 결제 토큰 주소
+  autoRetry?: boolean;                // 402에 대한 자동 재시도 (기본값: true)
+  timeout?: number;                   // 요청 타임아웃(ms 단위) (기본값: 30000)
+}
+```
+
+### 요청 옵션
+
+```typescript
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: any;                         // 요청 본문 (자동으로 JSON으로 직렬화됨)
+  preferredToken?: string;            // 기본 선호 토큰 덮어쓰기
+}
+```
+
+### wrapFetchWithPayment 매개변수
+
+고급 사용 사례를 위해, `wrapFetchWithPayment`는 하위 수준 제어를 제공합니다:
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // 래핑할 Fetch 함수
+  signer: Signer | MultiNetworkSigner, // 서명을 위한 지갑 클라이언트
+  maxPaymentValue: string,             // 최소 단위로 최대 결제 (예: '1000000'은 1 USDC)
+  selectPaymentRequirements?: Function, // 사용자 정의 요구 사항 선택기
+  config?: {
+    timeout?: number;                  // 요청 타임아웃(ms 단위)
+    maxRetries?: number;               // 최대 결제 재시도 횟수
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // 결제에 사용할 토큰 주소
+    preferredNetwork?: string;         // 네트워크 식별자 (예: 'base', 'ethereum')
+  }
+): typeof fetch
+```
+
+**모든 매개변수를 사용한 예제:**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // 최대 5 USDC
+  undefined, // 기본 요구 사항 선택기
+  {
+    timeout: 60000,    // 60초 타임아웃
+    maxRetries: 3      // 최대 3회 재시도
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
+## 지원되는 토큰
+
+**EIP-2612 또는 EIP-3009 지원이 있는 토큰만** AnySpend x402와 호환되어 가스 없는 결제가 가능합니다.
+
+### EIP-2612와 EIP-3009이란?
+
+- **EIP-2612 (Permit)**: 오프체인 서명을 통한 가스 없는 토큰 승인을 허용합니다
+- **EIP-3009 (TransferWithAuthorization)**: 오프체인 서명을 통한 가스 없는 전송을 가능하게 합니다 (USDC에서 사용됨)
+
+
+### 일반적으로 호환되는 토큰
+
+- **USDC** - 모든 체인에서 EIP-3009 지원
+- **B3** - EIP-2612 permit 지원
+- **기타 많은 토큰** - 아래 도구를 사용하여 호환성을 확인하세요
+
+<Card title="토큰 호환성 검사기" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  19개 이상의 네트워크에서 EIP-2612 또는 EIP-3009 지원을 가진 모든 호환 토큰을 검색하세요
+</Card>
+
+체인별로 자세한 토큰 주소는 [네트워크 지원](/anyspend/x402-network-support)을 참조하세요.
+
+## 예제
+
+### React 컴포넌트 (X402Client 사용)
+
+```tsx
+import { X402Client } from 'anyspend-x402-client';
+import { useWalletClient } from 'wagmi';
+import { useState } from 'react';
+
+export function PremiumDataFetcher() {
+  const { data: walletClient } = useWalletClient();
+  const [data, setData] = useState(null);
+ 

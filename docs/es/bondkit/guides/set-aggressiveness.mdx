@@ -4,27 +4,73 @@ description: Cómo elegir el factor de agresividad (0–100) para tu lanzamiento
 lang: es
 originalPath: bondkit/guides/set-aggressiveness.mdx
 ---
-## Orientación
+## Entendiendo el Impacto de la Agresividad
 
-- 0–20: suave; compradores tempranos y tardíos reciben cantidades similares por unidad
-- 30–60: equilibrado; aumento moderado del precio, típico para lanzamientos generales
-- 70–100: pronunciado; fuerte ventaja temprana, escalada de precios más rápida
+El factor de agresividad determina cuánta ventaja obtienen los compradores tempranos. Valores más altos crean aumentos de precio más pronunciados que recompensan la participación temprana.
 
-## Regla general
+### Impacto en Diferentes Niveles
 
-- Objetivos más pequeños o comunidades estrechas: inclinarse más alto (50–80)
-- Objetivos más grandes o audiencias más amplias: inclinarse más bajo (20–50)
+| Rango | Ventaja para el Comprador Temprano | Mejor Para | Comportamiento del Precio |
+|-------|-----------------------------------|------------|-------------------------|
+| **0-20** | Ventaja de 1.5-2x | Lanzamientos justos, tokens comunitarios | Precios casi lineales |
+| **30-60** | Ventaja de 2-3x | La mayoría de los proyectos, enfoque equilibrado | Curva moderada |
+| **70-100** | Ventaja de 3-6x | Lanzamientos con mucho hype, recompensar a los creyentes | Curva pronunciada |
 
-## Ejemplo
+<Note>
+Al máximo de agresividad (100), los compradores tempranos pueden obtener **6x más tokens** que los compradores tardíos por la misma cantidad de B3!
+</Note>
 
-```ts
+## Marco de Decisión
+
+### Elige Bajo (0-30) Si:
+- **Objetivo**: Distribución justa para todos
+- **Comunidad**: Valora la igualdad sobre las recompensas tempranas
+- **Cronograma**: Desea un crecimiento constante y predecible
+- **Riesgo**: Prefiere mínima volatilidad de precios
+
+### Elige Medio (30-70) Si:
+- **Objetivo**: Enfoque equilibrado con algún incentivo temprano
+- **Comunidad**: Mezcla de partidarios tempranos y público en general
+- **Cronograma**: Ritmo de recaudación moderado
+- **Riesgo**: Cómodo con cierta variación de precios
+
+### Elige Alto (70-100) Si:
+- **Objetivo**: Máximas recompensas para los adoptantes tempranos
+- **Comunidad**: Creyentes nucleares fuertes
+- **Cronograma**: Desea una recaudación de fondos rápida
+- **Riesgo**: Cómodo con grandes oscilaciones de precios
+
+## Ejemplo de Impacto Real
+
+**Configuración del Proyecto:** Objetivo de 10M B3, comprando 1M B3
+
+| Agresividad | El Comprador Temprano Obtiene | El Comprador Tardío Obtiene | Ventaja |
+|-------------|-------------------------------|-----------------------------|---------|
+| 0 | ~100K tokens | ~100K tokens | 1x (sin ventaja) |
+| 50 | ~208K tokens | ~114K tokens | Ventaja de 1.8x |
+| 100 | ~306K tokens | ~49K tokens | Ventaja de 6.2x |
+
+## Ejemplo de Configuración
+
+```typescript
 const config = {
-  aggressivenessFactor: 35,
+  name: "My Token",
+  symbol: "MTK", 
+  aggressivenessFactor: 75, // Alta recompensa para compradores tempranos
+  targetAmount: parseEther("100"), // Objetivo de 100 B3
+  finalTokenSupply: parseEther("1000000"), // 1M tokens
   // ...otros parámetros
 };
 ```
 
-<Note>
-`exponent = 1 / (1 + aggressivenessFactor/100)`. Una mayor agresividad aumenta la inclinación de la curva y reduce los tokens por unidad más adelante en el bonding.
-</Note>
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Ejemplos Detallados" icon="calculator" href="/bondkit/concepts/pricing#aggressiveness-factor-impact">
+    Ver tablas detalladas de distribución de tokens
+  </Card>
+  <Card title="Creación de Token" icon="rocket" href="/bondkit/quickstart">
+    Listo para desplegar tu token
+  </Card>
+</CardGroup>
 

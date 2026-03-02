@@ -1,0 +1,578 @@
+---
+title: Personalização
+description: >-
+  Slots, substituições de conteúdo, temas e classes CSS para componentes
+  AnySpend
+lang: pt-BR
+originalPath: anyspend/customization.mdx
+---
+Quatro camadas de personalização, cada uma visando uma preocupação diferente:
+
+<CardGroup cols={2}>
+<Card title="Slots" icon="puzzle-piece">
+  Substitua seções inteiras da UI por seus próprios componentes
+</Card>
+<Card title="Conteúdo" icon="font">
+  Substitua textos e mensagens para diferentes estados
+</Card>
+<Card title="Tema" icon="palette">
+  Configure cores e aparência da marca
+</Card>
+<Card title="Classes" icon="code">
+  Aplique sobrescritas de classes CSS em elementos específicos
+</Card>
+</CardGroup>
+
+Todos os componentes principais (`<AnySpend>`, `<AnySpendDeposit>`, `<AnySpendCheckout>`, `<AnySpendCheckoutTrigger>`) aceitam as props `slots`, `content` e `theme`.
+
+---
+
+## Slots
+
+Slots permitem substituir seções inteiras da UI por seus próprios componentes React. Cada slot recebe props do AnySpend que você pode usar em sua implementação personalizada.
+
+```typescript title="Interface AnySpendSlots" icon="code"
+interface AnySpendSlots {
+  /** Substitui o botão principal de ação/pagamento */
+  actionButton?: (props: ActionButtonSlotProps) => ReactNode;
+  /** Substitui o botão de conectar carteira */
+  connectWalletButton?: (props: ConnectWalletButtonSlotProps) => ReactNode;
+  /** Substitui o cabeçalho */
+  header?: (props: { mode: "page" | "modal" }) => ReactNode;
+  /** Substitui o rodapé */
+  footer?: ReactNode;
+  /** Substitui a tela de sucesso */
+  successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
+  /** Substitui a tela de erro */
+  errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** Substitui o painel do formulário de checkout (somente checkout) */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** Substitui o seletor de método de envio (somente checkout) */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** Substitui a entrada do código de desconto (somente checkout) */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
+}
+```
+
+<Tip>
+  Os slots `checkoutForm`, `shippingSelector` e `discountInput` são usados apenas em `<AnySpendCheckout>` e `<AnySpendCheckoutTrigger>`. Veja o [Guia de Checkout](/anyspend/checkout) para detalhes sobre recursos de formulário/envio/desconto.
+</Tip>
+
+### Interfaces das props dos slots
+
+<AccordionGroup>
+<Accordion title="ActionButtonSlotProps">
+```typescript
+interface ActionButtonSlotProps {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  text: string;
+}
+```
+</Accordion>
+
+<Accordion title="ConnectWalletButtonSlotProps">
+```typescript
+interface ConnectWalletButtonSlotProps {
+  onPayment: () => void;
+  txLoading: boolean;
+  connectedAddress?: string;
+  paymentLabel: string;
+}
+```
+</Accordion>
+
+<Accordion title="SuccessScreenSlotProps">
+```typescript
+interface SuccessScreenSlotProps {
+  title: string;
+  description: string;
+  txHash?: string;
+  orderId?: string;
+  explorerUrl?: string;
+  onDone: () => void;
+  returnUrl?: string;
+  returnLabel?: string;
+}
+```
+</Accordion>
+
+<Accordion title="ErrorScreenSlotProps">
+```typescript
+interface ErrorScreenSlotProps {
+  title: string;
+  description: string;
+  errorType: "failure" | "expired" | "refunded";
+  orderId?: string;
+  onRetry?: () => void;
+  onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Exemplos de slots
+
+<Tabs>
+<Tab title="Botão de Ação Personalizado">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    actionButton: ({ onClick, disabled, loading, text }) => (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="my-custom-button"
+      >
+        {loading ? <MySpinner /> : text}
+      </button>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Tela de Sucesso Personalizada">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    successScreen: ({ title, txHash, explorerUrl, onDone, returnUrl }) => (
+      <div className="my-success">
+        <Confetti />
+        <h2>{title}</h2>
+        {txHash && (
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+            Ver Transação
+          </a>
+        )}
+        {returnUrl ? (
+          <a href={returnUrl}>Continuar Comprando</a>
+        ) : (
+          <button onClick={onDone}>Concluído</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Cabeçalho & Rodapé Personalizados">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    header: ({ mode }) => (
+      <div className="my-header">
+        <img src="/logo.svg" alt="Meu App" />
+        {mode === "modal" && <CloseButton />}
+      </div>
+    ),
+    footer: (
+      <div className="my-footer">
+        <span>Powered by MyApp</span>
+        <a href="/terms">Termos</a>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Conectar Carteira Personalizado">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    connectWalletButton: ({ onPayment, txLoading, connectedAddress, paymentLabel }) => (
+      <div className="my-wallet-section">
+        {connectedAddress ? (
+          <button onClick={onPayment} disabled={txLoading}>
+            {txLoading ? "Processando..." : paymentLabel}
+          </button>
+        ) : (
+          <button onClick={onPayment}>Conectar & Pagar</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Formulário de Checkout Personalizado">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="Email para o recibo"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">Selecionar tamanho</option>
+          <option value="S">Pequeno</option>
+          <option value="M">Médio</option>
+          <option value="L">Grande</option>
+        </select>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Conteúdo
+
+Substitua textos e mensagens exibidos durante diferentes estados da transação. Cada campo aceita um `string` ou `ReactNode`.
+
+```typescript title="Interface AnySpendContent" icon="code"
+interface AnySpendContent {
+  // Estado de sucesso
+  successTitle?: string | ReactNode;
+  successDescription?: string | ReactNode;
+
+  // Estado de falha
+  failureTitle?: string | ReactNode;
+  failureDescription?: string | ReactNode;
+
+  // Estado expirado
+  expiredTitle?: string | ReactNode;
+  expiredDescription?: string | ReactNode;
+
+  // Estado reembolsado
+  refundedTitle?: string | ReactNode;
+  refundedDescription?: string | ReactNode;
+
+  // Estado de processamento
+  processingTitle?: string | ReactNode;
+  processingDescription?: string | ReactNode;
+
+  // Rótulos de botões
+  returnButtonLabel?: string;
+  retryButtonLabel?: string;
+}
+```
+
+### Exemplos de conteúdo
+
+<Tabs>
+<Tab title="E-commerce">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={cartItems}
+  content={{
+    successTitle: "Pedido Confirmado!",
+    successDescription: "Seu pedido está sendo preparado. Verifique seu email para atualizações de envio.",
+    failureTitle: "Pagamento Falhou",
+    failureDescription: "Seu cartão não foi cobrado. Por favor, tente novamente ou use um método de pagamento diferente.",
+    processingTitle: "Processando Pagamento...",
+    processingDescription: "Por favor, não feche esta janela. Isso geralmente leva menos de um minuto.",
+    returnButtonLabel: "Voltar para a Loja",
+    retryButtonLabel: "Tentar Novamente",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Assinatura">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  content={{
+    successTitle: "Assinatura Ativada!",
+    successDescription: (
+      <div>
+        <p>Bem-vindo ao Pro! Sua conta foi atualizada.</p>
+        <ul>
+          <li>Chamadas de API ilimitadas</li>
+          <li>Suporte prioritário</li>
+          <li>Análises avançadas</li>
+        </ul>
+      </div>
+    ),
+    returnButtonLabel: "Ir para o Dashboard",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Jogos">
+```tsx
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  content={{
+    successTitle: "Tokens Depositados!",
+    successDescription: "Seu saldo no jogo foi atualizado. Volte a jogar!",
+    expiredTitle: "Sessão Expirada",
+    expiredDescription: "Sua janela de depósito fechou. Inicie um novo depósito para continuar.",
+    returnButtonLabel: "Voltar ao Jogo",
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Tema
+
+Configure a aparência visual dos componentes AnySpend com cores da marca.
+
+```typescript title="Interface AnySpendTheme" icon="code"
+interface AnySpendTheme {
+  /** Cor primária da marca (hex). Aplicada como a cor principal de destaque. */
+  brandColor?: string;
+  /** Sobrescritas individuais de cores (valores hex) */
+  colors?: Partial<{
+    primary: string;         // Cor principal do texto
+    secondary: string;       // Cor secundária do texto
+    tertiary: string;        // Cor do texto abafado
+    surfacePrimary: string;  // Cor de fundo primária
+    surfaceSecondary: string; // Fundo secundário (cartões, painéis)
+    brand: string;           // Cor de destaque/marca (botões, links)
+    borderPrimary: string;   // Cor da borda primária
+    borderSecondary: string; // Cor da borda secundária
+  }>;
+}
+```
+
+<Note>
+  A prop `brandColor` é um atalho que define a cor `brand`. Se `brandColor` e `colors.brand` forem fornecidos, `colors.brand` tem precedência.
+</Note>
+
+### Exemplos de tema
+
+<Tabs>
+<Tab title="Apenas Cor da Marca">
+```tsx
+// Branding rápido — basta definir sua cor de marca
+<AnySpend
+  recipientAddress="0x..."
+  theme={{ brandColor: "#6366f1" }}
+/>
+```
+</Tab>
+
+<Tab title="Tema Escuro">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  theme={{
+    brandColor: "#10b981",
+    colors: {
+      primary: "#f9fafb",
+      secondary: "#9ca3af",
+      tertiary: "#6b7280",
+      surfacePrimary: "#111827",
+      surfaceSecondary: "#1f2937",
+      borderPrimary: "#374151",
+      borderSecondary: "#4b5563",
+    },
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Sobrescrita Mínima">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={items}
+  theme={{
+    colors: {
+      brand: "#e11d48",      // Acento Rosa
+      surfaceSecondary: "#fef2f2", // Fundo rosa claro
+    },
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Sobrescritas de classes CSS
+
+Aplique classes CSS personalizadas a elementos específicos dentro dos componentes AnySpend. Cada componente tem sua própria interface de classe.
+
+### AnySpendClasses
+
+Usado por `<AnySpend>`:
+
+```typescript title="AnySpendClasses" icon="code"
+interface AnySpendClasses {
+  container?: string;
+  header?: string;
+  tabSection?: string;
+  cryptoPaySection?: string;
+  cryptoReceiveSection?: string;
+  panelOnramp?: string;
+  paymentButton?: string;
+  navigationBar?: string;
+}
+```
+
+### AnySpendCheckoutClasses
+
+Usado por `<AnySpendCheckout>` e `<AnySpendCheckoutTrigger>`:
+
+<AccordionGroup>
+<Accordion title="Layout & Estrutura" defaultOpen>
+```typescript
+interface AnySpendCheckoutClasses {
+  root?: string;               // Container raiz
+  layout?: string;             // Wrapper do layout de dois painéis
+  paymentColumn?: string;      // Coluna esquerda (pagamento + formulários)
+  cartColumn?: string;         // Coluna direita (carrinho/resumo)
+}
+```
+</Accordion>
+
+<Accordion title="Painel de Pagamento">
+```typescript
+{
+  paymentPanel?: string;            // Container do painel de pagamento
+  paymentTitle?: string;            // Título "Pagar com"
+  paymentMethodSelector?: string;   // Container do seletor de método
+  paymentMethodButton?: string;     // Botão de método individual
+  cryptoPanel?: string;             // Seção de pagamento com cripto
+  tokenSelector?: string;           // Dropdown de token
+  quoteDisplay?: string;            // Exibição de cotação/preço
+  payButton?: string;               // Botão de pagar
+  fiatPanel?: string;               // Seção de pagamento fiat
+  stripeForm?: string;              // Container do formulário Stripe
+  stripeSubmitButton?: string;      // Botão de envio Stripe
+  coinbasePanel?: string;           // Painel Coinbase
+}
+```
+</Accordion>
+
+<Accordion title="Painel do Carrinho">
+```typescript
+{
+  cartPanel?: string;               // Container do carrinho
+  cartTitle?: string;               // Cabeçalho do carrinho
+  cartItemRow?: string;             // Linha de item individual
+  cartItemImage?: string;           // Imagem do item
+  cartItemName?: string;            // Nome do item
+  cartItemDescription?: string;     // Descrição do item
+  cartItemPrice?: string;           // Preço do item
+  cartItemMetadata?: string;        // Container de metadados
+  cartItemMetadataLabel?: string;   // Rótulo de metadados
+  cartItemMetadataValue?: string;   // Valor de metadados
+  cartSummary?: string;             // Seção de resumo
+  cartSubtotal?: string;            // Linha de subtotal
+  cartTotal?: string;               // Linha de total
+  cartSummaryLine?: string;         // Linha de resumo extra
+  cartSummaryLineLabel?: string;    // Rótulo da linha de resumo
+  cartSummaryLineAmount?: string;   // Quantia da linha de resumo
+  cartDiscount?: string;            // Linha de desconto
+}
+```
+</Accordion>
+
+<Accordion title="Painel de Formulário">
+```typescript
+{
+  formPanel?: string;          // Container do painel de formulário
+  formField?: string;          // Campo de formulário individual
+  formFieldLabel?: string;     // Rótulo do campo
+  formFieldInput?: string;     // Entrada do campo
+  shippingSelector?: string;   // Seletor de opção de envio
+  discountInput?: string;      // Entrada do código de desconto
+  addressForm?: string;        // Formulário de endereço
+}
+```
+</Accordion>
+
+<Accordion title="Status & Branding">
+```typescript
+{
+  poweredBy?: string;          // Rodapé "Powered by"
+  successPanel?: string;       // Tela de sucesso
+  returnButton?: string;       // Botão de retorno/redirecionamento
+  orderStatusPanel?: string;   // Rastreador de status do pedido
+  retryButton?: string;        // Botão de tentar novamente
+  transactionLink?: string;    // Link do explorador de transações
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### AnySpendDepositClasses
+
+Usado por `<AnySpendDeposit>`:
+
+```typescript title="AnySpendDepositClasses" icon="code"
+interface AnySpendDepositClasses {
+  root?: string;
+  chainSelection?: string;
+  form?: string;
+  balance?: string;
+  options?: string;
+  chainsList?: string;
+  divider?: string;
+  backButton?: string;
+}
+```
+
+### AnySpendAllClasses
+
+Combina várias interfaces de classe juntas. Usado por `<AnySpendDeposit>` e `<AnySpendWorkflowTrigger>`:
+
+```typescript title="AnySpendAllClasses" icon="code"
+interface AnySpendAllClasses {
+  deposit

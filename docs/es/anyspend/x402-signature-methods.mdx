@@ -1,0 +1,415 @@
+---
+title: Permiso vs TransferenciaConAutorización
+description: 'Firmas de pago sin gas: EIP-2612 permit y EIP-3009 transferWithAuthorization'
+lang: es
+originalPath: anyspend/x402-signature-methods.mdx
+---
+## Visión general
+
+AnySpend x402 utiliza firmas criptográficas en lugar de aprobaciones de tokens tradicionales, habilitando **pagos sin gas** para los usuarios. El facilitador paga todas las tarifas de gas mientras los usuarios simplemente firman mensajes de autorización.
+
+Hay dos principales estándares de firma soportados, cada uno optimizado para diferentes tipos de tokens:
+
+- **EIP-3009 (transferWithAuthorization)** - Usado por USDC, transferencias directas en un paso
+- **EIP-2612 (permit)** - Usado por la mayoría de los tokens ERC-20 modernos, aprobación en dos pasos + transferencia
+
+## Comparación rápida
+
+| Característica | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
+|---------|-------------------|--------------------------------------|
+| **Usado por** | La mayoría de los ERC-20 modernos | USDC (todas las redes) |
+| **Ejecución** | Dos pasos: aprobar + transferir | Un paso: transferencia directa |
+| **Tipo de Nonce** | Secuencial (autoincrementa) | Bytes32 aleatorios |
+| **Dependencia** | Debe esperar por el nonce anterior | No se requiere orden |
+| **Ideal para** | Tokens ERC-20 generales | Pagos con stablecoin |
+| **Protección contra Replay** | Nonce secuencial | Seguimiento de nonce aleatorio |
+| **Eficiencia de Gas** | 2 transacciones (permit + transferFrom) | 1 transacción (transferencia directa) |
+
+## EIP-3009: transferWithAuthorization (USDC)
+
+### Visión general
+
+Autorización de transferencia directa - la firma autoriza una transferencia inmediata del remitente al destinatario sin un paso de aprobación separado.
+
+**Usado por:** USDC en todas las redes (Base, Ethereum, Arbitrum, Optimism, Polygon, etc.)
+
+### Principales ventajas
+
+- Ejecución en un paso - transferencia directa, sin aprobación necesaria
+- Nonce aleatorio - sin dependencia secuencial, transacciones paralelas posibles
+- Liquidación inmediata - se ejecuta en una sola transacción
+- Sin gas para el pagador - el facilitador paga el gas
+- Sin front-running - nonce aleatorio previene ataques MEV
+
+### Estructura del mensaje
+
+```solidity
+transferWithAuthorization(
+    address from,          // Dirección del pagador
+    address to,            // Dirección del destinatario
+    uint256 value,         // Monto a transferir
+    uint256 validAfter,    // 0 (válido inmediatamente)
+    uint256 validBefore,   // Fecha límite de tiempo
+    bytes32 nonce,         // Nonce aleatorio (previene replay)
+    bytes signature        // Firma EIP-712
+)
+```
+
+### Ejemplo de uso
+
+```typescript
+import { signTransferWithAuthorization } from 'anyspend-x402-client';
+
+const signature = await signTransferWithAuthorization({
+  from: payerAddress,
+  to: recipientAddress,
+  value: '1000000',              // 1 USDC (6 decimales)
+  validBefore: deadline,
+  nonce: randomBytes32()         // Generar nonce aleatorio
+});
+```
+
+### Cómo funciona
+
+<Steps>
+<Step title="El Usuario Firma la Autorización">
+El usuario firma un mensaje EIP-712 autorizando la transferencia con un nonce aleatorio
+</Step>
+
+<Step title="El Facilitador Ejecuta la Transferencia">
+El facilitador llama a `receiveWithAuthorization()` con la firma
+</Step>
+
+<Step title="USDC Transferido">
+USDC se transfiere directamente del usuario al facilitador en una transacción atómica
+</Step>
+
+<Step title="Nonce Invalidado">
+El nonce aleatorio se marca como usado, previniendo ataques de replay
+</Step>
+</Steps>
+
+### Estructura de datos tipados EIP-712
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'USD Coin',
+    version: '2',
+    chainId: 8453, // Base
+    verifyingContract: usdcAddress
+  },
+  types: {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' }
+    ]
+  },
+  message: {
+    from: payerAddress,
+    to: recipientAddress,
+    value: '1000000',
+    validAfter: 0,
+    validBefore: deadline,
+    nonce: randomNonce
+  }
+};
+```
+
+---
+
+## EIP-2612: Permit (ERC-20 Estándar)
+
+### Visión general
+
+Aprobación basada en firma que establece un límite de gasto, seguido de una llamada `transferFrom()` separada. Este es el método estándar para la mayoría de los tokens ERC-20 modernos.
+
+**Usado por:** La mayoría de los tokens ERC-20 modernos con soporte de permit
+
+### Principales ventajas
+
+- Ampliamente adoptado - estándar en muchos tokens
+- Aprobaciones limitadas por tiempo - expiración basada en plazo
+- Compatible con ERC-20 - funciona con la infraestructura existente
+- Sin gas para el pagador - el facilitador paga el gas
+- Soportado por las principales carteras y dapps
+
+### Estructura del mensaje
+
+```solidity
+permit(
+    address owner,         // Propietario del token
+    address spender,       // Gastador aprobado (facilitador)
+    uint256 value,         // Monto de la aprobación
+    uint256 deadline,      // Fecha límite de expiración
+    uint8 v, bytes32 r, bytes32 s  // Componentes de la firma
+)
+```
+
+### Ejemplo de uso
+
+```typescript
+import { signPermit } from 'anyspend-x402-client';
+
+const nonce = await token.nonces(ownerAddress);  // Obtener nonce actual
+
+const signature = await signPermit({
+  token: tokenAddress,
+  owner: ownerAddress,
+  spender: facilitatorAddress,
+  value: '1000000',  // 1 USDC (6 decimales)
+  deadline: deadline,
+  nonce: nonce                    // Nonce secuencial
+});
+```
+
+### Cómo funciona
+
+<Steps>
+<Step title="El Usuario Firma el Permit">
+El usuario firma un mensaje de permit EIP-712 con el nonce secuencial actual
+</Step>
+
+<Step title="El Facilitador Llama a Permit">
+El facilitador llama a `permit()` para establecer el límite de gasto en cadena
+</Step>
+
+<Step title="Nonce Autoincrementa">
+El contrato del token incrementa automáticamente el nonce del usuario
+</Step>
+
+<Step title="El Facilitador Transfiere los Tokens">
+El facilitador llama a `transferFrom()` para transferir los tokens usando la aprobación
+</Step>
+</Steps>
+
+### Estructura de datos tipados EIP-712
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'Dai Stablecoin',
+    version: '1',
+    chainId: 8453, // Base
+    verifyingContract: daiAddress
+  },
+  types: {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  },
+  message: {
+    owner: ownerAddress,
+    spender: facilitatorAddress,
+    value: '1000000000000000000',
+    nonce: currentNonce,
+    deadline: deadline
+  }
+};
+```
+
+---
+
+## ¿Qué método utiliza mi token?
+
+### Verificación del soporte del token
+
+```typescript
+// Verificar si el token soporta EIP-3009 (estilo USDC)
+const hasTransferWithAuth = await token.read.transferWithAuthorization !== undefined;
+
+// Verificar si el token soporta EIP-2612 (Permit estándar)
+const hasPermit = await token.read.permit !== undefined;
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+### Tokens comunes por método
+
+**EIP-3009 (transferWithAuthorization):**
+- USDC (todas las cadenas)
+- USDC.e (versiones puente)
+
+**EIP-2612 (permit):**
+- La mayoría de los ERC-20 modernos
+- USDT (en algunas cadenas - Base, Arbitrum, Optimism)
+- Muchos tokens DeFi
+- Ver compatibilidad: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+**Sin Soporte Sin Gas:**
+- USDT en la red principal de Ethereum (sin permit)
+- USDT en Polygon (sin permit)
+- Tokens ERC-20 antiguos
+
+<Note>
+El cliente AnySpend x402 detecta automáticamente qué método de firma usar basado en el contrato del token. No necesitas especificar esto manualmente.
+</Note>
+
+## Gestión de nonce
+
+### Nonce aleatorio (EIP-3009)
+
+**Ventajas:**
+- Sin dependencia de orden - múltiples firmas pueden usarse en cualquier orden
+- Transacciones paralelas posibles
+- Sin estado bloqueado si una transacción falla
+
+**Implementación:**
+```typescript
+import { randomBytes } from 'crypto';
+
+// Generar nonce aleatorio criptográficamente seguro
+const nonce = '0x' + randomBytes(32).toString('hex');
+```
+
+**Seguimiento de Nonce:**
+```solidity
+// Verificar si el nonce ha sido usado
+mapping(address => mapping(bytes32 => bool)) public authorizationState;
+
+function isAuthorizationUsed(address authorizer, bytes32 nonce)
+    external
+    view
+    returns (bool)
+{
+    return authorizationState[authorizer][nonce];
+}
+```
+
+### Nonce secuencial (EIP-2612)
+
+**Ventajas:**
+- Simple y predecible
+- Eficiente en gas (única ranura de almacenamiento)
+- Estándar en todas las implementaciones de permit
+
+**Implementación:**
+```typescript
+// Obtener nonce actual del contrato del token
+const currentNonce = await token.read.nonces([ownerAddress]);
+
+// Firmar con nonce actual
+const signature = await signPermit({
+  // ...
+  nonce: currentNonce
+});
+```
+
+**Autoincremento de Nonce:**
+```solidity
+// El contrato del token incrementa automáticamente
+mapping(address => uint256) public nonces;
+
+function permit(/* ... */) external {
+    require(nonce == nonces[owner], "Nonce inválido");
+    nonces[owner]++; // Autoincremento
+    // ... resto de la lógica de permit
+}
+```
+
+## Consideraciones de seguridad
+
+### Protección contra replay
+
+**EIP-3009:**
+- Nonce aleatorio previene replay a través de cadenas y contratos
+- Cada nonce solo puede usarse una vez por dirección
+- Estado de nonce almacenado en cadena en mapping
+
+**EIP-2612:**
+- Nonce secuencial previene replay
+- Debe usar nonce actual (autoincrementa)
+- Transacciones fallidas bloquean firmas subsiguientes hasta ser re-firmadas
+
+### Cumplimiento de plazo
+
+Ambos métodos hacen cumplir plazos para prevenir firmas obsoletas:
+
+```typescript
+const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutos desde ahora
+```
+
+**Mejores Prácticas:**
+- Usar plazos cortos (5-10 minutos) por seguridad
+- Plazos más largos (30-60 minutos) para mejor UX si es necesario
+- Nunca usar `type(uint256).max` para aprobaciones infinitas
+
+### Validación de firma
+
+Ambos métodos validan firmas usando EIP-712:
+
+```typescript
+// Recuperar dirección del firmante de la firma
+const recoveredAddress = recoverTypedDataAddress({
+  domain,
+  types,
+  primaryType,
+  message,
+  signature
+});
+
+// Verificar que la dirección del firmante coincida con la dirección esperada
+if (recoveredAddress !== expectedSigner) {
+  throw new Error('Firma inválida');
+}
+```
+
+## Integración del SDK del cliente
+
+El cliente AnySpend x402 maneja toda la complejidad de la firma automáticamente:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: tokenAddress // USDC o cualquier token compatible
+});
+
+// El cliente automáticamente:
+// 1. Detecta si el token usa permit o transferWithAuthorization
+// 2. Obtiene el nonce actual (para permit) o genera un nonce aleatorio
+// 3. Construye los datos tipados EIP-712 correctos
+// 4. Solicita al usuario que firme
+// 5. Incluye la firma en el encabezado X-PAYMENT
+
+const response = await client.request('https://api.example.com/data');
+```
+
+## Comparación de costos de gas
+
+| Método | Gas del Usuario | Gas del Facilitador | Total de Transacciones |
+|--------|----------|-----------------|-------------------|
+| EIP-3009 | 0 | ~45,000 | 1 |
+| EIP-2612 | 0 | ~70,000 (permit) + ~45,000 (transfer) | 2 |
+
+<Note>
+Todos los costos de gas son pagados por el facilitador e incluidos en la tarifa de AnySpend del 0.25%. Los usuarios nunca pagan gas directamente.
+</Note>
+
+## Lecturas adicionales
+
+<CardGroup cols={2}>
+<Card title="Especificación EIP-2612" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-2612">
+  Especificación oficial de permit EIP-2612
+</Card>
+
+<Card title="Especificación EIP-3009" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-3009">
+  Especificación oficial de transferWithAuthorization EIP-3009
+</Card>
+
+<Card title="Datos Tipados EIP-712" icon="signature" href="https://eips.ethereum.org/EIPS/eip-712">
+  Hashing y firma de datos estructurados tipados EIP-712
+</Card>
+
+<Card title="Soporte de Red" icon="globe" href="/anyspend/x402-network-support">
+  Vea qué tokens soportan qué métodos en cada red
+</Card>
+</CardGroup>

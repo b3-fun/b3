@@ -1,0 +1,165 @@
+---
+title: Tinjauan AnySpend x402
+description: >-
+  Bayar untuk API dan layanan berbayar dengan token apa pun menggunakan protokol
+  pembayaran terbuka x402
+lang: id
+originalPath: anyspend/x402-overview.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositori GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Lihat kode sumber, contoh, dan berkontribusi
+</Card>
+
+<Card title="Paket npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  Instal paket @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Apa itu AnySpend x402
+
+AnySpend x402 adalah implementasi B3 dari **protokol pembayaran x402** yang memungkinkan pembayaran kriptokurensi instan dan otomatis langsung melalui HTTP. Berbeda dengan fasilitator x402 tradisional yang hanya mendukung USDC, **AnySpend memungkinkan Anda membayar dengan token yang kompatibel apa pun** (EIP-2612 atau EIP-3009) sementara server sumber menerima token apa pun yang mereka inginkan.
+
+Protokol x402 memodernisasi kode status HTTP `402 Payment Required`, mengubahnya menjadi solusi praktis untuk mikropembayaran antar mesin, API berbayar, dan interaksi agen otonom.
+
+## Untuk pembeli (pembayar)
+
+Bayar untuk sumber daya berbayar menggunakan token yang kompatibel apa pun yang Anda miliki:
+
+
+- **Bayar dengan token yang kompatibel**: Gunakan token apa pun dengan dukungan EIP-2612 atau EIP-3009 untuk pembayaran tanpa gas
+- **Protokol standar**: Bekerja dengan layanan yang diaktifkan x402 apa pun menggunakan HTTP standar
+- **Tidak perlu swap manual**: AnySpend secara otomatis mengonversi token Anda ke apa yang dibutuhkan penjual
+- **Integrasi sederhana**: Satu SDK bekerja di semua layanan x402
+
+<Card title="Pemeriksa Kompatibilitas Token" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Telusuri token yang kompatibel dengan dukungan EIP-2612 atau EIP-3009 di lebih dari 19 jaringan
+</Card>
+
+**Kasus Penggunaan:**
+- Akses API premium dan layanan agen AI
+- Bayar untuk sumber daya komputasi dan umpan data
+- Aktifkan pembayaran agen-ke-agen otonom
+- Konsumsi konten berbayar secara programatis
+
+## Untuk penjual (server sumber)
+
+Terima pembayaran dalam USDC sementara pelanggan Anda membayar dengan token pilihan mereka:
+
+- **Terima USDC**: Dibayar dalam USDC terlepas dari token apa yang digunakan pelanggan
+- **Middleware Express**: Tambahkan pembayaran ke API Anda hanya dengan beberapa baris kode
+- **Tidak perlu infrastruktur blockchain**: AnySpend menangani semua kompleksitas on-chain
+- **Penyelesaian instan**: Pembayaran diverifikasi dan diselesaikan secara otomatis
+
+**Kasus Penggunaan:**
+- Monetisasi API premium dan layanan data
+- Bangun alur kerja agen AI berbayar
+- Buat konten dan alat berbayar
+- Terima pembayaran kripto tanpa keahlian kripto
+
+## Mulai cepat
+
+Pilih jalur Anda:
+
+<CardGroup cols={2}>
+<Card title="Saya ingin membayar layanan" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  **Untuk Pembeli**: Pelajari cara menggunakan SDK klien x402 untuk membayar sumber daya berbayar dengan token apa pun
+</Card>
+
+<Card title="Saya ingin menerima pembayaran" icon="cash-register" href="/anyspend/x402-quickstart-sellers">
+  **Untuk Penjual**: Tambahkan middleware Express ke API Anda dan mulai menerima pembayaran multi-token
+</Card>
+</CardGroup>
+
+
+## Bagaimana cara kerjanya
+
+<Steps>
+<Step title="Klien Meminta Sumber Daya">
+Aplikasi pengguna membuat permintaan HTTP standar ke API Anda
+</Step>
+
+<Step title="Pembayaran Diperlukan">
+API Anda mengembalikan `402 Payment Required` dengan detail pembayaran
+</Step>
+
+<Step title="Preferensi Token">
+Klien menentukan token pembayaran yang diinginkan (USDC, USDT, dll.)
+</Step>
+
+<Step title="Kutipan AnySpend">
+AnySpend menghitung jumlah setara dalam token pilihan klien
+</Step>
+
+<Step title="Klien Menandatangani Pembayaran">
+Pengguna menandatangani otorisasi kriptografis untuk token mereka
+</Step>
+
+<Step title="Penyelesaian Otomatis">
+AnySpend menukar token ke USDC dan menyelesaikan ke dompet Anda
+</Step>
+
+<Step title="Sumber Daya Dikirim">
+API Anda menerima konfirmasi pembayaran dan mengembalikan sumber daya yang diminta
+</Step>
+</Steps>
+
+## Pembeda utama
+
+### Dukungan multi-token
+
+**x402 standar**: Server sumber dan klien harus sama-sama menggunakan USDC
+
+**AnySpend x402**: Klien membayar dengan **token yang kompatibel apa pun** (dukungan EIP-2612 atau EIP-3009 diperlukan) yang mereka miliki. AnySpend menangani konversinya.
+
+```
+Klien membayar dengan DAI (EIP-2612) → AnySpend menukar ke 1 USDC → Penjual menerima 1 USDC
+```
+
+### Tidak memerlukan infrastruktur
+
+Server sumber tidak perlu:
+- Menjalankan node blockchain
+- Mengelola dompet atau kunci pribadi
+- Menangani swap token atau bridging
+- Memantau status transaksi
+
+Fasilitator AnySpend menangani semua operasi blockchain dan menyediakan endpoint HTTP sederhana untuk verifikasi dan penyelesaian.
+
+### Kepatuhan protokol standar
+
+Klien yang menggunakan AnySpend tidak perlu tahu bahwa mereka menggunakan fasilitator khusus. Alur menggunakan pesan protokol x402 standar, dan konversi multi-token terjadi di sisi server sumber melalui middleware.
+
+## Pengiriman paket
+
+AnySpend x402 terdiri dari dua paket:
+
+<CardGroup cols={2}>
+<Card title="SDK Server" icon="server">
+  **@b3dotfun/anyspend-x402**
+
+  Middleware server universal yang mendukung Express, Next.js, dan Hono agar server sumber dapat dengan mudah menerima pembayaran multi-token
+</Card>
+
+<Card title="SDK Klien" icon="code">
+  **anyspend-x402-client**
+
+  SDK TypeScript yang agnostik platform untuk klien melakukan pembayaran dengan pembantu tanda tangan
+</Card>
+</CardGroup>
+
+## Didukung oleh fasilitator AnySpend
+
+Semua pembayaran x402 diproses melalui Fasilitator AnySpend, yang menangani:
+
+- Dukungan multi-token di lebih dari 19 jaringan blockchain
+- Swap token otomatis dan routing lintas rantai
+- Pembayaran tanpa gas untuk pengguna
+- Implementasi x402 yang sesuai standar
+- Pengganti langsung untuk fasilitator x402 apa pun
+
+**Endpoint Produksi:** `https://mainnet.anyspend.com/x402`
+
+<Card title="Fasilitator AnySpend" icon="server" href="/anyspend/x402-facilitator">
+  Endpoint API, arsitektur, dan konfigurasi
+</Card>

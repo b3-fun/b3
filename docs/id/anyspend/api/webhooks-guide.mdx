@@ -1,0 +1,408 @@
+---
+title: Panduan Webhooks
+description: Terima notifikasi waktu nyata ketika ada kejadian
+lang: id
+originalPath: anyspend/api/webhooks-guide.mdx
+---
+Webhook memungkinkan server Anda menerima callback HTTP secara real-time ketika terjadi event di organisasi AnySpend Anda -- pembayaran selesai, checkout kadaluarsa, dan lainnya. Daripada polling API, Anda mendaftarkan URL dan AnySpend mendorong event ke Anda.
+
+## Cara Kerjanya
+
+```
+Pembayar menyelesaikan pembayaran
+        |
+        v
+AnySpend memproses transaksi
+        |
+        v
+AnySpend mengirim POST ke URL webhook Anda
+        |
+        v
+Server Anda memverifikasi tanda tangan & memproses event
+        |
+        v
+Server Anda merespons dengan 200 OK
+```
+
+<Steps>
+  <Step title="Daftarkan endpoint webhook">
+    Buat webhook melalui Dashboard atau API, tentukan URL dan event mana yang ingin diikuti.
+  </Step>
+  <Step title="AnySpend mengirim event">
+    Ketika event yang diikuti terjadi, AnySpend mengirim permintaan `POST` ke URL Anda dengan payload JSON dan header tanda tangan.
+  </Step>
+  <Step title="Verifikasi dan proses">
+    Server Anda memverifikasi tanda tangan HMAC-SHA256, memproses event, dan merespons dengan status `200` dalam waktu 30 detik.
+  </Step>
+  <Step title="Pengulangan otomatis">
+    Jika server Anda tidak merespons dengan status `2xx`, AnySpend akan mengulangi hingga 3 kali dengan backoff eksponensial.
+  </Step>
+</Steps>
+
+## Event yang Didukung
+
+| Event | Deskripsi |
+|-------|-------------|
+| `payment.completed` | Pembayaran berhasil diterima dan dikonfirmasi di-chain |
+| `payment.failed` | Upaya pembayaran gagal (dibatalkan, waktu habis, dll.) |
+| `checkout.completed` | Sesi checkout selesai oleh pembayar |
+| `checkout.expired` | Sesi checkout kadaluarsa sebelum pembayar menyelesaikannya |
+
+<Tip>
+  Anda dapat berlangganan semua event dengan melewatkan `["*"]` sebagai array event, atau pilih hanya yang Anda butuhkan.
+</Tip>
+
+## Membuat Webhook
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+    const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+    const webhook = await platform.webhooks.create({
+      url: "https://your-server.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed"],
+      description: "Pengelola pembayaran produksi",
+    });
+
+    // PENTING: Simpan rahasia ini dengan aman -- hanya ditampilkan sekali
+    console.log("ID Webhook:", webhook.id);
+    console.log("Rahasia tanda tangan:", webhook.secret);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_your_api_key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://your-server.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed"],
+        "description": "Pengelola pembayaran produksi"
+      }'
+    ```
+  </Tab>
+  <Tab title="Dashboard">
+    Navigasi ke **Settings > Webhooks > Add Endpoint** di [Dashboard AnySpend](https://app.anyspend.com). Masukkan URL Anda, pilih event, dan klik **Create**. Rahasia tanda tangan akan ditampilkan sekali -- salin segera.
+  </Tab>
+</Tabs>
+
+## Payload Webhook
+
+Setiap pengiriman webhook mengirim permintaan `POST` dengan body JSON berikut:
+
+```json
+{
+  "event": "payment.completed",
+  "webhook_id": "wh_abc123",
+  "timestamp": "2025-06-01T15:30:00Z",
+  "data": {
+    "id": "txn_xyz789",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xPayerAddress",
+    "recipient_address": "0xYourAddress",
+    "tx_hash": "0xabc...def",
+    "status": "completed",
+    "form_data": {
+      "email": "payer@example.com",
+      "shipping_address": { "line1": "123 Main St", "city": "SF", "state": "CA", "zip": "94102" }
+    },
+    "discount_code": "SUMMER20",
+    "created_at": "2025-06-01T15:29:45Z",
+    "completed_at": "2025-06-01T15:30:00Z"
+  }
+}
+```
+
+### Headers
+
+| Header | Deskripsi |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AnySpend-Signature` | Digest hex HMAC-SHA256 dari body permintaan mentah |
+| `X-AnySpend-Webhook-Id` | ID endpoint webhook |
+| `X-AnySpend-Delivery-Id` | ID upaya pengiriman unik |
+| `X-AnySpend-Event` | Tipe event (mis. `payment.completed`) |
+| `X-AnySpend-Timestamp` | Timestamp ISO 8601 |
+
+## Merekonsiliasi Pembayaran dengan Sistem Anda
+
+Webhook `payment.completed` selalu mencakup blok `checkoutSession` yang berisi `clientReferenceId`, `metadata`, `customerEmail`, dan `customerName` -- semua yang Anda butuhkan untuk mencocokkan pembayaran dengan catatan internal Anda.
+
+### Menggunakan client_reference_id
+
+Lewati ID pesanan atau pengguna Anda saat membuat checkout (melalui parameter URL atau API):
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { clientReferenceId, metadata } = data.checkoutSession;
+
+  // Cari pesanan internal Anda
+  const order = await db.orders.findOne({ id: clientReferenceId });
+  if (!order) return;
+
+  // Tandai sebagai dibayar
+  await db.orders.update(order.id, {
+    status: "paid",
+    txHash: data.txHash,
+    paidAt: new Date(),
+  });
+}
+```
+
+### Menggunakan metadata
+
+Untuk data yang lebih kaya, gunakan pasangan kunci-nilai metadata:
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { metadata, customerEmail } = data.checkoutSession;
+
+  // metadata berisi apa pun yang Anda lewatkan melalui URL atau API
+  const userId = metadata?.user_id;    // mis., ID pengguna Clerk
+  const plan = metadata?.plan;          // mis., "pro"
+
+  await activateSubscription(userId, plan);
+
+  if (customerEmail) {
+    await sendReceipt(customerEmail, data.amount, data.txHash);
+  }
+}
+```
+
+<Tip>
+  Baik `client_reference_id` maupun `metadata` selalu termasuk dalam payload webhook. Anda dapat mengaturnya melalui [parameter URL](/anyspend/api/payment-links#url-parameters) untuk integrasi sederhana atau [Checkout Sessions API](/anyspend/api/checkout-sessions-api) untuk kontrol sisi server.
+</Tip>
+
+---
+
+## Memverifikasi Tanda Tangan
+
+<Warning>
+  Selalu verifikasi header `X-AnySpend-Signature` sebelum memproses webhook. Tanpa verifikasi, penyerang dapat mengirim event palsu ke endpoint Anda.
+</Warning>
+
+Tanda tangan dihitung sebagai:
+
+```
+HMAC-SHA256(webhook_secret, raw_request_body)
+```
+
+### Express.js (Node.js)
+
+```javascript
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+
+// PENTING: Gunakan body mentah untuk verifikasi tanda tangan
+app.post(
+  "/webhooks/anyspend",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["x-anyspend-signature"];
+    const secret = process.env.ANYSPEND_WEBHOOK_SECRET;
+
+    // Hitung tanda tangan yang diharapkan
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(req.body) // req.body adalah Buffer ketika menggunakan express.raw()
+      .digest("hex");
+
+    // Perbandingan waktu konstan untuk mencegah serangan waktu
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSignature, "hex")
+      )
+    ) {
+      console.error("Tanda tangan webhook tidak valid");
+      return res.status(401).send("Tanda tangan tidak valid");
+    }
+
+    // Tanda tangan valid -- parse dan proses event
+    const event = JSON.parse(req.body.toString());
+
+    switch (event.event) {
+      case "payment.completed":
+        handlePaymentCompleted(event.data);
+        break;
+      case "payment.failed":
+        handlePaymentFailed(event.data);
+        break;
+      case "checkout.completed":
+        handleCheckoutCompleted(event.data);
+        break;
+      case "checkout.expired":
+        handleCheckoutExpired(event.data);
+        break;
+      default:
+        console.log("Tipe event tidak ditangani:", event.event);
+    }
+
+    // Selalu merespons dengan 200 untuk mengakui penerimaan
+    res.status(200).json({ received: true });
+  }
+);
+
+function handlePaymentCompleted(data) {
+  console.log(`Pembayaran ${data.id} selesai untuk ${data.amount}`);
+  // Penuhi pesanan, kirim email konfirmasi, perbarui database, dll.
+}
+
+function handlePaymentFailed(data) {
+  console.log(`Pembayaran ${data.id} gagal`);
+  // Beritahu pelanggan, perbarui status pesanan, dll.
+}
+
+function handleCheckoutCompleted(data) {
+  console.log(`Sesi checkout selesai`);
+}
+
+function handleCheckoutExpired(data) {
+  console.log(`Sesi checkout kadaluarsa`);
+}
+
+app.listen(3000);
+```
+
+### Python (Flask)
+
+```python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+WEBHOOK_SECRET = "whsec_your_secret_here"
+
+@app.route("/webhooks/anyspend", methods=["POST"])
+def handle_webhook():
+    # Verifikasi tanda tangan
+    signature = request.headers.get("X-AnySpend-Signature", "")
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        request.data,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(signature, expected):
+        return jsonify({"error": "Tanda tangan tidak valid"}), 401
+
+    event = request.get_json()
+
+    if event["event"] == "payment.completed":
+        print(f"Pembayaran {event['data']['id']} selesai")
+        # Penuhi pesanan...
+    elif event["event"] == "payment.failed":
+        print(f"Pembayaran {event['data']['id']} gagal")
+        # Tangani kegagalan...
+
+    return jsonify({"received": True}), 200
+```
+
+## Kebijakan Pengulangan
+
+Jika endpoint Anda tidak merespons dengan kode status `2xx` dalam **30 detik**, AnySpend menandai pengiriman sebagai gagal dan mengulangi.
+
+| Upaya | Jeda setelah upaya sebelumnya |
+|---------|------------------------------|
+| Pengulangan pertama | 1 menit |
+| Pengulangan kedua | 10 menit |
+| Pengulangan ketiga | 1 jam |
+
+Setelah 3 pengulangan gagal, pengiriman ditandai sebagai `gagal` secara permanen. Anda masih dapat mengulangi secara manual dari Dashboard atau API.
+
+<Info>
+  Jika endpoint Anda secara konsisten gagal (10+ pengiriman gagal berturut-turut), webhook akan secara otomatis **dinonaktifkan** dan Anda akan menerima notifikasi email. Aktifkan kembali dari Dashboard setelah memperbaiki masalah.
+</Info>
+
+## Melihat Riwayat Pengiriman
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    // Daftar pengiriman terbaru untuk sebuah webhook
+    const deliveries = await platform.webhooks.deliveries("wh_abc123", {
+      limit: 20,
+    });
+
+    for (const d of deliveries.data) {
+      console.log(
+        d.id,
+        d.event,
+        d.status,        // "sukses" | "gagal" | "tunda"
+        d.response_code, // Kode status HTTP dari server Anda
+        d.created_at
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+## Mengulangi Pengiriman Gagal
+
+```typescript
+// Mengulangi pengiriman gagal tertentu
+await platform.webhooks.retry("wh_abc123", "del_failed456");
+```
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_failed456/retry \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+## Menguji Webhook
+
+Gunakan endpoint tes untuk mengirim event sintetis ke URL webhook Anda. Ini membantu memverifikasi endpoint Anda dapat dijangkau dan logika verifikasi tanda tangan Anda benar.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const testResult = await platform.webhooks.test("wh_abc123");
+
+    console.log(testResult.delivery_id);    // ID Pengiriman
+    console.log(testResult.response_code);  // Status HTTP server Anda
+    console.log(testResult.success);        // true jika respons 2xx
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+Event tes menggunakan tipe event `payment.completed` dengan data tiruan. Handler Anda harus memprosesnya seperti event lainnya, tetapi Anda dapat memeriksa header `X-AnySpend-Test: true` jika Anda ingin melewati efek samping selama pengujian.
+
+## Praktik Terbaik
+
+<CardGroup cols={2}>
+  <Card title="Tanggapi dengan cepat" icon="bolt">
+    Kembalikan `200` segera dan proses event secara asinkron (mis., dalam antrian pekerjaan latar belakang). Pengiriman webhook habis waktu setelah 30 detik.
+  </Card>
+  <Card title="Tangani duplikat" icon="clone">
+    Gunakan header `X-AnySpend-Delivery-Id` atau field `data.id` untuk menduplikasi event. Pengulangan dapat mengirimkan event yang sama lebih dari sekali.
+  </Card>
+  <Card title="Verifikasi tanda tangan" icon="shield-halved">
+    Selalu verifikasi header `X-AnySpend-Signature`. Jangan pernah mempercayai payload tanpa verifikasi.
+  </Card>
+  <Card title="Gunakan HTTPS" icon="lock">
+    URL webhook harus menggunakan HTTPS dalam produksi. URL HTTP hanya diizinkan untuk `localhost` selama pengembangan.
+  </Card>
+</CardGroup>

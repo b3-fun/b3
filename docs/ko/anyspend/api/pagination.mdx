@@ -1,0 +1,274 @@
+---
+title: 페이지네이션 & 필터링
+description: 리스트 엔드포인트를 통한 페이지네이션 및 결과 필터링
+lang: ko
+originalPath: anyspend/api/pagination.mdx
+---
+# 페이지네이션 및 필터링
+
+AnySpend 플랫폼 API의 모든 목록 엔드포인트는 페이지네이션된 응답을 반환합니다. 이 페이지에서는 대규모 결과 세트를 탐색하고, 데이터를 필터링하며, 결과를 정렬하는 방법을 다룹니다.
+
+## 목록 응답 형식
+
+모든 목록 엔드포인트는 일관된 봉투를 반환합니다:
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium Membership" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic Plan" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+| 필드 | 타입 | 설명 |
+|-------|------|-------------|
+| `object` | `string` | 목록 응답의 경우 항상 `"list"`입니다. |
+| `data` | `array` | 현재 페이지의 리소스 객체 배열입니다. 각 항목은 자체 `object` 타입 필드를 포함합니다. |
+| `has_more` | `boolean` | 이 페이지를 넘어 더 많은 결과가 있는 경우 `true`입니다. 다음 페이지를 가져올지 결정하는 데 사용합니다. |
+| `total_count` | `number` | 모든 페이지에 걸쳐 일치하는 리소스의 총 수입니다. |
+| `url` | `string` | 이 목록의 API 엔드포인트 경로입니다. |
+
+## 페이지네이션 파라미터
+
+결과를 탐색하기 위해 `page` 및 `limit` 쿼리 파라미터를 사용합니다.
+
+| 파라미터 | 타입 | 기본값 | 최대 | 설명 |
+|-----------|------|---------|-----|-------------|
+| `page` | `integer` | `1` | -- | 검색할 페이지 번호입니다 (1부터 시작). |
+| `limit` | `integer` | `20` | `100` | 페이지 당 결과 수입니다. |
+
+### 기본 페이지네이션 예시
+
+```bash
+# 첫 번째 페이지 (기본값: 20개 결과)
+curl "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 두 번째 페이지, 페이지 당 50개 결과
+curl "https://platform-api.anyspend.com/api/v1/payment-links?page=2&limit=50" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 페이지 탐색
+
+`has_more` 필드를 사용하여 페이지네이션을 멈출 시기를 결정합니다:
+
+```typescript
+async function fetchAllPaymentLinks(): Promise<PaymentLink[]> {
+  const allLinks: PaymentLink[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/payment-links?page=${page}&limit=100`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+    allLinks.push(...body.data);
+    hasMore = body.has_more;
+    page++;
+  }
+
+  return allLinks;
+}
+```
+
+## 필터링
+
+대부분의 목록 엔드포인트는 결과를 필터링하기 위한 쿼리 파라미터를 지원합니다. 사용 가능한 필터는 리소스 유형에 따라 다릅니다.
+
+### 결제 링크
+
+| 파라미터 | 타입 | 설명 |
+|-----------|------|-------------|
+| `search` | `string` | 이름이나 짧은 코드로 검색합니다 (부분 일치). |
+| `active` | `"true"` 또는 `"false"` | 활성/비활성 상태로 필터링합니다. |
+
+```bash
+# "premium"을 포함하는 결제 링크 검색
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 활성화된 결제 링크만
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 필터 결합
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium&active=true&limit=10" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 체크아웃 세션
+
+| 파라미터 | 타입 | 설명 |
+|-----------|------|-------------|
+| `status` | `"active"`, `"completed"`, `"expired"` | 세션 상태로 필터링합니다. |
+
+```bash
+# 결제 링크의 완료된 세션
+curl "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/sessions?status=completed" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 거래
+
+| 파라미터 | 타입 | 설명 |
+|-----------|------|-------------|
+| `status` | `string` | 거래 상태로 필터링합니다. |
+| `chain_id` | `number` | 블록체인 네트워크로 필터링합니다. |
+
+```bash
+# Base (체인 ID 8453)에서의 거래
+curl "https://platform-api.anyspend.com/api/v1/transactions?chain_id=8453" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## 정렬
+
+정렬을 지원하는 목록 엔드포인트는 `sort` 및 `order` 파라미터를 수용합니다.
+
+| 파라미터 | 타입 | 기본값 | 설명 |
+|-----------|------|---------|-------------|
+| `sort` | `string` | `created_at` | 정렬할 필드입니다. 허용되는 값은 리소스에 따라 다릅니다. |
+| `order` | `"asc"` 또는 `"desc"` | `desc` | 정렬 방향입니다. |
+
+### 결제 링크 정렬 필드
+
+| 필드 | 설명 |
+|-------|-------------|
+| `created_at` | 결제 링크가 생성된 시간 (기본값). |
+| `updated_at` | 결제 링크가 마지막으로 수정된 시간. |
+| `name` | 이름 순으로 알파벳순. |
+| `current_uses` | 완료된 체크아웃 수. |
+
+```bash
+# 가장 인기 있는 결제 링크부터
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=current_uses&order=desc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 이름 순으로 알파벳순
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=name&order=asc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## 자동 페이지네이션 예시
+
+편의를 위해 페이지네이션을 자동으로 처리하는 비동기 반복자를 구축할 수 있습니다:
+
+```typescript
+async function* paginate<T>(
+  endpoint: string,
+  params: Record<string, string> = {},
+  limit = 100,
+): AsyncGenerator<T> {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const queryParams = new URLSearchParams({
+      ...params,
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/${endpoint}?${queryParams}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+
+    for (const item of body.data) {
+      yield item as T;
+    }
+
+    hasMore = body.has_more;
+    page++;
+  }
+}
+
+// for-await 사용
+async function main() {
+  for await (const link of paginate<PaymentLink>("payment-links", { active: "true" })) {
+    console.log(`${link.name}: ${link.current_uses} completions`);
+  }
+}
+```
+
+## 결과 계산
+
+`total_count`를 사용하여 모든 페이지를 가져오지 않고 일치하는 리소스의 총 수를 얻습니다:
+
+```typescript
+async function countActivePaymentLinks(): Promise<number> {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links?active=true&limit=1",
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      },
+    }
+  );
+
+  const body = await response.json();
+  return body.total_count;
+}
+```
+
+카운트만 필요할 때 응답 페이로드를 최소화하기 위해 `limit=1`을 설정합니다.
+
+## 모범 사례
+
+<AccordionGroup>
+<Accordion title="대량 작업에는 limit=100 사용">
+모든 레코드를 가져와야 하는 경우(예: 데이터 내보내기 또는 동기화를 위해) API 호출 수를 최소화하고 속도 제한 내에서 유지하기 위해 최대 `limit=100`을 사용합니다.
+</Accordion>
+
+<Accordion title="페이지네이션 루프에는 has_more 대신 total_count 사용">
+`has_more`는 다음 페이지를 가져올지 여부를 결정하는 권한 있는 신호입니다. 요청 사이에 총계가 변경될 수 있으므로 `total_count`에서 페이지 수를 계산하는 것을 피하세요.
+</Accordion>
+
+<Accordion title="UI 페이지네이션 컨트롤에 total_count 캐시">
+예를 들어, "8페이지 중 3페이지"와 같은 페이지네이션 UI를 구축할 때 `total_count`를 한 번 가져와 세션에 캐시합니다. 사용자가 새로고침하거나 새 필터를 적용할 때만 다시 가져옵니다.
+</Accordion>
+
+<Accordion title="페이지네이션과 함께 필터 결합">
+모든 레코드를 가져와 클라이언트 측에서 필터링하는 대신 필터를 적용하여 결과 세트를 줄이고 페이지네이션된 필터링된 결과를 가져옵니다:
+
+```bash
+# 모든 링크를 가져와 로컬에서 필터링하는 대신...
+# 서버 측에서 필터링하고 필터링된 결과를 페이지네이션
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true&search=premium&limit=20" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+</Accordion>
+
+<Accordion title="대량 가져오기 중 속도 제한 준수">
+큰 데이터 세트를 페이지네이션하는 경우 분당 120회 요청의 속도 제한을 염두에 두세요. 매우 큰 데이터 세트의 경우 페이지 요청 사이에 짧은 지연을 추가하세요:
+
+```typescript
+async function fetchWithDelay() {
+  for await (const link of paginate("payment-links")) {
+    process.stdout.write(".");
+  }
+  // paginate 함수는 최대 ceil(total / 100) 요청을 합니다.
+  // 10,000개 레코드의 경우, 이는 100개 요청입니다 -- 분당 120회 제한 내입니다.
+}
+```
+</Accordion>
+</AccordionGroup>

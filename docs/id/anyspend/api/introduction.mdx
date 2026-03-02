@@ -1,0 +1,247 @@
+---
+title: Platform API
+description: >-
+  Akses programatik ke AnySpend - buat tautan pembayaran, kelola produk, lacak
+  transaksi, dan lainnya
+lang: id
+originalPath: anyspend/api/introduction.mdx
+---
+# Platform API AnySpend
+
+Platform API AnySpend memberikan Anda kontrol penuh secara programatik atas infrastruktur pembayaran Anda. Bangun integrasi, otomatiskan alur kerja, dan biarkan agen AI mengelola tumpukan perdagangan Anda -- semua melalui REST API yang bersih ala Stripe.
+
+## Untuk siapa ini?
+
+- **Pengembang** yang membangun integrasi khusus dengan AnySpend
+- **Agen AI** yang membuat tautan pembayaran, mengelola produk, atau menarik analitik
+- **Platform otomatisasi** yang mengorkestrasi alur kerja perdagangan (Zapier, n8n, skrip kustom)
+- **Layanan backend** yang perlu membuat sesi checkout secara programatik atau melacak transaksi
+
+## Mulai cepat
+
+Buat tautan pembayaran dalam 3 baris:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+API mengembalikan respons ala Stripe dengan sumber daya yang dibuat:
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "short_code": "xK9mQ2",
+  "amount": "10000000",
+  "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "chain_id": 8453,
+  "recipient_address": "0xYourAddress...",
+  "url": "https://platform-api.anyspend.com/pay/xK9mQ2",
+  "is_active": true,
+  "items": [],
+  "created_at": 1709078400000,
+  "updated_at": 1709078400000
+}
+```
+
+## Mengasosiasikan pembayaran dengan pelanggan
+
+Ada dua pola untuk menghubungkan pembayaran AnySpend kembali ke pengguna Anda:
+
+### Pola 1: Parameter URL (sederhana)
+
+Tambahkan `client_reference_id` dan `metadata` ke URL tautan pembayaran Anda:
+
+```
+https://anyspend.com/pay/xK9mQ2?client_reference_id=order_123&metadata[user_id]=clerk_abc
+```
+
+Nilai-nilai ini mengalir ke webhook `payment.completed` Anda secara otomatis.
+
+### Pola 2: Sesi sisi server (enterprise)
+
+Buat sesi checkout di backend Anda dengan konteks pelanggan penuh:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/checkout-sessions \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123def456",
+    "client_reference_id": "order_456",
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "metadata": { "user_id": "clerk_abc", "plan": "pro" },
+    "success_url": "https://example.com/success?session_id={SESSION_ID}"
+  }'
+```
+
+Respons termasuk bidang `url` -- arahkan pelanggan Anda ke sana untuk membayar. Semua data disertakan dalam webhook ketika pembayaran selesai.
+
+<Tip>
+  Lihat [Panduan Webhooks](/anyspend/api/webhooks-guide#reconciling-payments-with-your-system) untuk contoh lengkap rekonsiliasi pembayaran dalam handler webhook Anda.
+</Tip>
+
+## URL Dasar
+
+Semua permintaan API dibuat ke:
+
+```
+https://platform-api.anyspend.com/api/v1
+```
+
+## Tingkatan otentikasi
+
+API menggunakan tiga tingkatan otentikasi tergantung pada endpoint:
+
+| Tingkatan | Auth yang diperlukan | Batas laju | Kasus penggunaan |
+|------|--------------|------------|----------|
+| **Terbuka** | Tidak ada (pembatasan laju berbasis IP) | 5 permintaan/menit per IP | Quick Pay -- pembayaran satu kali tanpa akun yang diperlukan |
+| **Kunci API** | kunci `asp_xxx` via header | 120 permintaan/menit per kunci | Semua operasi API standar -- CRUD pada tautan pembayaran, produk, transaksi, dll. |
+| **JWT** | token sesi Dashboard | Batas sesi standar | Rute hanya Dashboard (dikelola secara otomatis oleh aplikasi web) |
+
+Sebagian besar pengembang akan menggunakan otentikasi Kunci API. Lihat halaman [Otentikasi](/anyspend/api/authentication) untuk detail tentang membuat dan mengelola kunci.
+
+## Format respons
+
+Setiap respons API mengikuti format ala Stripe yang konsisten.
+
+### Sumber daya tunggal
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "amount": "10000000",
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+Bidang `object` memberitahu Anda jenis sumber daya. Bidang `id` adalah pengenal unik.
+
+### Daftar sumber daya
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+Lihat halaman [Pagination & Filtering](/anyspend/api/pagination) untuk detail tentang navigasi respons daftar.
+
+### Respons kesalahan
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "Bidang 'name' diperlukan.",
+    "param": "name"
+  }
+}
+```
+
+Lihat halaman [Kesalahan](/anyspend/api/errors) untuk taksonomi kesalahan lengkap.
+
+### Sumber daya yang dihapus
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "deleted": true
+}
+```
+
+## Batas laju
+
+Batas laju bervariasi berdasarkan tingkatan otentikasi. Ketika Anda melebihi batas, API mengembalikan status `429` dengan `rate_limit_error`:
+
+| Tingkatan | Batas | Jendela |
+|------|-------|--------|
+| Terbuka (Quick Pay) | 5 permintaan | 1 menit |
+| Kunci API | 120 permintaan | 1 menit |
+
+Header respons termasuk informasi batas laju:
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 117
+X-RateLimit-Reset: 1709078460
+```
+
+## Idempotensi
+
+Untuk pengulangan yang aman pada permintaan `POST` dan `PATCH`, sertakan header `Idempotency-Key`. Permintaan duplikat dengan kunci dan badan yang sama mengembalikan respons yang disimpan di cache. Lihat halaman [Idempotensi](/anyspend/api/idempotency) untuk detail.
+
+## Sumber daya yang tersedia
+
+<CardGroup cols={2}>
+<Card title="Otentikasi" icon="key" href="/anyspend/api/authentication">
+  Buat dan kelola kunci API, pahami tingkatan izin, dan ikuti praktik terbaik keamanan.
+</Card>
+
+<Card title="Tautan Pembayaran" icon="link" href="/anyspend/api/payment-links">
+  Buat, perbarui, dan kelola tautan pembayaran dengan item, statistik, sesi, dan pelacakan pengunjung.
+</Card>
+
+<Card title="Produk" icon="box" href="/anyspend/api/products">
+  Kelola katalog produk Anda -- buat produk yang dapat dilampirkan pada tautan pembayaran.
+</Card>
+
+<Card title="Sesi Checkout" icon="credit-card" href="/anyspend/api/checkout-sessions-api">
+  Buat dan lacak sesi checkout, pantau status pembayaran, dan tangani penyelesaian.
+</Card>
+
+<Card title="Transaksi" icon="arrow-right-arrow-left" href="/anyspend/api/transactions">
+  Kueri riwayat transaksi, filter berdasarkan status, dan tarik detail penyelesaian.
+</Card>
+
+<Card title="Pelanggan" icon="users" href="/anyspend/api/customers">
+  Lacak dompet pelanggan, lihat riwayat pembelian, dan kelola catatan pelanggan.
+</Card>
+
+<Card title="Webhooks" icon="bell" href="/anyspend/api/webhooks-api">
+  Daftarkan endpoint webhook untuk menerima notifikasi waktu nyata untuk event pembayaran.
+</Card>
+
+<Card title="Kode Diskon" icon="tag" href="/anyspend/api/discount-codes">
+  Buat dan kelola kode diskon untuk tautan pembayaran Anda.
+</Card>
+</CardGroup>
+
+## Langkah selanjutnya
+
+<Steps>
+<Step title="Dapatkan kunci API Anda">
+  Pergi ke [Dashboard AnySpend](https://anyspend.com/dashboard) Anda di bawah **Settings > API Keys** dan buat kunci dengan izin yang Anda butuhkan.
+</Step>
+
+<Step title="Buat permintaan pertama Anda">
+  Gunakan contoh curl di atas atau klien HTTP pilihan Anda untuk membuat tautan pembayaran.
+</Step>
+
+<Step title="Siapkan webhooks">
+  Daftarkan endpoint webhook untuk menerima notifikasi waktu nyata ketika pembayaran selesai.
+</Step>
+</Steps>

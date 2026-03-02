@@ -1,0 +1,252 @@
+---
+title: 分析
+description: 收入与转化分析概览
+lang: cn
+originalPath: anyspend/api/analytics.mdx
+---
+分析端点提供了您的支付性能的全面概述，包括收入总额、客户数量、转化率以及按天、支付链接、令牌和链的细分。
+
+<Info>
+  分析端点需要 **read** 权限。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL：`https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 获取分析概览
+
+<ParamField path="GET /analytics/overview" type="read">
+  返回指定时间段的聚合分析概览。
+</ParamField>
+
+<ParamField path="period" type="string" query>
+  指标的时间段。可选值：`7d`、`30d`、`90d`、`all`。默认为 `30d`。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/analytics/overview?period=30d" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const analytics = await client.analytics.overview({ period: "30d" });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "period_usd": 45230.50,
+      "period_transactions": 312,
+      "all_time_usd": 182450.75,
+      "all_time_transactions": 1847
+    },
+    "customers": {
+      "total": 892,
+      "new_in_period": 156
+    },
+    "payment_links": {
+      "total": 24,
+      "active": 18
+    },
+    "conversion_rate": 0.68,
+    "daily": [
+      {
+        "date": "2026-02-27",
+        "transactions": 14,
+        "revenue_usd": 1820.00
+      },
+      {
+        "date": "2026-02-26",
+        "transactions": 18,
+        "revenue_usd": 2340.50
+      },
+      {
+        "date": "2026-02-25",
+        "transactions": 11,
+        "revenue_usd": 1450.25
+      }
+    ],
+    "top_payment_links": [
+      {
+        "id": "pl_abc123",
+        "name": "Pro Plan Monthly",
+        "revenue_usd": 12500.00,
+        "transactions": 125
+      },
+      {
+        "id": "pl_def456",
+        "name": "Enterprise Annual",
+        "revenue_usd": 9800.00,
+        "transactions": 14
+      },
+      {
+        "id": "pl_ghi789",
+        "name": "Starter Pack",
+        "revenue_usd": 7200.00,
+        "transactions": 96
+      }
+    ],
+    "top_tokens": [
+      {
+        "symbol": "USDC",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain_id": 8453,
+        "revenue_usd": 32100.00,
+        "transactions": 245
+      },
+      {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "chain_id": 8453,
+        "revenue_usd": 8400.00,
+        "transactions": 42
+      }
+    ],
+    "top_chains": [
+      {
+        "chain_id": 8453,
+        "name": "Base",
+        "revenue_usd": 38200.00,
+        "transactions": 278
+      },
+      {
+        "chain_id": 1,
+        "name": "Ethereum",
+        "revenue_usd": 7030.50,
+        "transactions": 34
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 响应字段
+
+### 收入
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `period_usd` | `number` | 选定期间内的美元总收入 |
+| `period_transactions` | `number` | 期间内完成的交易数量 |
+| `all_time_usd` | `number` | 总生命周期内的美元收入 |
+| `all_time_transactions` | `number` | 总生命周期内的交易数量 |
+
+### 客户
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `total` | `number` | 总独特客户数（按钱包地址） |
+| `new_in_period` | `number` | 选定期间内获得的新客户 |
+
+### 支付链接
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `total` | `number` | 创建的支付链接总数 |
+| `active` | `number` | 当前活跃的支付链接 |
+
+### 转化率
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `conversion_rate` | `number` | 完成结账与启动会话的比率（0.0 至 1.0） |
+
+### 每日细分
+
+`daily` 数组中的每个条目包含：
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `date` | `string` | 日期，格式为 `YYYY-MM-DD` |
+| `transactions` | `number` | 那天完成的交易 |
+| `revenue_usd` | `number` | 那天的美元收入 |
+
+### 顶级支付链接
+
+按选定期间内的收入排名：
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `id` | `string` | 支付链接 ID |
+| `name` | `string` | 支付链接名称 |
+| `revenue_usd` | `number` | 美元收入 |
+| `transactions` | `number` | 交易数量 |
+
+### 顶级令牌
+
+按选定期间内的收入排名：
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `symbol` | `string` | 令牌符号（例如，`USDC`） |
+| `address` | `string` | 令牌合约地址 |
+| `chain_id` | `number` | 接收令牌的链 ID |
+| `revenue_usd` | `number` | 美元收入 |
+| `transactions` | `number` | 交易数量 |
+
+### 顶级链
+
+按选定期间内的收入排名：
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `chain_id` | `number` | 链 ID |
+| `name` | `string` | 链名称 |
+| `revenue_usd` | `number` | 美元收入 |
+| `transactions` | `number` | 交易数量 |
+
+---
+
+## 期间选项
+
+| 值 | 描述 |
+|-------|-------------|
+| `7d` | 最近 7 天 |
+| `30d` | 最近 30 天（默认） |
+| `90d` | 最近 90 天 |
+| `all` | 全部时间 |
+
+<Note>
+  `daily` 数组为选定期间每天返回一个条目。对于 `all`，每日数组限制在最近的 90 天。
+</Note>
+
+## 示例：仪表板图表
+
+```typescript
+const analytics = await client.analytics.overview({ period: "30d" });
+
+// 绘制每日收入
+analytics.daily.forEach(({ date, revenue_usd, transactions }) => {
+  console.log(`${date}: $${revenue_usd.toFixed(2)} (${transactions} txns)`);
+});
+
+// 将转化率显示为百分比
+console.log(`Conversion: ${(analytics.conversion_rate * 100).toFixed(1)}%`);
+
+// 显示表现最佳的支付链接
+const top = analytics.top_payment_links[0];
+if (top) {
+  console.log(`Best link: ${top.name} - $${top.revenue_usd.toFixed(2)}`);
+}
+```

@@ -1,0 +1,408 @@
+---
+title: Guía de Webhooks
+description: Recibe notificaciones en tiempo real cuando ocurran eventos
+lang: es
+originalPath: anyspend/api/webhooks-guide.mdx
+---
+Los webhooks permiten que tu servidor reciba callbacks HTTP en tiempo real cuando ocurren eventos en tu organización de AnySpend -- pagos completados, cierres de sesión expirados, y más. En lugar de sondear la API, registras una URL y AnySpend te envía los eventos.
+
+## Cómo Funciona
+
+```
+El pagador completa el pago
+        |
+        v
+AnySpend procesa la transacción
+        |
+        v
+AnySpend envía POST a tu URL de webhook
+        |
+        v
+Tu servidor verifica la firma y procesa el evento
+        |
+        v
+Tu servidor responde con 200 OK
+```
+
+<Steps>
+  <Step title="Registrar un endpoint de webhook">
+    Crea un webhook a través del Dashboard o la API, especificando la URL y a qué eventos suscribirse.
+  </Step>
+  <Step title="AnySpend envía eventos">
+    Cuando ocurre un evento suscrito, AnySpend envía una solicitud `POST` a tu URL con un payload JSON y un encabezado de firma.
+  </Step>
+  <Step title="Verificar y procesar">
+    Tu servidor verifica la firma HMAC-SHA256, procesa el evento y responde con un estado `200` dentro de los 30 segundos.
+  </Step>
+  <Step title="Reintentos automáticos">
+    Si tu servidor no responde con un estado `2xx`, AnySpend reintenta hasta 3 veces con retroceso exponencial.
+  </Step>
+</Steps>
+
+## Eventos Soportados
+
+| Evento | Descripción |
+|--------|-------------|
+| `payment.completed` | Un pago fue recibido con éxito y confirmado en cadena |
+| `payment.failed` | Un intento de pago falló (revertido, tiempo agotado, etc.) |
+| `checkout.completed` | Una sesión de pago fue completada por el pagador |
+| `checkout.expired` | Una sesión de pago expiró antes de que el pagador la completara |
+
+<Tip>
+  Puedes suscribirte a todos los eventos pasando `["*"]` como el array de eventos, o elegir solo los que necesites.
+</Tip>
+
+## Creando un Webhook
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+    const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+    const webhook = await platform.webhooks.create({
+      url: "https://your-server.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed"],
+      description: "Manejador de pagos de producción",
+    });
+
+    // IMPORTANTE: Almacena este secreto de forma segura -- solo se muestra una vez
+    console.log("ID de Webhook:", webhook.id);
+    console.log("Secreto de firma:", webhook.secret);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_your_api_key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://your-server.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed"],
+        "description": "Manejador de pagos de producción"
+      }'
+    ```
+  </Tab>
+  <Tab title="Dashboard">
+    Navega a **Configuración > Webhooks > Añadir Endpoint** en el [Dashboard de AnySpend](https://app.anyspend.com). Ingresa tu URL, selecciona los eventos, y haz clic en **Crear**. El secreto de firma se mostrará una vez -- cópialo inmediatamente.
+  </Tab>
+</Tabs>
+
+## Payload del Webhook
+
+Cada entrega de webhook envía una solicitud `POST` con el siguiente cuerpo JSON:
+
+```json
+{
+  "event": "payment.completed",
+  "webhook_id": "wh_abc123",
+  "timestamp": "2025-06-01T15:30:00Z",
+  "data": {
+    "id": "txn_xyz789",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xPayerAddress",
+    "recipient_address": "0xYourAddress",
+    "tx_hash": "0xabc...def",
+    "status": "completed",
+    "form_data": {
+      "email": "payer@example.com",
+      "shipping_address": { "line1": "123 Main St", "city": "SF", "state": "CA", "zip": "94102" }
+    },
+    "discount_code": "SUMMER20",
+    "created_at": "2025-06-01T15:29:45Z",
+    "completed_at": "2025-06-01T15:30:00Z"
+  }
+}
+```
+
+### Encabezados
+
+| Encabezado | Descripción |
+|------------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AnySpend-Signature` | Digesto hex de HMAC-SHA256 del cuerpo de la solicitud cruda |
+| `X-AnySpend-Webhook-Id` | ID del endpoint de webhook |
+| `X-AnySpend-Delivery-Id` | ID único del intento de entrega |
+| `X-AnySpend-Event` | Tipo de evento (p. ej., `payment.completed`) |
+| `X-AnySpend-Timestamp` | Timestamp ISO 8601 |
+
+## Conciliando Pagos con Tu Sistema
+
+El webhook `payment.completed` siempre incluye un bloque `checkoutSession` que contiene `clientReferenceId`, `metadata`, `customerEmail`, y `customerName` -- todo lo que necesitas para asociar pagos a tus registros internos.
+
+### Usando client_reference_id
+
+Pasa tu ID de orden o usuario al crear el checkout (vía parámetro de URL o API):
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { clientReferenceId, metadata } = data.checkoutSession;
+
+  // Busca tu orden interna
+  const order = await db.orders.findOne({ id: clientReferenceId });
+  if (!order) return;
+
+  // Marca como pagado
+  await db.orders.update(order.id, {
+    status: "paid",
+    txHash: data.txHash,
+    paidAt: new Date(),
+  });
+}
+```
+
+### Usando metadata
+
+Para datos más ricos, usa pares clave-valor de metadata:
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { metadata, customerEmail } = data.checkoutSession;
+
+  // metadata contiene lo que pasaste vía URL o API
+  const userId = metadata?.user_id;    // p. ej., ID de usuario de Clerk
+  const plan = metadata?.plan;          // p. ej., "pro"
+
+  await activateSubscription(userId, plan);
+
+  if (customerEmail) {
+    await sendReceipt(customerEmail, data.amount, data.txHash);
+  }
+}
+```
+
+<Tip>
+  Tanto `client_reference_id` como `metadata` siempre están incluidos en el payload del webhook. Puedes establecerlos a través de [parámetros de URL](/anyspend/api/payment-links#url-parameters) para integraciones simples o la [API de Sesiones de Checkout](/anyspend/api/checkout-sessions-api) para control del lado del servidor.
+</Tip>
+
+---
+
+## Verificando Firmas
+
+<Warning>
+  Siempre verifica el encabezado `X-AnySpend-Signature` antes de procesar un webhook. Sin verificación, un atacante podría enviar eventos falsificados a tu endpoint.
+</Warning>
+
+La firma se calcula como:
+
+```
+HMAC-SHA256(webhook_secret, raw_request_body)
+```
+
+### Express.js (Node.js)
+
+```javascript
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+
+// IMPORTANTE: Usa el cuerpo crudo para la verificación de la firma
+app.post(
+  "/webhooks/anyspend",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["x-anyspend-signature"];
+    const secret = process.env.ANYSPEND_WEBHOOK_SECRET;
+
+    // Calcula la firma esperada
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(req.body) // req.body es un Buffer cuando se usa express.raw()
+      .digest("hex");
+
+    // Comparación de tiempo constante para prevenir ataques de tiempo
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSignature, "hex")
+      )
+    ) {
+      console.error("Firma de webhook inválida");
+      return res.status(401).send("Firma inválida");
+    }
+
+    // La firma es válida -- parsea y procesa el evento
+    const event = JSON.parse(req.body.toString());
+
+    switch (event.event) {
+      case "payment.completed":
+        handlePaymentCompleted(event.data);
+        break;
+      case "payment.failed":
+        handlePaymentFailed(event.data);
+        break;
+      case "checkout.completed":
+        handleCheckoutCompleted(event.data);
+        break;
+      case "checkout.expired":
+        handleCheckoutExpired(event.data);
+        break;
+      default:
+        console.log("Tipo de evento no manejado:", event.event);
+    }
+
+    // Siempre responde con 200 para acusar recibo
+    res.status(200).json({ received: true });
+  }
+);
+
+function handlePaymentCompleted(data) {
+  console.log(`Pago ${data.id} completado por ${data.amount}`);
+  // Cumplir orden, enviar correo de confirmación, actualizar base de datos, etc.
+}
+
+function handlePaymentFailed(data) {
+  console.log(`Pago ${data.id} fallido`);
+  // Notificar al cliente, actualizar estado de la orden, etc.
+}
+
+function handleCheckoutCompleted(data) {
+  console.log(`Sesión de checkout completada`);
+}
+
+function handleCheckoutExpired(data) {
+  console.log(`Sesión de checkout expirada`);
+}
+
+app.listen(3000);
+```
+
+### Python (Flask)
+
+```python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+WEBHOOK_SECRET = "whsec_your_secret_here"
+
+@app.route("/webhooks/anyspend", methods=["POST"])
+def handle_webhook():
+    # Verificar firma
+    signature = request.headers.get("X-AnySpend-Signature", "")
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        request.data,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(signature, expected):
+        return jsonify({"error": "Firma inválida"}), 401
+
+    event = request.get_json()
+
+    if event["event"] == "payment.completed":
+        print(f"Pago {event['data']['id']} completado")
+        # Cumplir orden...
+    elif event["event"] == "payment.failed":
+        print(f"Pago {event['data']['id']} fallido")
+        # Manejar fallo...
+
+    return jsonify({"received": True}), 200
+```
+
+## Política de Reintentos
+
+Si tu endpoint no responde con un código de estado `2xx` dentro de **30 segundos**, AnySpend marca la entrega como fallida y reintenta.
+
+| Intento | Retraso después del intento anterior |
+|---------|------------------------------|
+| 1er reintento | 1 minuto |
+| 2do reintento | 10 minutos |
+| 3er reintento | 1 hora |
+
+Después de 3 reintentos fallidos, la entrega se marca como `fallida` permanentemente. Aún puedes reintentar manualmente desde el Dashboard o la API.
+
+<Info>
+  Si tu endpoint falla consistentemente (10+ entregas fallidas consecutivas), el webhook se **deshabilitará** automáticamente y recibirás una notificación por correo electrónico. Rehábilitarlo desde el Dashboard después de solucionar el problema.
+</Info>
+
+## Viendo el Historial de Entregas
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    // Listar entregas recientes para un webhook
+    const deliveries = await platform.webhooks.deliveries("wh_abc123", {
+      limit: 20,
+    });
+
+    for (const d of deliveries.data) {
+      console.log(
+        d.id,
+        d.event,
+        d.status,        // "success" | "failed" | "pending"
+        d.response_code, // Código de estado HTTP de tu servidor
+        d.created_at
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+## Reintentando Entregas Fallidas
+
+```typescript
+// Reintentar una entrega fallida específica
+await platform.webhooks.retry("wh_abc123", "del_failed456");
+```
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_failed456/retry \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+## Probando Webhooks
+
+Usa el endpoint de prueba para enviar un evento sintético a tu URL de webhook. Esto ayuda a verificar que tu endpoint es alcanzable y tu lógica de verificación de firma es correcta.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const testResult = await platform.webhooks.test("wh_abc123");
+
+    console.log(testResult.delivery_id);    // ID de entrega
+    console.log(testResult.response_code);  // Estado HTTP de tu servidor
+    console.log(testResult.success);        // true si respuesta 2xx
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+El evento de prueba usa el tipo de evento `payment.completed` con datos ficticios. Tu manejador debería procesarlo como cualquier otro evento, pero puedes verificar el encabezado `X-AnySpend-Test: true` si quieres omitir efectos secundarios durante las pruebas.
+
+## Mejores Prácticas
+
+<CardGroup cols={2}>
+  <Card title="Responder rápidamente" icon="bolt">
+    Devuelve un `200` inmediatamente y procesa el evento de manera asincrónica (p. ej., en una cola de trabajos en segundo plano). Las entregas de webhook tienen un tiempo de espera después de 30 segundos.
+  </Card>
+  <Card title="Manejar duplicados" icon="clone">
+    Usa el encabezado `X-AnySpend-Delivery-Id` o el campo `data.id` para deduplicar eventos. Los reintentos pueden entregar el mismo evento más de una vez.
+  </Card>
+  <Card title="Verificar firmas" icon="shield-halved">
+    Siempre verifica el encabezado `X-AnySpend-Signature`. Nunca confíes en el payload sin verificación.
+  </Card>
+  <Card title="Usar HTTPS" icon="lock">
+    Las URLs de webhook deben usar HTTPS en producción. Las URLs HTTP solo están permitidas para `localhost` durante el desarrollo.
+  </Card>
+</CardGroup>

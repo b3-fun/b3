@@ -1,0 +1,577 @@
+---
+title: Personalización
+description: 'Slots, content overrides, themes y clases CSS para componentes de AnySpend'
+lang: es
+originalPath: anyspend/customization.mdx
+---
+Cuatro capas de personalización, cada una dirigida a una preocupación diferente:
+
+<CardGroup cols={2}>
+<Card title="Slots" icon="puzzle-piece">
+  Reemplaza secciones enteras de la interfaz de usuario con tus propios componentes
+</Card>
+<Card title="Contenido" icon="font">
+  Sobrescribe textos y mensajes para diferentes estados
+</Card>
+<Card title="Tema" icon="palette">
+  Configura colores y apariencia de marca
+</Card>
+<Card title="Clases" icon="code">
+  Aplica sobrescrituras de clases CSS a elementos específicos
+</Card>
+</CardGroup>
+
+Todos los componentes principales (`<AnySpend>`, `<AnySpendDeposit>`, `<AnySpendCheckout>`, `<AnySpendCheckoutTrigger>`) aceptan las propiedades `slots`, `content` y `theme`.
+
+---
+
+## Slots
+
+Los slots te permiten reemplazar secciones enteras de la interfaz de usuario con tus propios componentes React. Cada slot recibe propiedades de AnySpend que puedes usar en tu implementación personalizada.
+
+```typescript title="Interfaz AnySpendSlots" icon="code"
+interface AnySpendSlots {
+  /** Reemplaza el botón principal de acción/pago */
+  actionButton?: (props: ActionButtonSlotProps) => ReactNode;
+  /** Reemplaza el botón de conectar cartera */
+  connectWalletButton?: (props: ConnectWalletButtonSlotProps) => ReactNode;
+  /** Reemplaza el encabezado */
+  header?: (props: { mode: "page" | "modal" }) => ReactNode;
+  /** Reemplaza el pie de página */
+  footer?: ReactNode;
+  /** Reemplaza la pantalla de éxito */
+  successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
+  /** Reemplaza la pantalla de error */
+  errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** Reemplaza el panel del formulario de pago (solo en checkout) */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** Reemplaza el selector de método de envío (solo en checkout) */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** Reemplaza la entrada de código de descuento (solo en checkout) */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
+}
+```
+
+<Tip>
+  Los slots `checkoutForm`, `shippingSelector` y `discountInput` solo se usan en `<AnySpendCheckout>` y `<AnySpendCheckoutTrigger>`. Consulta la [Guía de Checkout](/anyspend/checkout) para detalles sobre las características de formulario/envío/descuento.
+</Tip>
+
+### Interfaces de propiedades de slot
+
+<AccordionGroup>
+<Accordion title="ActionButtonSlotProps">
+```typescript
+interface ActionButtonSlotProps {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  text: string;
+}
+```
+</Accordion>
+
+<Accordion title="ConnectWalletButtonSlotProps">
+```typescript
+interface ConnectWalletButtonSlotProps {
+  onPayment: () => void;
+  txLoading: boolean;
+  connectedAddress?: string;
+  paymentLabel: string;
+}
+```
+</Accordion>
+
+<Accordion title="SuccessScreenSlotProps">
+```typescript
+interface SuccessScreenSlotProps {
+  title: string;
+  description: string;
+  txHash?: string;
+  orderId?: string;
+  explorerUrl?: string;
+  onDone: () => void;
+  returnUrl?: string;
+  returnLabel?: string;
+}
+```
+</Accordion>
+
+<Accordion title="ErrorScreenSlotProps">
+```typescript
+interface ErrorScreenSlotProps {
+  title: string;
+  description: string;
+  errorType: "failure" | "expired" | "refunded";
+  orderId?: string;
+  onRetry?: () => void;
+  onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Ejemplos de slots
+
+<Tabs>
+<Tab title="Botón de Acción Personalizado">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    actionButton: ({ onClick, disabled, loading, text }) => (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="my-custom-button"
+      >
+        {loading ? <MySpinner /> : text}
+      </button>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Pantalla de Éxito Personalizada">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    successScreen: ({ title, txHash, explorerUrl, onDone, returnUrl }) => (
+      <div className="my-success">
+        <Confetti />
+        <h2>{title}</h2>
+        {txHash && (
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+            Ver Transacción
+          </a>
+        )}
+        {returnUrl ? (
+          <a href={returnUrl}>Continuar Comprando</a>
+        ) : (
+          <button onClick={onDone}>Hecho</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Encabezado y Pie de Página Personalizados">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    header: ({ mode }) => (
+      <div className="my-header">
+        <img src="/logo.svg" alt="Mi App" />
+        {mode === "modal" && <CloseButton />}
+      </div>
+    ),
+    footer: (
+      <div className="my-footer">
+        <span>Impulsado por MyApp</span>
+        <a href="/terms">Términos</a>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Conectar Cartera Personalizada">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    connectWalletButton: ({ onPayment, txLoading, connectedAddress, paymentLabel }) => (
+      <div className="my-wallet-section">
+        {connectedAddress ? (
+          <button onClick={onPayment} disabled={txLoading}>
+            {txLoading ? "Procesando..." : paymentLabel}
+          </button>
+        ) : (
+          <button onClick={onPayment}>Conectar y Pagar</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Formulario de Pago Personalizado">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="Correo para recibo"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">Seleccionar tamaño</option>
+          <option value="S">Pequeño</option>
+          <option value="M">Mediano</option>
+          <option value="L">Grande</option>
+        </select>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Contenido
+
+Sobrescribe textos y mensajes mostrados durante diferentes estados de transacción. Cada campo acepta un `string` o `ReactNode`.
+
+```typescript title="Interfaz AnySpendContent" icon="code"
+interface AnySpendContent {
+  // Estado de éxito
+  successTitle?: string | ReactNode;
+  successDescription?: string | ReactNode;
+
+  // Estado de fallo
+  failureTitle?: string | ReactNode;
+  failureDescription?: string | ReactNode;
+
+  // Estado expirado
+  expiredTitle?: string | ReactNode;
+  expiredDescription?: string | ReactNode;
+
+  // Estado reembolsado
+  refundedTitle?: string | ReactNode;
+  refundedDescription?: string | ReactNode;
+
+  // Estado de procesamiento
+  processingTitle?: string | ReactNode;
+  processingDescription?: string | ReactNode;
+
+  // Etiquetas de botones
+  returnButtonLabel?: string;
+  retryButtonLabel?: string;
+}
+```
+
+### Ejemplos de contenido
+
+<Tabs>
+<Tab title="E-commerce">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={cartItems}
+  content={{
+    successTitle: "¡Orden Confirmada!",
+    successDescription: "Tu orden está siendo preparada. Revisa tu correo para actualizaciones de envío.",
+    failureTitle: "Pago Fallido",
+    failureDescription: "Tu tarjeta no fue cargada. Por favor, intenta de nuevo o usa un método de pago diferente.",
+    processingTitle: "Procesando Pago...",
+    processingDescription: "Por favor, no cierres esta ventana. Esto usualmente toma menos de un minuto.",
+    returnButtonLabel: "Volver a la Tienda",
+    retryButtonLabel: "Intentar de Nuevo",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Suscripción">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  content={{
+    successTitle: "¡Suscripción Activada!",
+    successDescription: (
+      <div>
+        <p>¡Bienvenido a Pro! Tu cuenta ha sido mejorada.</p>
+        <ul>
+          <li>Llamadas API ilimitadas</li>
+          <li>Soporte prioritario</li>
+          <li>Análisis avanzados</li>
+        </ul>
+      </div>
+    ),
+    returnButtonLabel: "Ir al Dashboard",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Juegos">
+```tsx
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  content={{
+    successTitle: "¡Tokens Depositados!",
+    successDescription: "Tu balance en el juego ha sido actualizado. ¡Vuelve al juego!",
+    expiredTitle: "Sesión Expirada",
+    expiredDescription: "Tu ventana de depósito ha cerrado. Inicia un nuevo depósito para continuar.",
+    returnButtonLabel: "Volver al Juego",
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Tema
+
+Configura la apariencia visual de los componentes AnySpend con colores de marca.
+
+```typescript title="Interfaz AnySpendTheme" icon="code"
+interface AnySpendTheme {
+  /** Color principal de la marca (hex). Aplicado como el color de acento principal. */
+  brandColor?: string;
+  /** Sobrescrituras individuales de colores (valores hex) */
+  colors?: Partial<{
+    primary: string;         // Color principal de texto
+    secondary: string;       // Color secundario de texto
+    tertiary: string;        // Color de texto atenuado
+    surfacePrimary: string;  // Color de fondo primario
+    surfaceSecondary: string; // Fondo secundario (tarjetas, paneles)
+    brand: string;           // Color de acento/marca (botones, enlaces)
+    borderPrimary: string;   // Color de borde primario
+    borderSecondary: string; // Color de borde secundario
+  }>;
+}
+```
+
+<Note>
+  La propiedad `brandColor` es un atajo que establece el color `brand`. Si se proporcionan tanto `brandColor` como `colors.brand`, `colors.brand` tiene prioridad.
+</Note>
+
+### Ejemplos de tema
+
+<Tabs>
+<Tab title="Solo Color de Marca">
+```tsx
+// Branding rápido — solo establece tu color de marca
+<AnySpend
+  recipientAddress="0x..."
+  theme={{ brandColor: "#6366f1" }}
+/>
+```
+</Tab>
+
+<Tab title="Tema Oscuro">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  theme={{
+    brandColor: "#10b981",
+    colors: {
+      primary: "#f9fafb",
+      secondary: "#9ca3af",
+      tertiary: "#6b7280",
+      surfacePrimary: "#111827",
+      surfaceSecondary: "#1f2937",
+      borderPrimary: "#374151",
+      borderSecondary: "#4b5563",
+    },
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Sobrescritura Mínima">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={items}
+  theme={{
+    colors: {
+      brand: "#e11d48",      // Acento rosa
+      surfaceSecondary: "#fef2f2", // Fondo rosa claro
+    },
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Sobrescrituras de clases CSS
+
+Aplica clases CSS personalizadas a elementos específicos dentro de los componentes AnySpend. Cada componente tiene su propia interfaz de clases.
+
+### AnySpendClasses
+
+Usado por `<AnySpend>`:
+
+```typescript title="AnySpendClasses" icon="code"
+interface AnySpendClasses {
+  container?: string;
+  header?: string;
+  tabSection?: string;
+  cryptoPaySection?: string;
+  cryptoReceiveSection?: string;
+  panelOnramp?: string;
+  paymentButton?: string;
+  navigationBar?: string;
+}
+```
+
+### AnySpendCheckoutClasses
+
+Usado por `<AnySpendCheckout>` y `<AnySpendCheckoutTrigger>`:
+
+<AccordionGroup>
+<Accordion title="Estructura y Diseño" defaultOpen>
+```typescript
+interface AnySpendCheckoutClasses {
+  root?: string;               // Contenedor raíz
+  layout?: string;             // Envoltura del diseño de dos paneles
+  paymentColumn?: string;      // Columna izquierda (pago + formularios)
+  cartColumn?: string;         // Columna derecha (carrito/resumen)
+}
+```
+</Accordion>
+
+<Accordion title="Panel de Pago">
+```typescript
+{
+  paymentPanel?: string;            // Contenedor del panel de pago
+  paymentTitle?: string;            // Título "Pagar con"
+  paymentMethodSelector?: string;   // Contenedor del selector de método
+  paymentMethodButton?: string;     // Botón de método individual
+  cryptoPanel?: string;             // Sección de pago cripto
+  tokenSelector?: string;           // Selector de token
+  quoteDisplay?: string;            // Visualización de cotización/precio
+  payButton?: string;               // Botón de pago
+  fiatPanel?: string;               // Sección de pago fiat
+  stripeForm?: string;              // Contenedor del formulario Stripe
+  stripeSubmitButton?: string;      // Botón de envío Stripe
+  coinbasePanel?: string;           // Panel Coinbase
+}
+```
+</Accordion>
+
+<Accordion title="Panel de Carrito">
+```typescript
+{
+  cartPanel?: string;               // Contenedor del carrito
+  cartTitle?: string;               // Encabezado del carrito
+  cartItemRow?: string;             // Fila de artículo individual
+  cartItemImage?: string;           // Imagen del artículo
+  cartItemName?: string;            // Nombre del artículo
+  cartItemDescription?: string;     // Descripción del artículo
+  cartItemPrice?: string;           // Precio del artículo
+  cartItemMetadata?: string;        // Contenedor de metadatos
+  cartItemMetadataLabel?: string;   // Etiqueta de metadatos
+  cartItemMetadataValue?: string;   // Valor de metadatos
+  cartSummary?: string;             // Sección de resumen
+  cartSubtotal?: string;            // Fila de subtotal
+  cartTotal?: string;               // Fila total
+  cartSummaryLine?: string;         // Línea extra de resumen
+  cartSummaryLineLabel?: string;    // Etiqueta de línea de resumen
+  cartSummaryLineAmount?: string;   // Monto de línea de resumen
+  cartDiscount?: string;            // Fila de descuento
+}
+```
+</Accordion>
+
+<Accordion title="Panel de Formulario">
+```typescript
+{
+  formPanel?: string;          // Contenedor del panel de formulario
+  formField?: string;          // Campo de formulario individual
+  formFieldLabel?: string;     // Etiqueta del campo
+  formFieldInput?: string;     // Entrada del campo
+  shippingSelector?: string;   // Selector de opción de envío
+  discountInput?: string;      // Entrada de código de descuento
+  addressForm?: string;        // Formulario de dirección
+}
+```
+</Accordion>
+
+<Accordion title="Estado y Branding">
+```typescript
+{
+  poweredBy?: string;          // Pie de página "Impulsado por"
+  successPanel?: string;       // Pantalla de éxito
+  returnButton?: string;       // Botón de retorno/redirección
+  orderStatusPanel?: string;   // Rastreador de estado de orden
+  retryButton?: string;        // Botón de reintentar
+  transactionLink?: string;    // Enlace al explorador de transacciones
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### AnySpendDepositClasses
+
+Usado por `<AnySpendDeposit>`:
+
+```typescript title="AnySpendDepositClasses" icon="code"
+interface AnySpendDepositClasses {
+  root?: string;
+  chainSelection?: string;
+  form?: string;
+  balance?: string;
+  options?: string;
+  chainsList?: string;
+  divider?: string;
+  backButton?: string;
+}
+```
+
+### AnySpendAllClasses
+
+Combina varias interfaces de clases juntas. Usado por `<AnySpendDeposit>` y `<AnySpendWorkflowTrigger>`:
+
+```typescript title="AnySpendAllClasses" icon="code"
+interface AnySpendAllClasses {
+  deposit?: AnySpendDepositClasses;
+ 

@@ -1,0 +1,560 @@
+---
+title: Panduan Cepat untuk Penjual
+description: >-
+  Terima pembayaran dalam bentuk token apa pun untuk API dan layanan Anda
+  menggunakan middleware AnySpend x402
+lang: id
+originalPath: anyspend/x402-quickstart-sellers.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositori GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Lihat kode sumber dan contoh
+</Card>
+
+<Card title="Paket npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Tinjauan
+
+Panduan ini menunjukkan cara menambahkan dukungan pembayaran **AnySpend x402** ke API Express Anda, memungkinkan Anda menerima pembayaran dalam token apa pun sambil menerima token pilihan Anda. Dengan hanya beberapa baris kode, API Anda dapat memonetisasi endpoint dan menangani verifikasi pembayaran dan penyelesaian secara otomatis.
+
+**Keuntungan Utama:**
+- **Pembeli** dapat membayar dengan token apa pun yang mereka miliki (ETH, DAI, USDC, dll.)
+- **Penjual** dapat menerima token apa pun yang mereka inginkan (USDC, B3, DAI, token khusus, dll.)
+- AnySpend secara otomatis menangani semua konversi token
+- Tidak diperlukan infrastruktur blockchain atau manajemen dompet
+
+## Prasyarat
+
+Sebelum Anda mulai, pastikan Anda memiliki:
+
+- **Node.js 18+** terinstal
+- **API Express.js** (atau kesediaan untuk membuatnya)
+- **Alamat dompet** untuk menerima pembayaran USDC
+- **Pengetahuan dasar** tentang middleware Express
+
+## Instalasi
+
+Instal paket AnySpend x402:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+## Mulai Cepat
+
+### 1. Integrasi Dasar
+
+Cara termudah untuk menambahkan pembayaran ke API Express Anda:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+
+// Tentukan rute pembayaran dan harga Anda
+const endpointConfig = {
+  '/api/premium-data': {
+    amount: '1.00',        // $1.00 dalam USDC
+    asset: 'USD'           // Akan dikonversi ke USDC
+  },
+  '/api/ai-inference': {
+    amount: '0.50',        // $0.50 dalam USDC
+    asset: 'USD'
+  }
+};
+
+// Alamat penerima USDC Anda
+const recipientAddress = '0xYourWalletAddress...';
+
+// Terapkan middleware pembayaran
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator                    // Fasilitator AnySpend yang telah dikonfigurasi sebelumnya
+));
+
+// Tentukan rute Anda yang dilindungi
+app.get('/api/premium-data', (req, res) => {
+  // Ini hanya berjalan setelah pembayaran berhasil
+  res.json({
+    data: 'Data premium Anda di sini',
+    message: 'Pembayaran berhasil!'
+  });
+});
+
+app.get('/api/ai-inference', (req, res) => {
+  res.json({
+    result: 'Hasil inferensi AI',
+    model: 'gpt-4'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API dengan pembayaran x402 berjalan di port 3000');
+});
+```
+
+**Apa yang dilakukan ini:**
+
+1. Klien meminta endpoint API Anda
+2. Middleware mengembalikan `402 Payment Required` dengan detail pembayaran
+3. Klien membayar dengan token pilihan mereka (ETH, DAI, dll.)
+4. Fasilitator AnySpend mengonversi ke USDC dan menyelesaikan ke dompet Anda
+5. Handler rute Anda dijalankan dan mengembalikan data
+
+---
+
+### 2. Menerima token khusus (misalnya, B3)
+
+Anda dapat mengonfigurasi API Anda untuk menerima token apa pun, tidak hanya USDC:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// Konfigurasi untuk menerima token B3
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 token B3 (18 desimal)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Akses data harga ETH premium',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // Pembayaran diverifikasi - Anda menerima 100 token B3!
+  res.json({
+    data: 'Sejarah harga ETH premium',
+    paymentReceived: '100 token B3'
+  });
+});
+
+app.listen(3000);
+```
+
+**Apa yang berbeda:**
+
+- Pembeli masih dapat membayar dengan **token apa pun** (ETH, USDC, DAI, dll.)
+- AnySpend mengonversi pembayaran mereka ke **token B3**
+- Anda menerima tepat **100 token B3** di dompet Anda
+- Preferensi token baik pembeli maupun penjual tetap dipertahankan
+
+## Konfigurasi
+
+### URL Fasilitator
+
+Fasilitator AnySpend dihosting di:
+
+```
+https://mainnet.anyspend.com/x402
+```
+
+Paket `@b3dotfun/anyspend-x402` menyertakan instance fasilitator yang telah dikonfigurasi sebelumnya:
+
+```typescript
+import { facilitator } from '@b3dotfun/anyspend-x402';
+
+// Dikonfigurasi untuk menggunakan mainnet.anyspend.com/x402
+app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
+```
+
+### Konfigurasi Endpoint
+
+Anda memiliki tiga metode untuk mengonfigurasi persyaratan pembayaran:
+
+#### Metode 1: jumlah dolar sederhana (disarankan)
+
+Biarkan AnySpend menangani konversi token secara otomatis:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',      // $1.00 nilai token apa pun
+    asset: 'USD'
+  },
+  '/api/compute': {
+    amount: '2.50',
+    asset: 'USD'
+  }
+};
+```
+
+**Keuntungan:**
+- Klien dapat membayar dengan token yang didukung apa pun
+- AnySpend mengonversi ke USDC secara otomatis
+- Anda selalu menerima USDC
+
+#### Metode 2: persyaratan token spesifik
+
+Memerlukan token tertentu di jaringan tertentu. Anda dapat menerima **token apa pun**, tidak hanya USDC!
+
+**Contoh 1: menerima USDC (stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1000000',   // 1 USDC (6 desimal)
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC di Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Contoh 2: menerima token B3 (token khusus)**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 token B3 (100 * 10^18)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Akses ke data harga ETH premium dari CoinGecko',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**Contoh 3: menerima DAI (stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI (18 desimal)
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI di Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Contoh 4: menerima ETH asli**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH (18 desimal)
+    asset: '0x0000000000000000000000000000000000000000', // ETH Asli
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Contoh 5: menerima token ERC-20 khusus**
+
+Untuk token ERC-20 apa pun dengan dukungan permit:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 token (sesuaikan desimal)
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // Desimal token Anda
+        eip712: {
+          name: 'YourTokenName', // Dari kontrak token
+          version: '1',          // Versi EIP-712
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: 'Deskripsi endpoint API Anda',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**Poin Kunci:**
+- Pembeli masih dapat membayar dengan **token apa pun** yang mereka miliki
+- AnySpend secara otomatis mengonversi token mereka ke token yang Anda ingin terima
+- Anda menerima tepat token yang Anda tentukan dalam konfigurasi Anda
+- Fleksibilitas baik pembeli maupun penjual dipertahankan
+</Note>
+
+### Menemukan Detail Token
+
+Untuk mengonfigurasi token khusus, Anda perlu mengetahui parameter EIP-712-nya. Berikut cara menemukannya:
+
+**Metode 1: periksa kontrak token**
+
+Gunakan explorer blockchain seperti [Basescan](https://basescan.org):
+
+```typescript
+// Baca dari kontrak token
+const name = await token.read.name();      // mis., "B3"
+const version = await token.read.version(); // mis., "1"
+const decimals = await token.read.decimals(); // mis., 18
+```
+
+**Metode 2: token umum**
+
+| Token | Nama | Versi | Desimal | Alamat Base |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**Metode 3: gunakan viem**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+```
+
+#### Metode 3: fleksibel (biarkan klien memilih)
+
+Izinkan klien untuk menentukan token pembayaran pilihan mereka:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true       // Terima header X-PREFERRED-TOKEN
+  }
+};
+```
+
+Klien kemudian dapat menentukan preferensi token mereka:
+
+```bash
+curl https://api.example.com/data \
+  -H "X-PREFERRED-TOKEN: 0x4200000000000000000000000000000000000006" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+## Konfigurasi Lanjutan
+
+### Penetapan Harga Dinamis
+
+Hitung harga berdasarkan parameter permintaan:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use('/api/compute', (req, res, next) => {
+  // Hitung harga berdasarkan unit komputasi yang diminta
+  const units = parseInt(req.query.units as string) || 1;
+  const pricePerUnit = 0.10; // $0.10 per unit
+  const totalPrice = (units * pricePerUnit).toFixed(2);
+
+  // Lampirkan konfigurasi dinamis ke permintaan
+  req.x402Config = {
+    amount: totalPrice,
+    asset: 'USD'
+  };
+
+  next();
+}, paymentMiddleware(recipientAddress, {
+  '/api/compute': (req) => req.x402Config // Konfigurasi dinamis
+}, facilitator));
+
+app.get('/api/compute', (req, res) => {
+  const units = parseInt(req.query.units as string) || 1;
+  res.json({
+    result: `Menghitung ${units} unit`,
+    cost: req.x402Config.amount
+  });
+});
+```
+
+### Konfigurasi Fasilitator Khusus
+
+Jika Anda memerlukan pengaturan fasilitator khusus:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const customFacilitator = new Facilitator({
+  baseUrl: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.CDP_API_KEY_ID,        // Opsional: Coinbase CDP
+  apiSecret: process.env.CDP_API_KEY_SECRET,
+  timeout: 30000,                             // Timeout 30 detik
+  retries: 3                                  // Coba ulang permintaan yang gagal
+});
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  customFacilitator
+));
+```
+
+### Beberapa Penerima
+
+Rute pembayaran ke dompet yang berbeda berdasarkan endpoint:
+
+```typescript
+const endpointConfig = {
+  '/api/service-a': {
+    amount: '1.00',
+    asset: 'USD',
+    recipient: '0xWalletA...'
+  },
+  '/api/service-b': {
+    amount: '2.00',
+    asset: 'USD',
+    recipient: '0xWalletB...'
+  }
+};
+
+// Luluskan null sebagai penerima, gunakan penerima per-endpoint
+app.use(paymentMiddleware(null, endpointConfig, facilitator));
+```
+
+## Rute yang Dilindungi
+
+### Lindungi Rute Tertentu
+
+Lindungi hanya endpoint yang memerlukan pembayaran:
+
+```typescript
+// Rute publik - tidak memerlukan pembayaran
+app.get('/api/public', (req, res) => {
+  res.json({ message: 'Ini gratis!' });
+});
+
+// Rute yang dilindungi - memerlukan pembayaran
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium': { amount: '1.00', asset: 'USD' }
+  },
+  facilitator
+));
+
+app.get('/api/premium', (req, res) => {
+  res.json({ message: 'Ini membutuhkan uang!' });
+});
+```
+
+### Middleware Spesifik Rute
+
+Terapkan konfigurasi pembayaran yang berbeda ke grup rute yang berbeda:
+
+```typescript
+// Tingkat dasar - $0.50
+app.use('/api/basic', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/basic/*': { amount: '0.50', asset: 'USD' }
+  },
+  facilitator
+));
+
+// Tingkat premium - $2.00
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium/*': { amount: '2.00', asset: 'USD' }
+  },
+  facilitator
+));
+```
+
+## Pengujian
+
+### Pengembangan Lokal
+
+Uji API Anda secara lokal dengan USDC testnet:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const testFacilitator = new Facilitator({
+  baseUrl

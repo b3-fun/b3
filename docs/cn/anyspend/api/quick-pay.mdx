@@ -1,0 +1,153 @@
+---
+title: 快速支付
+description: 立即创建支付链接，无需认证
+lang: cn
+originalPath: anyspend/api/quick-pay.mdx
+---
+Quick Pay 是一个单一端点，允许您**无需 API 密钥**即可创建支付链接。它适用于快速原型制作、一次性发票、小费罐和捐赠页面，其中创建组织和管理 API 密钥的开销是不必要的。
+
+<Info>
+  Quick Pay 的频率限制为**每分钟每个 IP 地址 5 次请求**。如需更高的吞吐量或访问分析、webhooks 和自定义表单，请[创建一个组织](/anyspend/api/sdk-client)并使用 API 密钥。
+</Info>
+
+## 端点
+
+```
+POST /api/v1/quick-pay
+```
+
+不需要 `Authorization` 头。
+
+## 请求体
+
+| 参数 | 类型 | 必须 | 默认值 | 描述 |
+|-----------|------|----------|---------|-------------|
+| `recipient_address` | `string` | 是 | -- | 将接收付款的以太坊地址 |
+| `amount` | `string` | 否 | -- | 代币金额的最小单位（例如，对于 1 USDC 为 `"1000000"`） |
+| `token_address` | `string` | 否 | USDC on Base | ERC-20 代币合约地址 |
+| `chain_id` | `number` | 否 | `8453` (Base) | 目标链 ID |
+| `name` | `string` | 否 | -- | 链接的人类可读名称 |
+| `description` | `string` | 否 | -- | 向付款人显示的描述 |
+| `expires_in` | `number` | 否 | `86400` (24 小时) | 链接过期的秒数。最大为 `86400`。|
+
+## 响应
+
+成功的请求返回完整的 `PaymentLink` 对象：
+
+```json
+{
+  "id": "pl_abc123",
+  "url": "https://pay.anyspend.com/pl_abc123",
+  "recipient_address": "0x1234...abcd",
+  "amount": "1000000",
+  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "chain_id": 8453,
+  "name": "Coffee tip",
+  "description": null,
+  "status": "active",
+  "expires_at": "2025-06-02T12:00:00Z",
+  "created_at": "2025-06-01T12:00:00Z",
+  "org_id": "anonymous"
+}
+```
+
+与任何人分享 `url` -- 他们可以从任何支持的链上的任何钱包支付，资金将通过 AnySpend 路由到接收者。
+
+## 示例
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "5000000",
+    "name": "Buy me a coffee",
+    "description": "Thanks for the help!"
+  }'
+```
+
+```typescript SDK
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+// quickPay 是一个静态方法 -- 不需要 API 密钥
+const link = await AnySpendPlatformClient.quickPay({
+  recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "5000000",          // 5 USDC
+  name: "Buy me a coffee",
+  description: "Thanks for the help!",
+});
+
+console.log(link.url);
+// => https://pay.anyspend.com/pl_abc123
+```
+
+```python Python (requests)
+import requests
+
+resp = requests.post(
+    "https://platform-api.anyspend.com/api/v1/quick-pay",
+    json={
+        "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+        "amount": "5000000",
+        "name": "Buy me a coffee",
+    },
+)
+link = resp.json()
+print(link["url"])
+```
+
+</CodeGroup>
+
+## 用例
+
+<CardGroup cols={2}>
+  <Card title="小费罐" icon="hand-holding-dollar">
+    在您的博客或社交媒体个人资料上嵌入 Quick Pay 链接以接受小费，无需任何设置。
+  </Card>
+  <Card title="捐赠页面" icon="heart">
+    非营利组织和开源项目可以即时生成一次性捐赠链接。
+  </Card>
+  <Card title="快速开票" icon="file-invoice-dollar">
+    自由职业者可以通过电子邮件或聊天发送支付链接以获取单个发票。
+  </Card>
+  <Card title="原型制作" icon="flask">
+    在承诺使用完整的 API 密钥设置之前测试您的集成流程。
+  </Card>
+</CardGroup>
+
+## 限制
+
+<Warning>
+  Quick Pay 链接是有意限制的。如果您需要以下任何功能，请创建一个组织并使用经过身份验证的端点。
+</Warning>
+
+| 功能 | Quick Pay | 经过身份验证的 API |
+|---------|-----------|-------------------|
+| 分析和访客跟踪 | 否 | 是 |
+| Webhook 通知 | 否 | 是 |
+| 自定义结账表单 | 否 | 是 |
+| 运输选项和折扣代码 | 否 | 是 |
+| 自定义过期时间（> 24 小时） | 否 | 是 |
+| 创建后编辑链接 | 否 | 是 |
+| 组织品牌 | 否 | 是 |
+| 速率限制 | 5 req/min/IP | 100 req/min/key |
+
+## 错误响应
+
+| 状态 | 代码 | 描述 |
+|--------|------|-------------|
+| `400` | `invalid_request` | 缺少 `recipient_address` 或参数无效 |
+| `422` | `invalid_address` | `recipient_address` 不是有效的以太坊地址 |
+| `429` | `rate_limit_exceeded` | 当前分钟窗口内的请求超过 5 次 |
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "超出速率限制。45 秒后再试。",
+    "retry_after": 45
+  }
+}
+```

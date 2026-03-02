@@ -1,0 +1,417 @@
+---
+title: Izin vs TransferDenganOtorisasi
+description: >-
+  Tanda tangan pembayaran tanpa gas: EIP-2612 izin dan EIP-3009
+  transferWithAuthorization
+lang: id
+originalPath: anyspend/x402-signature-methods.mdx
+---
+## Ikhtisar
+
+AnySpend x402 menggunakan tanda tangan kriptografis daripada persetujuan token tradisional, memungkinkan **pembayaran tanpa gas** untuk pengguna. Fasilitator membayar semua biaya gas sementara pengguna hanya menandatangani pesan otorisasi.
+
+Ada dua standar tanda tangan utama yang didukung, masing-masing dioptimalkan untuk jenis token yang berbeda:
+
+- **EIP-3009 (transferWithAuthorization)** - Digunakan oleh USDC, transfer langsung satu langkah
+- **EIP-2612 (permit)** - Digunakan oleh sebagian besar token ERC-20 modern, persetujuan dua langkah + transfer
+
+## Perbandingan cepat
+
+| Fitur | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
+|---------|-------------------|--------------------------------------|
+| **Digunakan oleh** | Sebagian besar ERC-20 modern | USDC (semua jaringan) |
+| **Eksekusi** | Dua langkah: persetujuan + transfer | Satu langkah: transfer langsung |
+| **Tipe Nonce** | Berurutan (auto-increments) | Random bytes32 |
+| **Ketergantungan** | Harus menunggu nonce sebelumnya | Tidak memerlukan pengurutan |
+| **Ideal untuk** | Token ERC-20 umum | Pembayaran stablecoin |
+| **Perlindungan Replay** | Nonce berurutan | Pelacakan nonce acak |
+| **Efisiensi Gas** | 2 transaksi (permit + transferFrom) | 1 transaksi (transfer langsung) |
+
+## EIP-3009: transferWithAuthorization (USDC)
+
+### Ikhtisar
+
+Otorisasi transfer langsung - tanda tangan mengotorisasi transfer langsung dari pengirim ke penerima tanpa langkah persetujuan terpisah.
+
+**Digunakan oleh:** USDC di semua jaringan (Base, Ethereum, Arbitrum, Optimism, Polygon, dll.)
+
+### Keuntungan utama
+
+- Eksekusi satu langkah - transfer langsung, tidak perlu persetujuan
+- Nonce acak - tidak ada ketergantungan berurutan, transaksi paralel mungkin
+- Penyelesaian segera - dieksekusi dalam satu transaksi
+- Tanpa gas untuk pembayar - fasilitator membayar gas
+- Tidak ada front-running - nonce acak mencegah serangan MEV
+
+### Struktur pesan
+
+```solidity
+transferWithAuthorization(
+    address from,          // Alamat pembayar
+    address to,            // Alamat penerima
+    uint256 value,         // Jumlah yang ditransfer
+    uint256 validAfter,    // 0 (valid segera)
+    uint256 validBefore,   // Batas waktu timestamp
+    bytes32 nonce,         // Nonce acak (mencegah replay)
+    bytes signature        // Tanda tangan EIP-712
+)
+```
+
+### Contoh penggunaan
+
+```typescript
+import { signTransferWithAuthorization } from 'anyspend-x402-client';
+
+const signature = await signTransferWithAuthorization({
+  from: payerAddress,
+  to: recipientAddress,
+  value: '1000000',              // 1 USDC (6 desimal)
+  validBefore: deadline,
+  nonce: randomBytes32()         // Menghasilkan nonce acak
+});
+```
+
+### Cara kerja
+
+<Steps>
+<Step title="Pengguna Menandatangani Otorisasi">
+Pengguna menandatangani pesan EIP-712 yang mengotorisasi transfer dengan nonce acak
+</Step>
+
+<Step title="Fasilitator Menjalankan Transfer">
+Fasilitator memanggil `receiveWithAuthorization()` dengan tanda tangan
+</Step>
+
+<Step title="USDC Ditranfer">
+USDC ditransfer langsung dari pengguna ke fasilitator dalam satu transaksi atomik
+</Step>
+
+<Step title="Nonce Dibatalkan">
+Nonce acak ditandai sebagai digunakan, mencegah serangan replay
+</Step>
+</Steps>
+
+### Struktur data EIP-712 yang diketik
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'USD Coin',
+    version: '2',
+    chainId: 8453, // Base
+    verifyingContract: usdcAddress
+  },
+  types: {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' }
+    ]
+  },
+  message: {
+    from: payerAddress,
+    to: recipientAddress,
+    value: '1000000',
+    validAfter: 0,
+    validBefore: deadline,
+    nonce: randomNonce
+  }
+};
+```
+
+---
+
+## EIP-2612: Permit (Standard ERC-20)
+
+### Ikhtisar
+
+Persetujuan berbasis tanda tangan yang menetapkan batas kuota, diikuti oleh panggilan `transferFrom()` terpisah. Ini adalah metode standar untuk sebagian besar token ERC-20 modern.
+
+**Digunakan oleh:** Sebagian besar token ERC-20 modern dengan dukungan permit
+
+### Keuntungan utama
+
+- Luas diadopsi - standar di banyak token
+- Persetujuan terbatas waktu - berbasis batas waktu kedaluwarsa
+- Kompatibel dengan ERC-20 - bekerja dengan infrastruktur yang ada
+- Tanpa gas untuk pembayar - fasilitator membayar gas
+- Didukung oleh dompet dan dapps utama
+
+### Struktur pesan
+
+```solidity
+permit(
+    address owner,         // Pemilik token
+    address spender,       // Pengeluar yang disetujui (fasilitator)
+    uint256 value,         // Jumlah persetujuan
+    uint256 deadline,      // Timestamp kedaluwarsa
+    uint8 v, bytes32 r, bytes32 s  // Komponen tanda tangan
+)
+```
+
+### Contoh penggunaan
+
+```typescript
+import { signPermit } from 'anyspend-x402-client';
+
+const nonce = await token.nonces(ownerAddress);  // Dapatkan nonce saat ini
+
+const signature = await signPermit({
+  token: tokenAddress,
+  owner: ownerAddress,
+  spender: facilitatorAddress,
+  value: '1000000',  // 1 USDC (6 desimal)
+  deadline: deadline,
+  nonce: nonce                    // Nonce berurutan
+});
+```
+
+### Cara kerja
+
+<Steps>
+<Step title="Pengguna Menandatangani Permit">
+Pengguna menandatangani pesan permit EIP-712 dengan nonce berurutan saat ini
+</Step>
+
+<Step title="Fasilitator Memanggil Permit">
+Fasilitator memanggil `permit()` untuk menetapkan batas kuota di rantai
+</Step>
+
+<Step title="Nonce Auto-Increments">
+Kontrak token secara otomatis menambah nonce pengguna
+</Step>
+
+<Step title="Fasilitator Mentranfer Token">
+Fasilitator memanggil `transferFrom()` untuk mentransfer token menggunakan persetujuan
+</Step>
+</Steps>
+
+### Struktur data EIP-712 yang diketik
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'Dai Stablecoin',
+    version: '1',
+    chainId: 8453, // Base
+    verifyingContract: daiAddress
+  },
+  types: {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  },
+  message: {
+    owner: ownerAddress,
+    spender: facilitatorAddress,
+    value: '1000000000000000000',
+    nonce: currentNonce,
+    deadline: deadline
+  }
+};
+```
+
+---
+
+## Metode mana yang digunakan token saya?
+
+### Memeriksa dukungan token
+
+```typescript
+// Periksa apakah token mendukung EIP-3009 (gaya USDC)
+const hasTransferWithAuth = await token.read.transferWithAuthorization !== undefined;
+
+// Periksa apakah token mendukung EIP-2612 (Permit standar)
+const hasPermit = await token.read.permit !== undefined;
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+### Token umum berdasarkan metode
+
+**EIP-3009 (transferWithAuthorization):**
+- USDC (semua rantai)
+- USDC.e (versi terjembatani)
+
+**EIP-2612 (permit):**
+- Sebagian besar ERC-20 modern
+- USDT (di beberapa rantai - Base, Arbitrum, Optimism)
+- Banyak token DeFi
+- Periksa kompatibilitas: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+**Tanpa Dukungan Gasless:**
+- USDT di jaringan utama Ethereum (tanpa permit)
+- USDT di Polygon (tanpa permit)
+- Token ERC-20 lama
+
+<Note>
+Klien AnySpend x402 secara otomatis mendeteksi metode tanda tangan mana yang akan digunakan berdasarkan kontrak token. Anda tidak perlu menentukan ini secara manual.
+</Note>
+
+## Manajemen nonce
+
+### Nonce acak (EIP-3009)
+
+**Keuntungan:**
+- Tidak ada ketergantungan pengurutan - beberapa tanda tangan dapat digunakan dalam urutan apa pun
+- Transaksi paralel mungkin
+- Tidak ada keadaan terblokir jika satu transaksi gagal
+
+**Implementasi:**
+```typescript
+import { randomBytes } from 'crypto';
+
+// Hasilkan nonce acak yang aman secara kriptografi
+const nonce = '0x' + randomBytes(32).toString('hex');
+```
+
+**Pelacakan Nonce:**
+```solidity
+// Periksa apakah nonce telah digunakan
+mapping(address => mapping(bytes32 => bool)) public authorizationState;
+
+function isAuthorizationUsed(address authorizer, bytes32 nonce)
+    external
+    view
+    returns (bool)
+{
+    return authorizationState[authorizer][nonce];
+}
+```
+
+### Nonce berurutan (EIP-2612)
+
+**Keuntungan:**
+- Sederhana dan dapat diprediksi
+- Efisien gas (slot penyimpanan tunggal)
+- Standar di semua implementasi permit
+
+**Implementasi:**
+```typescript
+// Dapatkan nonce saat ini dari kontrak token
+const currentNonce = await token.read.nonces([ownerAddress]);
+
+// Tandatangani dengan nonce saat ini
+const signature = await signPermit({
+  // ...
+  nonce: currentNonce
+});
+```
+
+**Auto-Increment Nonce:**
+```solidity
+// Kontrak token secara otomatis menambah
+mapping(address => uint256) public nonces;
+
+function permit(/* ... */) external {
+    require(nonce == nonces[owner], "Invalid nonce");
+    nonces[owner]++; // Auto-increment
+    // ... sisa logika permit
+}
+```
+
+## Pertimbangan keamanan
+
+### Perlindungan replay
+
+**EIP-3009:**
+- Nonce acak mencegah replay lintas rantai dan kontrak
+- Setiap nonce hanya dapat digunakan sekali per alamat
+- Status nonce disimpan di rantai dalam pemetaan
+
+**EIP-2612:**
+- Nonce berurutan mencegah replay
+- Harus menggunakan nonce saat ini (auto-increments)
+- Transaksi gagal memblokir tanda tangan berikutnya sampai ditandatangani ulang
+
+### Penegakan batas waktu
+
+Kedua metode menegakkan batas waktu untuk mencegah tanda tangan kedaluwarsa:
+
+```typescript
+const deadline = Math.floor(Date.now() / 1000) + 300; // 5 menit dari sekarang
+```
+
+**Praktik Terbaik:**
+- Gunakan batas waktu pendek (5-10 menit) untuk keamanan
+- Batas waktu lebih lama (30-60 menit) untuk UX yang lebih baik jika diperlukan
+- Jangan pernah menggunakan `type(uint256).max` untuk persetujuan tak terbatas
+
+### Validasi tanda tangan
+
+Kedua metode memvalidasi tanda tangan menggunakan EIP-712:
+
+```typescript
+// Pulihkan alamat penandatangan dari tanda tangan
+const recoveredAddress = recoverTypedDataAddress({
+  domain,
+  types,
+  primaryType,
+  message,
+  signature
+});
+
+// Verifikasi penandatangan cocok dengan alamat yang diharapkan
+if (recoveredAddress !== expectedSigner) {
+  throw new Error('Tanda tangan tidak valid');
+}
+```
+
+## Integrasi SDK klien
+
+Klien AnySpend x402 secara otomatis menangani semua kompleksitas tanda tangan:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: tokenAddress // USDC atau token yang kompatibel
+});
+
+// Klien secara otomatis:
+// 1. Mendeteksi apakah token menggunakan permit atau transferWithAuthorization
+// 2. Mendapatkan nonce saat ini (untuk permit) atau menghasilkan nonce acak
+// 3. Membangun data EIP-712 yang diketik dengan benar
+// 4. Meminta pengguna untuk menandatangani
+// 5. Menyertakan tanda tangan dalam header X-PAYMENT
+
+const response = await client.request('https://api.example.com/data');
+```
+
+## Perbandingan biaya gas
+
+| Metode | Gas Pengguna | Gas Fasilitator | Total Transaksi |
+|--------|----------|-----------------|-------------------|
+| EIP-3009 | 0 | ~45,000 | 1 |
+| EIP-2612 | 0 | ~70,000 (permit) + ~45,000 (transfer) | 2 |
+
+<Note>
+Semua biaya gas dibayar oleh fasilitator dan termasuk dalam biaya AnySpend 0,25%. Pengguna tidak pernah membayar gas secara langsung.
+</Note>
+
+## Bacaan lebih lanjut
+
+<CardGroup cols={2}>
+<Card title="Spesifikasi EIP-2612" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-2612">
+  Spesifikasi permit EIP-2612 resmi
+</Card>
+
+<Card title="Spesifikasi EIP-3009" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-3009">
+  Spesifikasi transferWithAuthorization EIP-3009 resmi
+</Card>
+
+<Card title="Data Bertipe EIP-712" icon="signature" href="https://eips.ethereum.org/EIPS/eip-712">
+  Hashing dan penandatanganan data terstruktur bertipe EIP-712
+</Card>
+
+<Card title="Dukungan Jaringan" icon="globe" href="/anyspend/x402-network-support">
+  Lihat token mana yang mendukung metode apa di setiap jaringan
+</Card>
+</CardGroup>

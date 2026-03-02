@@ -1,0 +1,438 @@
+---
+title: Links de Pagamento
+description: >-
+  Crie, gerencie e acompanhe links de pagamento para aceitar pagamentos em
+  cripto_moedas
+lang: pt-BR
+originalPath: anyspend/api/payment-links.mdx
+---
+Links de pagamento são URLs compartilháveis que permitem aos seus clientes pagar com qualquer token em qualquer cadeia suportada. Cada link pode ser personalizado com marca, formulários, opções de envio e mais.
+
+<Info>
+  Links de pagamento lidam automaticamente com roteamento de token, abstração de gás e trocas entre cadeias via o protocolo AnySpend.
+</Info>
+
+## O objeto Link de Pagamento
+
+<ResponseField name="id" type="string">
+  Identificador único para o link de pagamento (ex.: `pl_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Nome de exibição mostrado ao cliente durante o checkout.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  A URL de checkout compartilhável (ex.: `https://pay.anyspend.com/pl_abc123`).
+</ResponseField>
+
+<ResponseField name="short_url" type="string">
+  URL encurtada para compartilhamento (ex.: `https://as.pay/abc123`).
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  O endereço do contrato do token que você deseja receber o pagamento.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  O ID da cadeia onde você deseja receber o pagamento.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  O endereço da carteira que recebe o pagamento.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  Quantia fixa de pagamento na menor unidade do token. Nulo para links de quantia variável.
+</ResponseField>
+
+<ResponseField name="min_amount" type="string | null">
+  Quantia mínima permitida para links de quantia variável.
+</ResponseField>
+
+<ResponseField name="max_amount" type="string | null">
+  Quantia máxima permitida para links de quantia variável.
+</ResponseField>
+
+<ResponseField name="suggested_amount" type="string | null">
+  Quantia sugerida pré-preenchida para links de quantia variável.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Descrição mostrada na página de checkout.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  ID do produto associado, se vinculado a um produto.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  Imagem exibida na página de checkout.
+</ResponseField>
+
+<ResponseField name="theme_color" type="string | null">
+  Código de cor hexadecimal para a marca da página de checkout (ex.: `#6366f1`).
+</ResponseField>
+
+<ResponseField name="button_text" type="string | null">
+  Texto personalizado para o botão de pagamento (padrão: `"Pagar"`).
+</ResponseField>
+
+<ResponseField name="max_uses" type="number | null">
+  Número máximo de pagamentos concluídos permitidos. Nulo para ilimitado.
+</ResponseField>
+
+<ResponseField name="uses" type="number">
+  Número de pagamentos concluídos até agora.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string | null">
+  Carimbo de data/hora de expiração no formato ISO 8601. Nulo para sem expiração.
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  Se o link está atualmente aceitando pagamentos.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  Campos de formulário personalizados para coletar do cliente durante o checkout.
+  <Expandable title="propriedades do form_schema">
+    <ResponseField name="fields" type="array">
+      Array de definições de campo de formulário.
+      <Expandable title="propriedades do campo">
+        <ResponseField name="id" type="string">Identificador único do campo.</ResponseField>
+        <ResponseField name="type" type="string">Tipo de campo: `text`, `email`, `phone`, `select`, `textarea`, `number`, `checkbox`.</ResponseField>
+        <ResponseField name="label" type="string">Rótulo de exibição.</ResponseField>
+        <ResponseField name="required" type="boolean">Se o campo é obrigatório.</ResponseField>
+        <ResponseField name="placeholder" type="string">Texto de espaço reservado.</ResponseField>
+        <ResponseField name="options" type="array">Opções para campos `select`.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  Opções de envio disponíveis para bens físicos.
+  <Expandable title="propriedades da opção de envio">
+    <ResponseField name="id" type="string">Identificador único da opção de envio.</ResponseField>
+    <ResponseField name="name" type="string">Nome de exibição (ex.: `"Envio Padrão"`).</ResponseField>
+    <ResponseField name="amount" type="string">Custo de envio na menor unidade do token.</ResponseField>
+    <ResponseField name="estimated_days" type="string">Tempo estimado de entrega (ex.: `"5-7 dias úteis"`).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="collect_shipping_address" type="boolean">
+  Se deve coletar um endereço de envio durante o checkout.
+</ResponseField>
+
+<ResponseField name="return_url" type="string | null">
+  URL para redirecionar o cliente após o pagamento.
+</ResponseField>
+
+<ResponseField name="return_label" type="string | null">
+  Rótulo para o botão de retorno (ex.: `"Voltar para a Loja"`).
+</ResponseField>
+
+<ResponseField name="branding" type="object | null">
+  Configuração de marca personalizada.
+  <Expandable title="propriedades da marca">
+    <ResponseField name="logo_url" type="string">URL da imagem do logo.</ResponseField>
+    <ResponseField name="business_name" type="string">Nome da empresa exibido no checkout.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="fee_on_top" type="boolean">
+  Se a taxa da plataforma é adicionada em cima do valor do pagamento (verdadeiro) ou absorvida pelo comerciante (falso).
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Itens de linha anexados a este link de pagamento.
+  <Expandable title="propriedades do item">
+    <ResponseField name="id" type="string">ID do item.</ResponseField>
+    <ResponseField name="name" type="string">Nome do item.</ResponseField>
+    <ResponseField name="amount" type="string">Preço do item.</ResponseField>
+    <ResponseField name="quantity" type="number">Quantidade do item.</ResponseField>
+    <ResponseField name="image_url" type="string | null">URL da imagem do item.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Carimbo de data/hora de criação no formato ISO 8601.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Carimbo de data/hora da última atualização no formato ISO 8601.
+</ResponseField>
+
+---
+
+## Parâmetros da URL
+
+Ao compartilhar uma URL de link de pagamento, você pode anexar parâmetros de consulta para pré-preencher dados da sessão, rastrear atribuição e associar pagamentos com seus clientes.
+
+| Parâmetro | Descrição | Exemplo |
+|-----------|-------------|---------|
+| `client_reference_id` | Seu ID de referência interno (ID do pedido, ID do usuário, etc.) | `?client_reference_id=order_123` |
+| `metadata[key]` | Metadados chave-valor arbitrários (notação de colchetes, até 50 chaves) | `?metadata[user_id]=clerk_abc&metadata[plan]=pro` |
+| `session_id` | Use uma sessão de checkout pré-criada em vez de criar uma nova | `?session_id=cs_abc123` |
+| `success_url` | Substitua a URL de redirecionamento após o pagamento bem-sucedido | `?success_url=https://example.com/thanks` |
+| `cancel_url` | Substitua a URL de cancelamento/volta | `?cancel_url=https://example.com/cart` |
+| `utm_source` | Fonte UTM para atribuição | `?utm_source=twitter` |
+| `utm_medium` | Meio UTM para atribuição | `?utm_medium=social` |
+| `utm_campaign` | Campanha UTM para atribuição | `?utm_campaign=launch` |
+
+### Limites de metadados
+
+- Máximo de 50 chaves por sessão
+- Comprimento da chave: até 40 caracteres
+- Comprimento do valor: até 500 caracteres
+
+### Exemplo: associando pagamentos com seus clientes
+
+```
+https://anyspend.com/pay/abc123?client_reference_id=order_456&metadata[user_id]=clerk_abc&metadata[plan]=pro
+```
+
+Todos os parâmetros são passados para webhooks, então você pode conciliar pagamentos no seu backend.
+
+<Tip>
+  Para integrações empresariais que precisam de controle total, use a [API de Sessões de Checkout](/anyspend/api/checkout-sessions-api) para criar sessões no lado do servidor com `customer_email`, `customer_name`, `metadata`, e `client_reference_id`, depois redirecione usando a `url` retornada ou anexe `?session_id=` ao seu link de pagamento.
+</Tip>
+
+---
+
+## Listar links de pagamento
+
+<ParamField query="search" type="string">
+  Pesquise links de pagamento por nome ou descrição.
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filtrar pelo status ativo. Omita para retornar todos os links.
+</ParamField>
+
+<ParamField query="sort" type="string" default="created_at">
+  Campo de ordenação. Um de: `created_at`, `updated_at`, `name`, `uses`.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Ordem de classificação. Um de: `asc`, `desc`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Número da página para paginação.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Número de resultados por página (máx. 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&sort=created_at&order=desc&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.paymentLinks.list({
+  active: true,
+  sort: "created_at",
+  order: "desc",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pl_abc123",
+          "name": "Plano Premium",
+          "url": "https://pay.anyspend.com/pl_abc123",
+          "short_url": "https://as.pay/abc123",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234...abcd",
+          "amount": "50000000",
+          "description": "Assinatura mensal premium",
+          "active": true,
+          "uses": 42,
+          "max_uses": null,
+          "expires_at": null,
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-20T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Criar um link de pagamento
+
+Crie um novo link de pagamento com experiência de checkout personalizável.
+
+<ParamField body="name" type="string" required>
+  Nome de exibição para o link de pagamento.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  Endereço do contrato do token que você deseja receber.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  ID da cadeia onde você deseja receber o token.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  Endereço da carteira que recebe o pagamento.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descrição exibida na página de checkout.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Quantia fixa de pagamento na menor unidade do token. Omita para links de quantia variável.
+</ParamField>
+
+<ParamField body="min_amount" type="string">
+  Quantia mínima para links de quantia variável.
+</ParamField>
+
+<ParamField body="max_amount" type="string">
+  Quantia máxima para links de quantia variável.
+</ParamField>
+
+<ParamField body="suggested_amount" type="string">
+  Quantia pré-preenchida para links de quantia variável.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  Vincule a um produto existente.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL da imagem para exibir na página de checkout.
+</ParamField>
+
+<ParamField body="theme_color" type="string">
+  Código de cor hexadecimal para a marca do checkout (ex.: `"#6366f1"`).
+</ParamField>
+
+<ParamField body="button_text" type="string">
+  Texto personalizado do botão de pagamento.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  Número máximo de pagamentos concluídos. Omita para ilimitado.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  Carimbo de data/hora de expiração no formato ISO 8601.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  Campos de formulário personalizados para coletar durante o checkout. Veja o objeto Link de Pagamento acima para estrutura.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  Opções de envio para bens físicos. Veja o objeto Link de Pagamento acima para estrutura.
+</ParamField>
+
+<ParamField body="collect_shipping_address" type="boolean" default={false}>
+  Se deve coletar um endereço de envio.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  URL para redirecionar o cliente após o pagamento.
+</ParamField>
+
+<ParamField body="return_label" type="string">
+  Rótulo para o botão de retorno.
+</ParamField>
+
+<ParamField body="branding" type="object">
+  Configuração de marca personalizada. Veja o objeto Link de Pagamento acima para estrutura.
+</ParamField>
+
+<ParamField body="fee_on_top" type="boolean" default={false}>
+  Adicione a taxa da plataforma em cima do valor do pagamento.
+</ParamField>
+
+<ParamField body="items" type="array">
+  Itens de linha para exibir no checkout.
+  <Expandable title="propriedades do item">
+    <ParamField body="items[].name" type="string" required>Nome do item.</ParamField>
+    <ParamField body="items[].amount" type="string" required>Preço do item na menor unidade do token.</ParamField>
+    <ParamField body="items[].quantity" type="number" required>Quantidade.</ParamField>
+    <ParamField body="items[].image_url" type="string">URL da imagem do item.</ParamField>
+  </Expandable>
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Plano Premium",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "50000000",
+    "description": "Assinatura mensal premium",
+    "image_url": "https://example.com/premium.png",
+    "theme_color": "#6366f1",
+    "button_text": "Assine Agora",
+    "return_url": "https://example.com/thank-you",
+    "return_label": "Voltar ao Dashboard",
+    "form_schema": {
+      "fields": [
+        {
+          "id": "company_name",
+          "type": "text",
+          "label": "Nome da Empresa",
+          "required": true,
+          "placeholder": "Acme Inc."
+        },
+        {
+          "id": "team_size",
+          "type": "select",
+          "label": "Tamanho da Equipe",
+          "required": true,
+          "options": ["1-10", "11-50", "51-200", "200+"]
+        }
+      ]
+    },
+    "items": [
+      {
+        "name": "Plano Premium - Mensal",
+        "amount": "50000000",
+        "quantity": 1
+      }
+    ]
+  }'
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const

@@ -1,0 +1,132 @@
+---
+title: Deposit
+description: >-
+  Izinkan pengguna untuk mendeposit token ke alamat dompet dari rantai yang
+  didukung apa pun
+lang: id
+originalPath: anyspend/deposit.mdx
+---
+## Apa yang dilakukan
+
+Sebuah halaman setoran yang di-host di mana pengguna dapat mengirim token ke alamat dompet tertentu. Mereka menghubungkan dompet mereka, memilih token, dan AnySpend menangani perutean lintas-rantai. Anda menghasilkan URL, mereka mengkliknya.
+
+## Cara kerjanya
+
+1. **Aplikasi Anda menghasilkan URL setoran** dengan alamat penerima, rantai, dan token.
+2. **Pengguna menghubungkan dompet mereka** (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet).
+3. **Pengguna memilih token** dari saldo yang tersedia.
+4. **AnySpend merutekan pembayaran** lintas-rantai jika diperlukan, mengonversi ke token tujuan.
+5. **Selesai** -- secara opsional mengarahkan pengguna kembali ke aplikasi Anda.
+
+## Parameter URL
+
+Halaman setoran menerima parameter URL ini:
+
+| Parameter | Diperlukan | Deskripsi |
+|-----------|----------|-------------|
+| `recipientAddress` | Ya | Alamat dompet untuk menerima setoran (alamat EVM yang valid) |
+| `toChainId` | Ya* | ID rantai tujuan (mis., 8453 untuk Base) |
+| `toCurrency` | Ya* | Alamat kontrak token di rantai tujuan |
+| `amount` | Tidak | Jumlah tetap dalam wei/satuan terkecil. Ketika disediakan, pengguna tidak dapat mengubah jumlahnya |
+| `redirect_url` | Tidak | URL HTTPS untuk pengalihan setelah selesai |
+| `redirect_label` | Tidak | Label kustom untuk tombol pengalihan |
+| `partner` | Tidak | ID mitra untuk konfigurasi kustom |
+
+\* Tidak diperlukan untuk rantai Hyperliquid di mana USDC adalah token default.
+
+## Contoh URL
+
+**Setoran dasar ke Base USDC:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**Setoran jumlah tetap:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**Dengan pengalihan:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Return+to+App
+```
+
+## Dompet yang didukung
+
+Didukung langsung:
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+Auto-connect diaktifkan untuk pengguna yang kembali yang sebelumnya telah menghubungkan dompet mereka.
+
+## Dukungan rantai khusus
+
+### Hyperliquid
+
+Hyperliquid mendapatkan penanganan khusus:
+
+- USDC menggunakan format alamat 34-karakter khusus (`0x00000000000000000000000000000000`)
+- Ketika `toChainId` diatur ke Hyperliquid, `toCurrency` default ke USDC jika tidak ditentukan
+- Alamat nol secara otomatis dikoreksi ke format USDC Hyperliquid
+
+## Integrasi mitra
+
+Mitra dapat dikonfigurasi dengan pengaturan kustom:
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // URL pengalihan default
+  customRecipientLabel?: string; // Label kustom untuk penerima
+  returnHomeLabel?: string;      // Label kustom untuk tombol kembali
+}
+```
+
+Untuk mendaftar sebagai mitra, hubungi tim AnySpend untuk menambahkan konfigurasi Anda.
+
+## Keamanan
+
+- Hanya URL pengalihan HTTPS yang diizinkan (mencegah serangan pengalihan terbuka)
+- Jumlah harus valid integer positif (wei)
+- Alamat divalidasi sebelum diproses
+
+## Kasus penggunaan umum
+
+- **Bot Telegram** -- mendanai dompet bot melalui tautan yang dapat dibagikan
+- **Gaming** -- menyetorkan token ke akun game
+- **Marketplace** -- mendanai alamat escrow
+- **Tipping** -- memungkinkan pengguna memberi tip kepada pembuat konten dengan tautan setoran
+
+## Contoh integrasi
+
+Hasilkan tautan setoran di aplikasi Anda:
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```

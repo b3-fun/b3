@@ -1,0 +1,298 @@
+---
+title: Notifikasi
+description: Konfigurasikan pengaturan notifikasi email dan Telegram
+lang: id
+originalPath: anyspend/api/notifications-api.mdx
+---
+Konfigurasikan bagaimana Anda menerima notifikasi untuk event pembayaran. AnySpend mendukung saluran pengiriman email dan Telegram dengan granularitas per-event.
+
+<Info>
+  Membaca pengaturan notifikasi memerlukan izin **read**. Memperbarui pengaturan dan menghubungkan/memutuskan hubungan Telegram memerlukan izin **admin**.
+</Info>
+
+## Autentikasi
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Dasar: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoint
+
+### Dapatkan Pengaturan Notifikasi
+
+<ParamField path="GET /notifications" type="read">
+  Ambil konfigurasi notifikasi saat ini untuk akun Anda.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const settings = await client.notifications.get();
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "merchant@example.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": [
+      "payment.completed",
+      "payment.failed",
+      "checkout.completed"
+    ],
+    "updated_at": "2026-02-20T14:30:00Z"
+  }
+}
+```
+
+---
+
+### Perbarui Pengaturan Notifikasi
+
+<ParamField path="PATCH /notifications" type="admin">
+  Perbarui preferensi notifikasi. Semua bidang bersifat opsional -- hanya bidang yang disediakan yang diubah.
+</ParamField>
+
+<ParamField path="email_enabled" type="boolean">
+  Aktifkan atau nonaktifkan notifikasi email.
+</ParamField>
+
+<ParamField path="email_address" type="string">
+  Alamat email untuk menerima notifikasi. Harus dalam format email yang valid.
+</ParamField>
+
+<ParamField path="telegram_enabled" type="boolean">
+  Aktifkan atau nonaktifkan notifikasi Telegram. Telegram harus dihubungkan terlebih dahulu.
+</ParamField>
+
+<ParamField path="enabled_events" type="string[]">
+  Array dari tipe event untuk menerima notifikasi. Berlaku untuk saluran email dan Telegram.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email_enabled": true,
+        "email_address": "payments@mycompany.com",
+        "telegram_enabled": true,
+        "enabled_events": ["payment.completed", "payment.failed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.notifications.update({
+      email_enabled: true,
+      email_address: "payments@mycompany.com",
+      telegram_enabled: true,
+      enabled_events: ["payment.completed", "payment.failed"],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "payments@mycompany.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": ["payment.completed", "payment.failed"],
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Hubungkan Telegram
+
+<ParamField path="POST /notifications/telegram/link" type="admin">
+  Hasilkan URL link bot Telegram. Membuka link ini memulai percakapan dengan bot notifikasi AnySpend dan menghubungkan akun Telegram Anda.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/telegram/link \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const { link_url } = await client.notifications.linkTelegram();
+    // Arahkan pengguna atau tampilkan link
+    console.log("Buka link ini untuk menghubungkan Telegram:", link_url);
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "link_url": "https://t.me/AnySpendBot?start=link_abc123def456",
+    "expires_at": "2026-02-27T12:15:00Z"
+  }
+}
+```
+
+<Steps>
+  <Step title="Hasilkan link">
+    Panggil `POST /notifications/telegram/link` untuk mendapatkan URL link bot.
+  </Step>
+  <Step title="Buka di Telegram">
+    Buka `link_url` di Telegram. Tekan **Start** dalam percakapan bot.
+  </Step>
+  <Step title="Aktifkan notifikasi">
+    Panggil `PATCH /notifications` dengan `telegram_enabled: true`.
+  </Step>
+</Steps>
+
+<Note>
+  URL link kedaluwarsa setelah 15 menit. Hasilkan yang baru jika kedaluwarsa sebelum digunakan.
+</Note>
+
+---
+
+### Putuskan Hubungan Telegram
+
+<ParamField path="DELETE /notifications/telegram" type="admin">
+  Putuskan hubungan Telegram dari pengaturan notifikasi Anda. Notifikasi Telegram akan secara otomatis dinonaktifkan.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/notifications/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.unlinkTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Kirim Email Tes
+
+<ParamField path="POST /notifications/test/email" type="admin">
+  Kirim notifikasi tes ke alamat email yang dikonfigurasi. Email harus diaktifkan dan alamat harus diatur.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/email \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testEmail();
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "payments@mycompany.com",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+### Kirim Pesan Telegram Tes
+
+<ParamField path="POST /notifications/test/telegram" type="admin">
+  Kirim notifikasi tes ke akun Telegram yang terhubung. Telegram harus terhubung dan diaktifkan.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "@merchant",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+## Objek Pengaturan Notifikasi
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `email_enabled` | `boolean` | Apakah notifikasi email aktif |
+| `email_address` | `string \| null` | Alamat email yang dikonfigurasi |
+| `telegram_enabled` | `boolean` | Apakah notifikasi Telegram aktif |
+| `telegram_chat_id` | `string \| null` | ID chat Telegram yang terhubung |
+| `telegram_username` | `string \| null` | Username Telegram yang terhubung |
+| `enabled_events` | `string[]` | Tipe event yang memicu notifikasi |
+| `updated_at` | `string` | Cap waktu pembaruan terakhir ISO 8601 |
+
+## Event yang Didukung
+
+Tipe event yang sama tersedia untuk saluran email dan Telegram:
+
+| Tipe Event | Deskripsi |
+|------------|-------------|
+| `payment.completed` | Pembayaran berhasil diproses |
+| `payment.failed` | Upaya pembayaran gagal |
+| `checkout.completed` | Sesi checkout selesai dengan semua data formulir/pengiriman |

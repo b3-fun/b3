@@ -1,0 +1,464 @@
+---
+title: Productos
+description: Gestiona tu catálogo de productos para enlaces de pago y sesiones de pago
+lang: es
+originalPath: anyspend/api/products.mdx
+---
+Los productos representan artículos o servicios en tu catálogo. Cada producto define precios, token y configuración de cadena que pueden reutilizarse en múltiples enlaces de pago y sesiones de pago.
+
+<Info>
+  Los productos admiten tres tipos de precios: `one_time` para compras únicas, `subscription` para pagos recurrentes y `variable` para montos elegidos por el cliente.
+</Info>
+
+## El objeto Producto
+
+<ResponseField name="id" type="string">
+  Identificador único para el producto (por ejemplo, `prod_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Nombre del producto mostrado a los clientes.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  Precio en la unidad más pequeña del token. Nulo para tipos de producto `variable`.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Dirección del contrato del token para la fijación de precios.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  ID de la cadena para el token de precios.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Descripción del producto.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  URL de la imagen del producto.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Dirección de billetera predeterminada que recibe los pagos por este producto.
+</ResponseField>
+
+<ResponseField name="product_type" type="string">
+  Tipo de precio: `one_time`, `subscription` o `variable`.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Pares clave-valor arbitrarios para tu propio uso. No se muestra a los clientes.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  Campos de formulario personalizados para recopilar durante el pago. Misma estructura que [Payment Links form_schema](/anyspend/api/payment-links#the-payment-link-object).
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  Opciones de envío para bienes físicos. Misma estructura que [Payment Links shipping_options](/anyspend/api/payment-links#the-payment-link-object).
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  Si el producto está activo. Los productos inactivos no pueden usarse en nuevos enlaces de pago.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Marca de tiempo de creación ISO 8601.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo de la última actualización ISO 8601.
+</ResponseField>
+
+---
+
+## Listar productos
+
+Recupera una lista paginada de tus productos.
+
+<ParamField query="page" type="number" default={1}>
+  Número de página para la paginación.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Número de resultados por página (máximo 100).
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filtrar por estado activo. Omitir para devolver todos los productos.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products?page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.products.list({
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "prod_abc123",
+          "name": "Pro Plan",
+          "amount": "50000000",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Nivel profesional con acceso ilimitado",
+          "image_url": "https://example.com/pro.png",
+          "recipient_address": "0x1234...abcd",
+          "product_type": "one_time",
+          "metadata": {
+            "sku": "PRO-001",
+            "internal_id": "tier_3"
+          },
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-10T09:00:00Z",
+          "updated_at": "2026-02-15T12:00:00Z"
+        },
+        {
+          "id": "prod_def456",
+          "name": "Donación",
+          "amount": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Apoya nuestro proyecto con cualquier cantidad",
+          "image_url": null,
+          "recipient_address": "0x1234...abcd",
+          "product_type": "variable",
+          "metadata": null,
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-20T14:30:00Z",
+          "updated_at": "2026-01-20T14:30:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 2,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Crear un producto
+
+<ParamField body="name" type="string" required>
+  Nombre del producto.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  Dirección del contrato del token para la fijación de precios.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  ID de la cadena para el token de precios.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  Dirección de billetera predeterminada que recibe los pagos.
+</ParamField>
+
+<ParamField body="product_type" type="string" required>
+  Tipo de precio. Uno de: `one_time`, `subscription`, `variable`.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Precio en la unidad más pequeña del token. Requerido para los tipos `one_time` y `subscription`.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descripción del producto.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL de la imagen del producto.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Pares clave-valor arbitrarios (por ejemplo, `{"sku": "PRO-001"}`). Hasta 50 claves, valores de 500 caracteres.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  Campos de formulario personalizados para recopilar durante el pago.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  Opciones de envío para bienes físicos.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan",
+    "amount": "50000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "product_type": "one_time",
+    "description": "Nivel profesional con acceso ilimitado",
+    "image_url": "https://example.com/pro.png",
+    "metadata": {
+      "sku": "PRO-001",
+      "internal_id": "tier_3"
+    }
+  }'
+```
+
+```typescript SDK
+const product = await anyspend.products.create({
+  name: "Pro Plan",
+  amount: "50000000",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  productType: "one_time",
+  description: "Nivel profesional con acceso ilimitado",
+  imageUrl: "https://example.com/pro.png",
+  metadata: {
+    sku: "PRO-001",
+    internal_id: "tier_3",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "name": "Pro Plan",
+      "amount": "50000000",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "description": "Nivel profesional con acceso ilimitado",
+      "image_url": "https://example.com/pro.png",
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "product_type": "one_time",
+      "metadata": {
+        "sku": "PRO-001",
+        "internal_id": "tier_3"
+      },
+      "form_schema": null,
+      "shipping_options": null,
+      "active": true,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Recuperar un producto
+
+<ParamField path="id" type="string" required>
+  El ID del producto (por ejemplo, `prod_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const product = await anyspend.products.retrieve("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Devuelve el [objeto Producto](#the-product-object) completo.
+  </Tab>
+</Tabs>
+
+---
+
+## Actualizar un producto
+
+Actualiza un producto existente. Solo se actualizarán los campos que incluyas en el cuerpo de la solicitud.
+
+<ParamField path="id" type="string" required>
+  El ID del producto.
+</ParamField>
+
+Todos los parámetros del cuerpo del [endpoint de creación](#create-a-product) son aceptados. Adicionalmente:
+
+<ParamField body="active" type="boolean">
+  Establecer en `false` para desactivar el producto.
+</ParamField>
+
+<Warning>
+  Actualizar un producto no actualiza retroactivamente los enlaces de pago que se crearon a partir de él. Cada enlace de pago mantiene su propia configuración.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan (Anual)",
+    "amount": "500000000",
+    "description": "Nivel profesional - facturación anual"
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.products.update("prod_abc123", {
+  name: "Pro Plan (Anual)",
+  amount: "500000000",
+  description: "Nivel profesional - facturación anual",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Devuelve el [objeto Producto](#the-product-object) actualizado.
+  </Tab>
+</Tabs>
+
+---
+
+## Eliminar un producto
+
+Eliminación suave de un producto. El producto se marcará como inactivo y ya no aparecerá en los resultados de la lista por defecto. Los enlaces de pago existentes que usan este producto continuarán funcionando.
+
+<ParamField path="id" type="string" required>
+  El ID del producto.
+</ParamField>
+
+<Tip>
+  Eliminar un producto es una eliminación suave. Los datos del producto se conservan para referencia histórica en transacciones existentes y enlaces de pago.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.products.delete("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Generar un enlace de pago a partir de un producto
+
+Crea automáticamente un enlace de pago preconfigurado con los ajustes del producto. Este es un método de conveniencia que crea un nuevo enlace de pago usando el `name`, `amount`, `token_address`, `chain_id`, `recipient_address`, `description`, `image_url`, `form_schema` y `shipping_options` del producto.
+
+<ParamField path="id" type="string" required>
+  El ID del producto.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Sobrescribe el nombre del enlace de pago. Por defecto es el nombre del producto.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  URL para redirigir a los clientes después del pago.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  Número máximo de usos para el enlace generado.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  Marca de tiempo de expiración ISO 8601 para el enlace generado.
+</ParamField>
+
+Cualquier campo adicional de [enlace de pago](/anyspend/api/payment-links#create-a-payment-link) puede pasarse como sobrescrituras.
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products/prod_abc123/generate-link" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "return_url": "https://example.com/thank-you",
+    "max_uses": 100,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }'
+```
+
+```typescript SDK
+const paymentLink = await anyspend.products.generateLink("prod_abc123", {
+  returnUrl: "https://example.com/thank-you",
+  maxUses: 100,
+  expiresAt: "2026-12-31T23:59:59Z",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Devuelve un nuevo [objeto Enlace de Pago](/anyspend/api/payment-links#the-payment-link-object) con `product_id` establecido en el producto fuente.
+
+    ```json
+    {
+      "id": "pl_newlink789",
+      "name": "Pro Plan",
+      "url": "https://pay.anyspend.com/pl_newlink789",
+      "short_url": "https://as.pay/newlink789",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "description": "Nivel profesional con acceso ilimitado",
+      "product_id": "prod_abc123",
+      "image_url": "https://example.com/pro.png",
+      "max_uses": 100,
+      "uses": 0,
+      "expires_at": "2026-12-31T23:59:59Z",
+      "active": true,
+      "return_url": "https://example.com/thank-you",
+      "created_at": "2026-02-27T10:15:00Z",
+      "updated_at": "2026-02-27T10:15:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>

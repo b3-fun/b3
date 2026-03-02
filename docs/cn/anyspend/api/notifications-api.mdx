@@ -1,0 +1,298 @@
+---
+title: 通知
+description: 配置电子邮件和 Telegram 通知设置
+lang: cn
+originalPath: anyspend/api/notifications-api.mdx
+---
+配置如何接收支付事件的通知。AnySpend 支持通过电子邮件和 Telegram 渠道接收通知，并可针对每个事件进行精细设置。
+
+<Info>
+  阅读通知设置需要 **read** 权限。更新设置以及链接/取消链接 Telegram 需要 **admin** 权限。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 获取通知设置
+
+<ParamField path="GET /notifications" type="read">
+  检索您账户的当前通知配置。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const settings = await client.notifications.get();
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "merchant@example.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": [
+      "payment.completed",
+      "payment.failed",
+      "checkout.completed"
+    ],
+    "updated_at": "2026-02-20T14:30:00Z"
+  }
+}
+```
+
+---
+
+### 更新通知设置
+
+<ParamField path="PATCH /notifications" type="admin">
+  更新通知偏好。所有字段均为可选 —— 只更改提供的字段。
+</ParamField>
+
+<ParamField path="email_enabled" type="boolean">
+  启用或禁用电子邮件通知。
+</ParamField>
+
+<ParamField path="email_address" type="string">
+  接收通知的电子邮件地址。必须是有效的电子邮件格式。
+</ParamField>
+
+<ParamField path="telegram_enabled" type="boolean">
+  启用或禁用 Telegram 通知。首先必须链接 Telegram。
+</ParamField>
+
+<ParamField path="enabled_events" type="string[]">
+  接收通知的事件类型数组。适用于电子邮件和 Telegram 渠道。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email_enabled": true,
+        "email_address": "payments@mycompany.com",
+        "telegram_enabled": true,
+        "enabled_events": ["payment.completed", "payment.failed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.notifications.update({
+      email_enabled: true,
+      email_address: "payments@mycompany.com",
+      telegram_enabled: true,
+      enabled_events: ["payment.completed", "payment.failed"],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "payments@mycompany.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": ["payment.completed", "payment.failed"],
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### 链接 Telegram
+
+<ParamField path="POST /notifications/telegram/link" type="admin">
+  生成一个 Telegram 机器人链接 URL。打开此链接将启动与 AnySpend 通知机器人的对话，并链接您的 Telegram 账户。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/telegram/link \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const { link_url } = await client.notifications.linkTelegram();
+    // 重定向用户或显示链接
+    console.log("Open this link to connect Telegram:", link_url);
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "link_url": "https://t.me/AnySpendBot?start=link_abc123def456",
+    "expires_at": "2026-02-27T12:15:00Z"
+  }
+}
+```
+
+<Steps>
+  <Step title="生成链接">
+    调用 `POST /notifications/telegram/link` 获取机器人链接 URL。
+  </Step>
+  <Step title="在 Telegram 中打开">
+    在 Telegram 中打开 `link_url`。在机器人对话中按 **Start**。
+  </Step>
+  <Step title="启用通知">
+    调用 `PATCH /notifications` 并设置 `telegram_enabled: true`。
+  </Step>
+</Steps>
+
+<Note>
+  链接 URL 在 15 分钟后过期。如果在使用前过期，请生成新的链接。
+</Note>
+
+---
+
+### 取消链接 Telegram
+
+<ParamField path="DELETE /notifications/telegram" type="admin">
+  从您的通知设置中断开 Telegram。Telegram 通知将自动禁用。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/notifications/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.unlinkTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 发送测试电子邮件
+
+<ParamField path="POST /notifications/test/email" type="admin">
+  向您配置的电子邮件地址发送测试通知。必须启用电子邮件并设置地址。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/email \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testEmail();
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "payments@mycompany.com",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+### 发送测试 Telegram 消息
+
+<ParamField path="POST /notifications/test/telegram" type="admin">
+  向您链接的 Telegram 账户发送测试通知。必须先链接并启用 Telegram。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "@merchant",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+## 通知设置对象
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `email_enabled` | `boolean` | 电子邮件通知是否激活 |
+| `email_address` | `string \| null` | 配置的电子邮件地址 |
+| `telegram_enabled` | `boolean` | Telegram 通知是否激活 |
+| `telegram_chat_id` | `string \| null` | 链接的 Telegram 聊天 ID |
+| `telegram_username` | `string \| null` | 链接的 Telegram 用户名 |
+| `enabled_events` | `string[]` | 触发通知的事件类型 |
+| `updated_at` | `string` | ISO 8601 最后更新时间戳 |
+
+## 支持的事件
+
+电子邮件和 Telegram 渠道均可用的相同事件类型：
+
+| 事件类型 | 描述 |
+|------------|-------------|
+| `payment.completed` | 一笔支付成功处理 |
+| `payment.failed` | 一次支付尝试失败 |
+| `checkout.completed` | 一个结账会话完成，包括所有表单/运输数据 |

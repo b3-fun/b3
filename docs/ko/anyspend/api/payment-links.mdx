@@ -1,0 +1,379 @@
+---
+title: 결제 링크
+description: '암호화폐 결제를 수락하기 위한 결제 링크 생성, 관리 및 추적'
+lang: ko
+originalPath: anyspend/api/payment-links.mdx
+---
+결제 링크는 고객이 지원되는 모든 체인에서 모든 토큰으로 결제할 수 있게 해주는 공유 가능한 URL입니다. 각 링크는 브랜딩, 양식, 배송 옵션 등으로 커스터마이징할 수 있습니다.
+
+<Info>
+  결제 링크는 AnySpend 프로토콜을 통해 토큰 라우팅, 가스 추상화 및 체인 간 스왑을 자동으로 처리합니다.
+</Info>
+
+## 결제 링크 객체
+
+<ResponseField name="id" type="string">
+  결제 링크의 고유 식별자 (예: `pl_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  체크아웃 중 고객에게 표시되는 디스플레이 이름.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  공유 가능한 체크아웃 URL (예: `https://pay.anyspend.com/pl_abc123`).
+</ResponseField>
+
+<ResponseField name="short_url" type="string">
+  공유를 위한 단축 URL (예: `https://as.pay/abc123`).
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  결제를 받고자 하는 토큰 계약 주소.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  결제를 받고자 하는 체인 ID.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  결제를 받는 지갑 주소.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  토큰의 최소 단위로 고정된 결제 금액. 가변 금액 링크의 경우 Null.
+</ResponseField>
+
+<ResponseField name="min_amount" type="string | null">
+  가변 금액 링크의 최소 허용 금액.
+</ResponseField>
+
+<ResponseField name="max_amount" type="string | null">
+  가변 금액 링크의 최대 허용 금액.
+</ResponseField>
+
+<ResponseField name="suggested_amount" type="string | null">
+  가변 금액 링크에 대한 사전 채워진 제안 금액.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  체크아웃 페이지에 표시되는 설명.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  제품에 연결된 경우 해당 제품 ID.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  체크아웃 페이지에 표시되는 이미지.
+</ResponseField>
+
+<ResponseField name="theme_color" type="string | null">
+  체크아웃 페이지 브랜딩을 위한 16진수 색상 코드 (예: `#6366f1`).
+</ResponseField>
+
+<ResponseField name="button_text" type="string | null">
+  결제 버튼의 사용자 정의 텍스트 (기본값: `"Pay"`).
+</ResponseField>
+
+<ResponseField name="max_uses" type="number | null">
+  허용된 최대 완료된 결제 수. 무제한의 경우 Null.
+</ResponseField>
+
+<ResponseField name="uses" type="number">
+  지금까지 완료된 결제 수.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string | null">
+  ISO 8601 만료 타임스탬프. 만료 없음의 경우 Null.
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  링크가 현재 결제를 받고 있는지 여부.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  체크아웃 중 고객으로부터 수집할 사용자 정의 양식 필드.
+  <Expandable title="form_schema 속성">
+    <ResponseField name="fields" type="array">
+      양식 필드 정의의 배열.
+      <Expandable title="field 속성">
+        <ResponseField name="id" type="string">고유 필드 식별자.</ResponseField>
+        <ResponseField name="type" type="string">필드 유형: `text`, `email`, `phone`, `select`, `textarea`, `number`, `checkbox`.</ResponseField>
+        <ResponseField name="label" type="string">표시 레이블.</ResponseField>
+        <ResponseField name="required" type="boolean">필드가 필수인지 여부.</ResponseField>
+        <ResponseField name="placeholder" type="string">플레이스홀더 텍스트.</ResponseField>
+        <ResponseField name="options" type="array">`select` 필드의 옵션.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  실제 상품에 대한 사용 가능한 배송 옵션.
+  <Expandable title="shipping option 속성">
+    <ResponseField name="id" type="string">고유 배송 옵션 식별자.</ResponseField>
+    <ResponseField name="name" type="string">표시 이름 (예: `"Standard Shipping"`).</ResponseField>
+    <ResponseField name="amount" type="string">토큰의 최소 단위로 배송 비용.</ResponseField>
+    <ResponseField name="estimated_days" type="string">예상 배송 시간 (예: `"5-7 business days"`).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="collect_shipping_address" type="boolean">
+  체크아웃 중 배송 주소를 수집할지 여부.
+</ResponseField>
+
+<ResponseField name="return_url" type="string | null">
+  결제 후 고객을 리디렉션할 URL.
+</ResponseField>
+
+<ResponseField name="return_label" type="string | null">
+  반환 버튼의 레이블 (예: `"Back to Store"`).
+</ResponseField>
+
+<ResponseField name="branding" type="object | null">
+  사용자 정의 브랜딩 구성.
+  <Expandable title="branding 속성">
+    <ResponseField name="logo_url" type="string">로고 이미지 URL.</ResponseField>
+    <ResponseField name="business_name" type="string">체크아웃에 표시되는 비즈니스 이름.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="fee_on_top" type="boolean">
+  플랫폼 수수료를 결제 금액 위에 추가할지 (true) 또는 상인이 흡수할지 (false).
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  이 결제 링크에 첨부된 항목.
+  <Expandable title="item 속성">
+    <ResponseField name="id" type="string">항목 ID.</ResponseField>
+    <ResponseField name="name" type="string">항목 이름.</ResponseField>
+    <ResponseField name="amount" type="string">항목 가격.</ResponseField>
+    <ResponseField name="quantity" type="number">항목 수량.</ResponseField>
+    <ResponseField name="image_url" type="string | null">항목 이미지 URL.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 생성 타임스탬프.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 마지막 업데이트 타임스탬프.
+</ResponseField>
+
+---
+
+## URL 매개변수
+
+결제 링크 URL을 공유할 때, 세션 데이터를 사전 채우거나, 속성을 추적하고, 고객과 결제를 연결하기 위해 쿼리 매개변수를 추가할 수 있습니다.
+
+| 매개변수 | 설명 | 예시 |
+|-----------|-------------|---------|
+| `client_reference_id` | 내부 참조 ID (주문 ID, 사용자 ID 등) | `?client_reference_id=order_123` |
+| `metadata[key]` | 임의의 키-값 메타데이터 (대괄호 표기법, 최대 50개 키) | `?metadata[user_id]=clerk_abc&metadata[plan]=pro` |
+| `session_id` | 새로운 것을 생성하는 대신 사전 생성된 체크아웃 세션 사용 | `?session_id=cs_abc123` |
+| `success_url` | 성공적인 결제 후 리디렉션 URL 재정의 | `?success_url=https://example.com/thanks` |
+| `cancel_url` | 취소/뒤로 URL 재정의 | `?cancel_url=https://example.com/cart` |
+| `utm_source` | 속성을 위한 UTM 소스 | `?utm_source=twitter` |
+| `utm_medium` | 속성을 위한 UTM 매체 | `?utm_medium=social` |
+| `utm_campaign` | 속성을 위한 UTM 캠페인 | `?utm_campaign=launch` |
+
+### 메타데이터 제한
+
+- 세션당 최대 50개 키
+- 키 길이: 최대 40자
+- 값 길이: 최대 500자
+
+### 예시: 고객과 결제 연결
+
+```
+https://anyspend.com/pay/abc123?client_reference_id=order_456&metadata[user_id]=clerk_abc&metadata[plan]=pro
+```
+
+모든 매개변수는 백엔드에서 결제를 조정할 수 있도록 웹훅을 통해 전달됩니다.
+
+<Tip>
+  전체 제어가 필요한 엔터프라이즈 통합의 경우, `customer_email`, `customer_name`, `metadata`, 및 `client_reference_id`를 사용하여 서버 측에서 [Checkout Sessions API](/anyspend/api/checkout-sessions-api)를 통해 세션을 생성한 다음 반환된 `url`을 사용하여 리디렉션하거나 결제 링크에 `?session_id=`를 추가하세요.
+</Tip>
+
+---
+
+## 결제 링크 목록
+
+<ParamField query="search" type="string">
+  이름이나 설명으로 결제 링크 검색.
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  활성 상태로 필터링. 모든 링크를 반환하려면 생략.
+</ParamField>
+
+<ParamField query="sort" type="string" default="created_at">
+  정렬 필드. `created_at`, `updated_at`, `name`, `uses` 중 하나.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  정렬 순서. `asc`, `desc` 중 하나.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  페이지 번호를 위한 페이징.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  페이지당 결과 수 (최대 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&sort=created_at&order=desc&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.paymentLinks.list({
+  active: true,
+  sort: "created_at",
+  order: "desc",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pl_abc123",
+          "name": "Premium Plan",
+          "url": "https://pay.anyspend.com/pl_abc123",
+          "short_url": "https://as.pay/abc123",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234...abcd",
+          "amount": "50000000",
+          "description": "Premium monthly subscription",
+          "active": true,
+          "uses": 42,
+          "max_uses": null,
+          "expires_at": null,
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-20T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 결제 링크 생성
+
+사용자 정의 가능한 체크아웃 경험으로 새 결제 링크를 생성합니다.
+
+<ParamField body="name" type="string" required>
+  결제 링크의 디스플레이 이름.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  받고자 하는 토큰의 계약 주소.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  토큰을 받고자 하는 체인 ID.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  결제를 받는 지갑 주소.
+</ParamField>
+
+<ParamField body="description" type="string">
+  체크아웃 페이지에 표시되는 설명.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  토큰의 최소 단위로 고정된 결제 금액. 가변 금액 링크의 경우 생략.
+</ParamField>
+
+<ParamField body="min_amount" type="string">
+  가변 금액 링크의 최소 금액.
+</ParamField>
+
+<ParamField body="max_amount" type="string">
+  가변 금액 링크의 최대 금액.
+</ParamField>
+
+<ParamField body="suggested_amount" type="string">
+  가변 금액 링크에 대한 사전 채워진 금액.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  기존 제품에 연결.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  체크아웃 페이지에 표시할 이미지의 URL.
+</ParamField>
+
+<ParamField body="theme_color" type="string">
+  체크아웃 브랜딩을 위한 16진수 색상 코드 (예: `"#6366f1"`).
+</ParamField>
+
+<ParamField body="button_text" type="string">
+  사용자 정의 결제 버튼 텍스트.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  완료된 결제의 최대 수. 무제한의 경우 생략.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  ISO 8601 만료 타임스탬프.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  체크아웃 중 수집할 사용자 정의 양식 필드. 구조는 위의 결제 링크 객체 참조.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  실제 상품을 위한 배송 옵션. 구조는 위의 결제 링크 객체 참조.
+</ParamField>
+
+<ParamField body="collect_shipping_address" type="boolean" default={false}>
+  배송 주소를 수집할지 여부.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  결제 후 고객을 리디렉션할 URL.
+</ParamField>
+
+<ParamField body="return_label" type="string">
+  반환 버튼의 레이블.
+</ParamField>
+
+<ParamField body="branding" type="object">
+  사용자 정의 브랜딩 구성. 구조는 위의 결제 링크 객체 참조.
+</ParamField>
+
+<ParamField body="fee_on_top" type="boolean" default={false}>
+  결제 금액 위에 플랫폼 수수료 추가.
+</ParamField>
+
+<ParamField body="items" type="array">
+  체크아

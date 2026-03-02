@@ -1,0 +1,165 @@
+---
+title: Visão geral do AnySpend x402
+description: >-
+  Pague por APIs e serviços com paywall com qualquer token usando o protocolo de
+  pagamento aberto x402
+lang: pt-BR
+originalPath: anyspend/x402-overview.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositório GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Veja o código-fonte, exemplos e contribua
+</Card>
+
+<Card title="Pacote npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  Instale o pacote @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## O que é AnySpend x402
+
+AnySpend x402 é a implementação da B3 do **protocolo de pagamento x402** que possibilita pagamentos automáticos e instantâneos de criptomoedas diretamente via HTTP. Diferentemente dos facilitadores tradicionais de x402 que suportam apenas USDC, **AnySpend permite que você pague com qualquer token compatível** (EIP-2612 ou EIP-3009), enquanto os servidores de recursos recebem qualquer token que preferirem.
+
+O protocolo x402 moderniza o código de status HTTP `402 Payment Required`, transformando-o em uma solução prática para micropagamentos de máquina para máquina, APIs com paywall e interações de agentes autônomos.
+
+## Para compradores (pagadores)
+
+Pague por recursos com paywall usando qualquer token compatível que você possua:
+
+
+- **Pague com tokens compatíveis**: Use qualquer token com suporte EIP-2612 ou EIP-3009 para pagamentos sem gás
+- **Protocolo padrão**: Funciona com qualquer serviço habilitado para x402 usando HTTP padrão
+- **Sem trocas manuais**: AnySpend converte automaticamente seu token para o que o vendedor precisa
+- **Integração simples**: Um SDK funciona em todos os serviços x402
+
+<Card title="Verificador de Compatibilidade de Tokens" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Navegue por tokens compatíveis com suporte EIP-2612 ou EIP-3009 em mais de 19 redes
+</Card>
+
+**Casos de Uso:**
+- Acesso a APIs premium e serviços de agentes de IA
+- Pagamento por recursos computacionais e feeds de dados
+- Habilitação de pagamentos autônomos de agente para agente
+- Consumo programático de conteúdo com paywall
+
+## Para vendedores (servidores de recursos)
+
+Aceite pagamentos em USDC enquanto seus clientes pagam com o token de preferência deles:
+
+- **Receba USDC**: Seja pago em USDC independentemente do token que o cliente usar
+- **Middleware Express**: Adicione pagamentos à sua API com apenas algumas linhas de código
+- **Sem infraestrutura blockchain**: AnySpend lida com toda a complexidade on-chain
+- **Liquidação instantânea**: Pagamentos são verificados e liquidados automaticamente
+
+**Casos de Uso:**
+- Monetização de APIs premium e serviços de dados
+- Construção de fluxos de trabalho de agentes de IA pagos
+- Criação de conteúdo e ferramentas com paywall
+- Aceitação de pagamentos em cripto sem expertise em criptomoedas
+
+## Início rápido
+
+Escolha seu caminho:
+
+<CardGroup cols={2}>
+<Card title="Quero pagar por serviços" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  **Para Compradores**: Aprenda a usar o SDK cliente x402 para pagar por recursos com paywall com qualquer token
+</Card>
+
+<Card title="Quero aceitar pagamentos" icon="cash-register" href="/anyspend/x402-quickstart-sellers">
+  **Para Vendedores**: Adicione o middleware Express à sua API e comece a aceitar pagamentos multi-token
+</Card>
+</CardGroup>
+
+
+## Como funciona
+
+<Steps>
+<Step title="Cliente Solicita Recurso">
+A aplicação do usuário faz uma solicitação HTTP padrão para a sua API
+</Step>
+
+<Step title="Pagamento Necessário">
+Sua API retorna `402 Payment Required` com detalhes do pagamento
+</Step>
+
+<Step title="Preferência de Token">
+O cliente especifica seu token de pagamento preferido (USDC, USDT, etc.)
+</Step>
+
+<Step title="Cotação AnySpend">
+AnySpend calcula o valor equivalente no token escolhido pelo cliente
+</Step>
+
+<Step title="Cliente Assina o Pagamento">
+O usuário assina uma autorização criptográfica para o seu token
+</Step>
+
+<Step title="Liquidação Automática">
+AnySpend troca o token por USDC e liquida para sua carteira
+</Step>
+
+<Step title="Recurso Entregue">
+Sua API recebe a confirmação do pagamento e retorna o recurso solicitado
+</Step>
+</Steps>
+
+## Principais diferenciais
+
+### Suporte a múltiplos tokens
+
+**x402 padrão**: Servidores de recursos e clientes devem ambos usar USDC
+
+**AnySpend x402**: Clientes pagam com **qualquer token compatível** (suporte a EIP-2612 ou EIP-3009 necessário) que possuírem. AnySpend cuida da conversão.
+
+```
+Cliente paga com DAI (EIP-2612) → AnySpend troca por 1 USDC → Vendedor recebe 1 USDC
+```
+
+### Sem infraestrutura necessária
+
+Servidores de recursos não precisam de:
+- Executar nós de blockchain
+- Gerenciar carteiras ou chaves privadas
+- Lidar com trocas de tokens ou pontes
+- Monitorar o status da transação
+
+O facilitador AnySpend lida com todas as operações blockchain e fornece endpoints HTTP simples para verificação e liquidação.
+
+### Conformidade com o protocolo padrão
+
+Clientes usando AnySpend não precisam saber que estão usando um facilitador especial. O fluxo usa mensagens de protocolo x402 padrão, e a conversão de múltiplos tokens acontece do lado do servidor de recursos através de middleware.
+
+## Entrega de pacotes
+
+AnySpend x402 consiste em dois pacotes:
+
+<CardGroup cols={2}>
+<Card title="SDK do Servidor" icon="server">
+  **@b3dotfun/anyspend-x402**
+
+  Middleware universal do servidor suportando Express, Next.js, e Hono para servidores de recursos aceitarem facilmente pagamentos multi-token
+</Card>
+
+<Card title="SDK do Cliente" icon="code">
+  **anyspend-x402-client**
+
+  SDK TypeScript agnóstico de plataforma para clientes realizarem pagamentos com auxiliares de assinatura
+</Card>
+</CardGroup>
+
+## Potencializado pelo facilitador AnySpend
+
+Todos os pagamentos x402 são processados através do Facilitador AnySpend, que lida com:
+
+- Suporte a múltiplos tokens em mais de 19 redes blockchain
+- Trocas automáticas de tokens e roteamento entre cadeias
+- Pagamentos sem gás para usuários
+- Implementação do x402 conforme os padrões
+- Substituição direta para qualquer facilitador x402
+
+**Endpoint de Produção:** `https://mainnet.anyspend.com/x402`
+
+<Card title="Facilitador AnySpend" icon="server" href="/anyspend/x402-facilitator">
+  Endpoints da API, arquitetura e configuração
+</Card>

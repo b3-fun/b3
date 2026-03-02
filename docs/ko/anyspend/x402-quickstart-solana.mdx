@@ -1,0 +1,432 @@
+---
+title: Solana를 위한 빠른 시작
+description: Solana에서 AnySpend X402를 사용하여 USDC 및 SPL 토큰으로 결제 수락 및 지불하기
+lang: ko
+originalPath: anyspend/x402-quickstart-solana.mdx
+---
+<Note>
+**실시간으로 체험해 보세요!** [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)에서 Solana 상의 X402를 체험하거나 [GitHub에서 소스 코드를 탐색하세요](https://github.com/b3-fun/anyspend-x402-demo).
+</Note>
+
+<CardGroup cols={3}>
+<Card title="GitHub 저장소" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  소스 코드 및 예제 보기
+</Card>
+
+<Card title="npm 패키지" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+
+<Card title="라이브 데모" icon="rocket" href="https://github.com/b3-fun/anyspend-x402-demo">
+  완전한 작동하는 Solana 데모 앱
+</Card>
+</CardGroup>
+
+## 개요
+
+이 가이드는 서버(결제 수락) 및 클라이언트(결제 수행) 어플리케이션에서 **Solana** 상의 **AnySpend X402**를 사용하는 방법을 보여줍니다. Solana 상의 AnySpend X402는 트랜잭션 서명을 사용한 가스 없는 SPL 토큰 결제를 가능하게 하여, 유료 API, AI 에이전트 및 프리미엄 서비스에 이상적입니다.
+
+**주요 기능:**
+- **가스 없는 트랜잭션** - 퍼실리테이터가 모든 트랜잭션 수수료를 지원
+- **SPL 토큰 지원** - Solana 상의 USDC 및 기타 SPL 토큰으로 결제
+- **브라우저 지갑 통합** - Phantom, Solflare, Ledger 등과 호환
+- **AI 에이전트 친화적** - 자율 결제를 위한 간단한 fetch 래퍼
+
+## 사전 요구 사항
+
+- **Node.js 18+** 설치됨
+- **Solana 지갑**에 약간의 USDC(테스트용)
+- **Solana 또는 Express.js에 대한 기본 지식**(사용 사례에 따라 다름)
+
+## 서버 설정
+
+몇 줄의 코드만으로 Solana USDC 결제를 수락합니다.
+
+### 설치
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+### 기본 서버 예제
+
+```typescript
+import express from 'express';
+import { paymentMiddleware } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+const FACILITATOR_URL = 'https://mainnet.anyspend.com/x402';
+
+// 여러분의 Solana 지갑 주소
+const SOLANA_PAYTO_ADDRESS = 'YourSolanaWalletAddress...';
+
+// 결제 엔드포인트 구성
+app.use(
+  paymentMiddleware(
+    SOLANA_PAYTO_ADDRESS,
+    {
+      "POST /api/solana/premium": {
+        price: {
+          amount: '10000', // 0.01 USDC (6 decimals)
+          asset: {
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // Solana 상의 USDC
+            decimals: 6,
+          },
+        },
+        network: 'solana',
+        config: {
+          description: 'USDC 결제를 통한 프리미엄 데이터 접근',
+          mimeType: 'application/json',
+        },
+      },
+    },
+    {
+      url: FACILITATOR_URL,
+    },
+  ),
+);
+
+// 보호된 라우트
+app.post('/api/solana/premium', (req, res) => {
+  res.json({
+    message: '결제 성공!',
+    data: '여러분의 프리미엄 Solana 데이터',
+  });
+});
+
+app.listen(3001, () => {
+  console.log('Solana X402 서버가 3001 포트에서 실행 중입니다');
+});
+```
+
+**이 작업의 의미:**
+1. 클라이언트가 엔드포인트를 요청합니다
+2. 미들웨어가 Solana 결제 세부 정보와 함께 `402 Payment Required`를 반환합니다
+3. 클라이언트가 USDC 전송을 포함한 Solana 트랜잭션에 서명합니다
+4. 퍼실리테이터가 트랜잭션을 검증하고 제출합니다(가스 없음)
+5. 결제 확인 후 라우트 핸들러가 실행됩니다
+
+---
+
+## 클라이언트 설정
+
+사용 사례에 따라 Solana에서 결제를 수행하는 두 가지 방법이 있습니다.
+
+### 옵션 1: fetch 사용하기 (AI 에이전트 및 백엔드)
+
+Node.js 스크립트, AI 에이전트 및 서버 측 어플리케이션에 적합합니다.
+
+#### 설치
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### 예제 스크립트
+
+```typescript
+import {
+  createSigner,
+  wrapFetchWithPayment,
+} from "@b3dotfun/anyspend-x402-fetch";
+
+const privateKey = process.env.SOLANA_PRIVATE_KEY; // Base58 private key
+const url = "https://api.example.com/api/solana/premium";
+
+async function main() {
+  // 개인 키에서 Solana 서명자 생성
+  const signer = await createSigner("solana", privateKey);
+
+  // 결제 지원을 위해 fetch 래핑
+  const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+  // 결제 요청 수행
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+
+  // 결제 응답 확인
+  const paymentHeader = response.headers.get("x-payment-response");
+  if (paymentHeader) {
+    const payment = JSON.parse(atob(paymentHeader));
+    // 트랜잭션 확인 가능: https://solscan.io/tx/${payment.transaction}
+  }
+}
+
+main();
+```
+
+**핵심 포인트:**
+- Base58로 인코딩된 개인 키 사용(Solana 키쌍에서)
+- 402 응답 및 결제 흐름을 자동으로 처리
+- `x-payment-response` 헤더에서 트랜잭션 해시 반환
+
+---
+
+### 옵션 2: 브라우저 지갑 사용하기 (React/Next.js)
+
+Phantom, Solflare, Ledger 또는 기타 Solana 지갑을 사용하는 웹 어플리케이션용입니다.
+
+#### 설치
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### React 컴포넌트 예제
+
+```tsx
+import {
+  createWalletAdapterSigner,
+  useWallet,
+  WalletMultiButton,
+} from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { wrapFetchWithPayment } from "@b3dotfun/anyspend-x402-fetch";
+
+function PremiumDataFetcher() {
+  const { publicKey, signAllTransactions, connected } = useWallet();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    try {
+      // 지갑 어댑터에서 서명자 생성
+      const signer = createWalletAdapterSigner(
+        publicKey.toBase58(),
+        signAllTransactions
+      );
+
+      // 결제 지원을 위해 fetch 래핑
+      const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+      // 유료 요청 수행
+      const response = await fetchWithPayment(
+        "https://api.example.com/api/solana/premium",
+        { method: "POST" }
+      );
+
+      const result = await response.json();
+      setData(result);
+
+      // 트랜잭션 해시 가져오기
+      const paymentHeader = response.headers.get("x-payment-response");
+      if (paymentHeader) {
+        const payment = JSON.parse(atob(paymentHeader));
+        // 트랜잭션 확인 가능: https://solscan.io/tx/${payment.transaction}
+      }
+    } catch (error) {
+      // 결제 오류 처리
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <WalletMultiButton />
+      <button onClick={fetchPremiumData} disabled={!connected || loading}>
+        {loading ? "처리 중..." : "프리미엄 데이터 받기 (0.01 USDC)"}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+#### 앱 래퍼 설정
+
+지갑 제공자로 앱을 래핑합니다:
+
+```tsx
+import { WalletProvider } from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { clusterApiUrl } from "@solana/web3.js";
+
+function App() {
+  const endpoint = clusterApiUrl("mainnet-beta");
+
+  return (
+    <WalletProvider endpoint={endpoint} autoConnect>
+      <PremiumDataFetcher />
+    </WalletProvider>
+  );
+}
+```
+
+**핵심 포인트:**
+- Phantom, Solflare, Ledger, Trust Wallet 등과 호환
+- 사용자에게 트랜잭션 서명 승인을 요청
+- 완전히 가스 없음 - 사용자는 서명만 하고, 퍼실리테이터가 수수료를 지불
+- Solana Wallet Adapter v1과 X402 v2 서명을 연결
+
+---
+
+## 구성
+
+### 지원되는 네트워크
+
+- **`solana`** - Solana mainnet-beta
+- **`solana-devnet`** - Solana devnet (테스트용)
+
+### 토큰 구성
+
+Solana에서 가장 일반적인 SPL 토큰은 USDC입니다:
+
+```typescript
+{
+  address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC 민트
+  decimals: 6,
+}
+```
+
+다른 SPL 토큰의 경우, 민트 주소와 소수점을 지정합니다.
+
+### 퍼실리테이터 URL
+
+생산: `https://mainnet.anyspend.com/x402`
+
+퍼실리테이터는 다음을 처리합니다:
+- 트랜잭션 검증
+- 온체인 제출
+- 가스 수수료 후원
+- 결제 정산
+
+---
+
+## 테스트
+
+### 테스트 USDC 받기
+
+Solana devnet 테스트용:
+
+1. [Solana Faucet](https://faucet.solana.com/)에서 devnet SOL 받기
+2. devnet USDC 민트 사용: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
+3. 구성에서 네트워크를 `solana-devnet`으로 설정
+
+### 통합 테스트
+
+```typescript
+// 서버 - devnet 사용
+network: 'solana-devnet'
+
+// 클라이언트 - devnet RPC 사용
+const endpoint = 'https://api.devnet.solana.com';
+```
+
+---
+
+## 일반적인 토큰 주소
+
+| 토큰 | 민트 주소 | 소수점 | 네트워크 |
+|-------|--------------|----------|---------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | mainnet-beta |
+| USDC | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | devnet |
+
+---
+
+## 오류 처리
+
+```typescript
+try {
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+} catch (error) {
+  if (error.message.includes("Insufficient funds")) {
+    // 지갑에 USDC가 충분하지 않음
+  } else if (error.message.includes("User rejected")) {
+    // 사용자가 트랜잭션을 취소함
+  } else {
+    // 결제 오류 처리
+  }
+}
+```
+
+---
+
+## 다음 단계
+
+<CardGroup cols={2}>
+<Card title="X402 개요" icon="book" href="/anyspend/x402-overview">
+  AnySpend X402 작동 방식 알아보기
+</Card>
+
+<Card title="네트워크 지원" icon="globe" href="/anyspend/x402-network-support">
+  지원되는 모든 체인과 토큰 보기
+</Card>
+
+<Card title="서명 방법" icon="signature" href="/anyspend/x402-signature-methods">
+  Solana 트랜잭션 서명에 대한 심층 분석
+</Card>
+
+<Card title="구매자 가이드" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  EVM 클라이언트 설정 가이드
+</Card>
+</CardGroup>
+
+---
+
+## 문제 해결
+
+<AccordionGroup>
+<Accordion title="트랜잭션 서명 검증 실패">
+확인하세요:
+- 지갑에 결제를 위한 충분한 USDC가 있는지
+- 올바른 네트워크에 있는지 (mainnet vs devnet)
+- 퍼실리테이터 URL이 올바른지
+</Accordion>
+
+<Accordion title="지갑 어댑터가 작동하지 않음">
+확인하세요:
+- 앱을 `WalletProvider`로 래핑했는지
+- 지갑 확장 프로그램이 설치되어 있는지 (Phantom, Solflare 등)
+- 올바른 RPC 엔드포인트를 사용하고 있는지
+</Accordion>
+
+<Accordion title="결제는 성공했지만 데이터가 반환되지 않음">
+확인하세요:
+- 서버 엔드포인트가 올바르게 구성되어 있는지
+- 결제 금액이 서버 기대치와 일치하는지
+- 오류를 확인하기 위해 서버 로그를 확인하세요
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 도움 받기
+
+- **라이브 데모**: [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)에서 직접 체험해 보세요
+- **데모 소스 코드**: [github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)
+- **Discord**: 우리의 [Discord 커뮤니티](https://discord.gg/b3dotfun)에 참여하세요
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **예제**: [저장소](https://github.com/b3-fun/anyspend-x402/tree/main/examples/typescript)에서 전체 예제를 확인하세요

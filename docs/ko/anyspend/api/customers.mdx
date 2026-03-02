@@ -1,0 +1,467 @@
+---
+title: 고객들
+description: 고객 기록 및 결제 내역 관리
+lang: ko
+originalPath: anyspend/api/customers.mdx
+---
+고객은 결제 링크를 통해 결제하는 사람들을 나타냅니다. 고객 레코드는 지갑이 체크아웃 세션을 완료할 때 자동으로 생성되지만, API를 통해 수동으로도 생성 및 관리할 수 있습니다.
+
+<Info>
+  고객의 `name` 및 `email` 필드는 개인 정보 보호 준수를 위해 **휴면 상태에서 암호화**됩니다. API를 통해 검색할 때 자동으로 복호화됩니다.
+</Info>
+
+## 고객 객체
+
+<ResponseField name="id" type="string">
+  고객의 고유 식별자 (예: `cust_abc123`).
+</ResponseField>
+
+<ResponseField name="wallet_address" type="string">
+  고객의 지갑 주소.
+</ResponseField>
+
+<ResponseField name="name" type="string | null">
+  고객 이름. 휴면 상태에서 암호화됨.
+</ResponseField>
+
+<ResponseField name="email" type="string | null">
+  고객 이메일. 휴면 상태에서 암호화됨.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  자체 사용을 위한 임의의 키-값 쌍.
+</ResponseField>
+
+<ResponseField name="total_spent" type="string">
+  모든 완료된 거래에서 소비한 총 금액(USD 환산).
+</ResponseField>
+
+<ResponseField name="transaction_count" type="number">
+  완료된 거래의 총 수.
+</ResponseField>
+
+<ResponseField name="first_seen_at" type="string">
+  고객의 첫 번째 거래 ISO 8601 타임스탬프.
+</ResponseField>
+
+<ResponseField name="last_seen_at" type="string">
+  고객의 가장 최근 거래 ISO 8601 타임스탬프.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  생성 ISO 8601 타임스탬프.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  마지막 업데이트 ISO 8601 타임스탬프.
+</ResponseField>
+
+---
+
+## 고객 목록
+
+선택적 검색을 통해 고객의 페이지별 목록을 검색합니다.
+
+<ParamField query="search" type="string">
+  지갑 주소, 이름 또는 이메일로 고객 검색.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  페이지 번호.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  페이지 당 결과 수 (최대 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.customers.list({
+  search: "acme",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "metadata": {
+            "company": "Acme Inc.",
+            "plan": "pro"
+          },
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-25T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 생성
+
+수동으로 고객 레코드를 생성합니다. 결제를 하기 전에 고객을 사전 등록하는 데 유용합니다.
+
+<ParamField body="wallet_address" type="string" required>
+  고객의 지갑 주소.
+</ParamField>
+
+<ParamField body="name" type="string">
+  고객 이름. 휴면 상태에서 암호화될 것입니다.
+</ParamField>
+
+<ParamField body="email" type="string">
+  고객 이메일. 휴면 상태에서 암호화될 것입니다.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  임의의 키-값 쌍 (예: `{"plan": "pro"}`). 최대 50개의 키, 500자의 값.
+</ParamField>
+
+<Warning>
+  동일한 `wallet_address`를 가진 고객이 이미 존재하는 경우, 요청은 `409 Conflict` 오류를 반환합니다. 기존 고객을 수정하려면 업데이트 엔드포인트를 사용하세요.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/customers" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+    "name": "Alice Johnson",
+    "email": "alice@acme.com",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "pro"
+    }
+  }'
+```
+
+```typescript SDK
+const customer = await anyspend.customers.create({
+  walletAddress: "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+  name: "Alice Johnson",
+  email: "alice@acme.com",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "pro",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+      "name": "Alice Johnson",
+      "email": "alice@acme.com",
+      "metadata": {
+        "company": "Acme Inc.",
+        "plan": "pro"
+      },
+      "total_spent": "0.00",
+      "transaction_count": 0,
+      "first_seen_at": null,
+      "last_seen_at": null,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 검색
+
+<ParamField path="id" type="string" required>
+  고객 ID (예: `cust_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const customer = await anyspend.customers.retrieve("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    [고객 객체](#the-customer-object) 전체를 반환합니다.
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 업데이트
+
+기존 고객을 업데이트합니다. 요청 본문에 포함된 필드만 업데이트됩니다.
+
+<ParamField path="id" type="string" required>
+  고객 ID.
+</ParamField>
+
+<ParamField body="name" type="string">
+  업데이트된 고객 이름.
+</ParamField>
+
+<ParamField body="email" type="string">
+  업데이트된 고객 이메일.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  업데이트된 메타데이터. 이는 전체 메타데이터 객체를 **대체**합니다. 단일 키를 추가하려면 기존 메타데이터 전체에 새 키를 포함하세요.
+</ParamField>
+
+<Tip>
+  `wallet_address`는 생성 후 변경할 수 없습니다. 고객을 다른 지갑과 연결하려면 새 고객 레코드를 생성하세요.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alice Johnson-Smith",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "enterprise",
+      "upgraded_at": "2026-02-27"
+    }
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.customers.update("cust_abc123", {
+  name: "Alice Johnson-Smith",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "enterprise",
+    upgraded_at: "2026-02-27",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    업데이트된 [고객 객체](#the-customer-object)를 반환합니다.
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 삭제
+
+고객 레코드를 영구적으로 삭제합니다. 이 고객과 관련된 거래 기록은 보존되지만, 고객 참조는 삭제된 것으로 표시됩니다.
+
+<ParamField path="id" type="string" required>
+  고객 ID.
+</ParamField>
+
+<Warning>
+  이 작업은 되돌릴 수 없습니다. 모든 개인 식별 정보(이름, 이메일)는 영구적으로 삭제됩니다.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.customers.delete("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 거래 목록
+
+특정 고객의 거래 기록을 검색합니다.
+
+<ParamField path="id" type="string" required>
+  고객 ID.
+</ParamField>
+
+<ParamField query="status" type="string">
+  거래 상태로 필터링: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  페이지 번호.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  페이지 당 결과 수 (최대 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123/transactions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.customers.transactions("cust_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_tx001",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 고객 내보내기
+
+CSV 또는 JSON 형식으로 고객 데이터를 내보냅니다. 응답은 파일 다운로드로 스트리밍됩니다.
+
+<ParamField query="format" type="string" required>
+  내보낼 형식. `csv`, `json` 중 하나.
+</ParamField>
+
+<ParamField query="search" type="string">
+  검색어로 내보낼 고객 필터링.
+</ParamField>
+
+<Info>
+  내보내기는 10,000개 레코드로 제한됩니다. 더 큰 데이터 세트의 경우, 목록 엔드포인트와 페이지네이션을 사용하세요.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# CSV로 다운로드
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.csv
+
+# JSON으로 다운로드
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.json
+```
+
+```typescript SDK
+// ReadableStream으로 내보내기 받기
+const csvStream = await anyspend.customers.export({ format: "csv" });
+
+// 또는 JSON 배열로 받기
+const customers = await anyspend.customers.export({ format: "json" });
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,wallet_address,name,email,total_spent,transaction_count,first_seen_at,last_seen_at,created_at
+    cust_abc123,0xaabb...5678,Alice Johnson,alice@acme.com,250.00,5,2026-01-15T10:30:00Z,2026-02-25T14:22:00Z,2026-01-15T10:30:00Z
+    cust_def456,0xccdd...9012,Bob Smith,bob@example.com,100.00,2,2026-02-01T09:00:00Z,2026-02-20T16:45:00Z,2026-02-01T09:00:00Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z"
+        }
+      ],
+      "total": 2
+    }
+    ```
+  </Tab>
+</Tabs>

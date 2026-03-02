@@ -1,0 +1,435 @@
+---
+title: AI & Agent 통합
+description: AnySpend 플랫폼 API를 AI 에이전트 및 LLM과 함께 사용하세요
+lang: ko
+originalPath: anyspend/api/ai-integration.mdx
+---
+AnySpend 플랫폼 API는 **AI-first 통합**을 염두에 두고 설계되었습니다. 모든 엔드포인트는 고유한 `operationId`, 자세한 JSON 스키마, 그리고 LLM 함수 호출, 자율 에이전트 및 AI 오케스트레이션 프레임워크와 함께 사용하기 쉽게 해주는 일관된 규칙을 가지고 있습니다.
+
+## OpenAPI 사양
+
+전체 OpenAPI 3.1 사양은 다음에서 확인할 수 있습니다:
+
+```
+GET /api/v1/openapi.json
+```
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/openapi.json -o openapi.json
+```
+
+사양에는 다음이 포함됩니다:
+- 모든 엔드포인트에 대한 고유한 `operationId` (예: `createPaymentLink`, `listTransactions`)
+- 설명이 포함된 상세한 요청 및 응답 JSON 스키마
+- 인증 요구 사항
+- 오류 응답 스키마
+
+<Tip>
+  LLM을 위한 도구 정의를 자동 생성하기 위해 OpenAPI 사양을 사용하세요. 대부분의 AI 프레임워크는 OpenAPI 작업을 프로그래매틱하게 함수/도구 정의로 변환할 수 있습니다.
+</Tip>
+
+## LLM 함수 호출
+
+### Claude (Anthropic)
+
+OpenAPI 작업을 Claude 도구 정의로 변환합니다. 결제 링크를 생성하기 위한 도구 정의 예시는 다음과 같습니다:
+
+```json
+{
+  "name": "create_payment_link",
+  "description": "새 결제 링크를 생성하여 고객과 공유하여 암호화폐 결제를 수집합니다. 공유 가능한 URL을 포함한 결제 링크 객체를 반환합니다.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "결제 링크에 대한 사람이 읽을 수 있는 이름 (예: 'Pro Plan Monthly')"
+      },
+      "amount": {
+        "type": "string",
+        "description": "토큰의 가장 작은 단위로의 결제 금액. USDC(6자리 소수점)의 경우, '1000000' = 1 USDC."
+      },
+      "recipient_address": {
+        "type": "string",
+        "description": "결제를 받을 이더리움 주소 (0x 접두사, 42자)"
+      },
+      "token_address": {
+        "type": "string",
+        "description": "ERC-20 토큰 계약 주소. 생략하면 Base의 USDC로 기본 설정됩니다."
+      },
+      "chain_id": {
+        "type": "number",
+        "description": "대상 체인 ID. 기본값은 8453 (Base)."
+      },
+      "description": {
+        "type": "string",
+        "description": "결제 페이지에서 지불자에게 표시되는 선택적 설명"
+      }
+    },
+    "required": ["name", "amount", "recipient_address"]
+  }
+}
+```
+
+### OpenAI
+
+OpenAI의 함수 호출에 대한 동등한 함수 정의입니다:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "create_payment_link",
+    "description": "새 결제 링크를 생성하여 고객과 공유하여 암호화폐 결제를 수집합니다. 공유 가능한 URL을 포함한 결제 링크 객체를 반환합니다.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "결제 링크에 대한 사람이 읽을 수 있는 이름"
+        },
+        "amount": {
+          "type": "string",
+          "description": "가장 작은 단위로의 결제 금액 (예: '1000000'은 1 USDC)"
+        },
+        "recipient_address": {
+          "type": "string",
+          "description": "결제를 받을 이더리움 주소"
+        },
+        "token_address": {
+          "type": "string",
+          "description": "ERC-20 토큰 계약 주소 (기본값: Base의 USDC)"
+        },
+        "chain_id": {
+          "type": "number",
+          "description": "대상 체인 ID (기본값: 8453 / Base)"
+        },
+        "description": {
+          "type": "string",
+          "description": "결제 페이지에 표시되는 설명"
+        }
+      },
+      "required": ["name", "amount", "recipient_address"]
+    }
+  }
+}
+```
+
+## 예시: 대화 흐름
+
+AI 어시스턴트가 AnySpend 도구를 대화에서 어떻게 사용할 수 있는지 예시입니다:
+
+<Steps>
+  <Step title="사용자가 결제 링크 생성을 요청">
+    **사용자:** "Pro 계획 구독에 대해 50 USDC의 결제 링크를 생성해주세요"
+
+    AI는 `create_payment_link` 도구를 호출하기로 결정합니다.
+  </Step>
+  <Step title="AI가 도구를 호출">
+    ```json
+    {
+      "name": "create_payment_link",
+      "input": {
+        "name": "Pro Plan Subscription",
+        "amount": "50000000",
+        "recipient_address": "0xYourConfiguredAddress",
+        "description": "월간 Pro 계획 구독"
+      }
+    }
+    ```
+  </Step>
+  <Step title="도구가 결과를 반환">
+    ```json
+    {
+      "id": "pl_abc123",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "name": "Pro Plan Subscription",
+      "amount": "50000000",
+      "status": "active"
+    }
+    ```
+  </Step>
+  <Step title="AI가 사용자에게 응답">
+    "Pro 계획 구독에 대해 50 USDC의 결제 링크를 생성했습니다. 여기 링크입니다: https://pay.anyspend.com/pl_abc123"
+  </Step>
+</Steps>
+
+## AI 결제 에이전트 구축
+
+아래는 Claude와 AnySpend SDK를 사용하여 결제를 관리할 수 있는 AI 에이전트의 완전한 예시입니다:
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const anthropic = new Anthropic();
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// 에이전트가 사용할 수 있는 도구 정의
+const tools: Anthropic.Tool[] = [
+  {
+    name: "create_payment_link",
+    description: "암호화폐 결제를 수집하기 위한 결제 링크 생성",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "링크 이름" },
+        amount: { type: "string", description: "가장 작은 단위로의 금액" },
+        recipient_address: { type: "string", description: "수령인 ETH 주소" },
+      },
+      required: ["name", "amount", "recipient_address"],
+    },
+  },
+  {
+    name: "list_recent_transactions",
+    description: "최근 거래 목록화 선택적 상태 필터",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: { type: "string", enum: ["completed", "pending", "failed"] },
+        limit: { type: "number", description: "최대 결과 수 (기본값 10)" },
+      },
+    },
+  },
+  {
+    name: "get_transaction_stats",
+    description: "집계 거래 통계 가져오기",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+];
+
+// LLM 도구 입력에서 필요한 문자열 필드 검증
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`필드가 누락되었거나 잘못되었습니다: ${key}`);
+  }
+  return value;
+}
+
+// 도구 호출 실행
+async function executeTool(name: string, input: Record<string, unknown>) {
+  switch (name) {
+    case "create_payment_link":
+      return await platform.paymentLinks.create({
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
+      });
+
+    case "list_recent_transactions":
+      return await platform.transactions.list({
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
+      });
+
+    case "get_transaction_stats":
+      return await platform.transactions.stats();
+
+    default:
+      throw new Error(`알 수 없는 도구: ${name}`);
+  }
+}
+
+const SYSTEM_PROMPT =
+  "당신은 결제 관리 어시스턴트입니다. 제공된 도구를 사용하여 사용자가 결제 링크를 생성하고, 거래를 보고, AnySpend 계정을 관리할 수 있도록 도와주세요. 금액은 토큰의 가장 작은 단위로 표시됩니다 -- USDC의 경우 6자리 소수점으로, 1 USDC = 1000000입니다.";
+
+// 에이전트 루프 실행
+async function chat(userMessage: string) {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  let response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    tools,
+    messages,
+    system: SYSTEM_PROMPT,
+  });
+
+  // 도구 사용을 루프에서 처리
+  while (response.stop_reason === "tool_use") {
+    const toolUseBlocks = response.content.filter(
+      (b): b is Anthropic.ContentBlock & { type: "tool_use" } =>
+        b.type === "tool_use"
+    );
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolUseBlocks) {
+      const result = await executeTool(
+        block.name,
+        block.input as Record<string, unknown>
+      );
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
+    }
+
+    messages.push({ role: "assistant", content: response.content });
+    messages.push({ role: "user", content: toolResults });
+
+    response = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 1024,
+      tools,
+      messages,
+      system: SYSTEM_PROMPT,
+    });
+  }
+
+  // 텍스트 응답 추출
+  const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock?.type === "text" ? textBlock.text : "";
+}
+
+// 사용법
+const reply = await chat("티셔츠 주문에 대해 25 USDC 결제 링크를 생성해주세요");
+console.log(reply);
+```
+
+## MCP 서버 (곧 출시 예정)
+
+<Info>
+  전체 AnySpend 플랫폼 API를 MCP 도구로 노출하는 Model Context Protocol (MCP) 서버를 구축 중입니다. 이를 통해 MCP 호환 AI 클라이언트(Claude Desktop, Cursor, Windsurf 등)가 AnySpend 계정과 직접 상호 작용할 수 있습니다.
+
+  조기 접근을 위해 [대기 목록](https://anyspend.com/mcp-waitlist)에 가입하세요.
+</Info>
+
+MCP 서버는 다음을 지원할 것입니다:
+- 결제 링크, 제품, 고객 및 웹훅에 대한 모든 CRUD 작업
+- 거래 쿼리 및 내보내기
+- 분석 및 통계
+- 체크아웃 세션 관리
+
+## 추가 도구 정의
+
+에이전트에 포괄적인 커버리지를 제공하기 위해 추가할 수 있는 더 많은 도구 정의입니다:
+
+<AccordionGroup>
+  <Accordion title="list_payment_links">
+    ```json
+    {
+      "name": "list_payment_links",
+      "description": "상태에 따라 선택적으로 필터링된 모든 결제 링크 목록화",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "disabled"],
+            "description": "링크 상태로 필터링"
+          },
+          "limit": {
+            "type": "number",
+            "description": "반환할 최대 결과 수 (기본값 20, 최대 100)"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="get_analytics_overview">
+    ```json
+    {
+      "name": "get_analytics_overview",
+      "description": "총 거래량, 거래 수 및 상위 결제 링크를 포함한 고급 분석 개요 가져오기",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "ISO 8601 형식의 시작 날짜"
+          },
+          "to": {
+            "type": "string",
+            "description": "ISO 8601 형식의 종료 날짜"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="create_discount_code">
+    ```json
+    {
+      "name": "create_discount_code",
+      "description": "고객이 체크아웃 시 적용할 수 있는 할인 코드 생성",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "할인 코드 문자열 (예: 'SUMMER20')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"],
+            "description": "할인 유형: 백분율 할인 또는 고정 금액 할인"
+          },
+          "value": {
+            "type": "string",
+            "description": "할인 값: 백분율 (예: '20'은 20%) 또는 가장 작은 단위로의 고정 금액"
+          },
+          "max_uses": {
+            "type": "number",
+            "description": "이 코드를 사용할 수 있는 최대 횟수"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "ISO 8601 형식의 만료 날짜"
+          }
+        },
+        "required": ["code", "type", "value"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="export_transactions">
+    ```json
+    {
+      "name": "export_transactions",
+      "description": "보고 및 분석을 위해 CSV 또는 JSON으로 거래 내보내기",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "description": "내보내기 형식 (기본값: csv)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "pending", "failed"],
+            "description": "거래 상태로 필터링"
+          },
+          "from": {
+            "type": "string",
+            "description": "ISO 8601 형식의 시작 날짜"
+          },
+          "to": {
+            "type": "string",
+            "description": "ISO 8601 형식의 종료 날짜"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## 모범 사례
+
+<CardGroup cols={2}>
+  <Card title="쿼리 에이전트에 대해 읽기 전용 키 사용" icon="eye">
+    데이터만 읽는 AI 에이전트(거래 목록, 분석 보기)는 **읽기 전용** 권한이 있는 API 키를 사용해야 합니다. 이는 환상적인 도구 호출로 인한 실수를 방지합니다.
+  </Card>
+  <Card title="작업 에이전트에 대해 쓰기 키 사용" icon="pen">
