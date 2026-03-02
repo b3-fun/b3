@@ -1,0 +1,468 @@
+---
+title: 客户
+description: 管理客户记录和支付历史
+lang: cn
+originalPath: anyspend/api/customers.mdx
+---
+
+客户代表通过您的支付链接付款的人。当钱包完成结账会话时，会自动创建客户记录，但您也可以通过 API 手动创建和管理它们。
+
+<Info>
+  客户的 `name` 和 `email` 字段在休息时是**加密的**，以符合隐私合规性。通过 API 检索时会自动解密。
+</Info>
+
+## 客户对象
+
+<ResponseField name="id" type="string">
+  客户的唯一标识符（例如，`cust_abc123`）。
+</ResponseField>
+
+<ResponseField name="wallet_address" type="string">
+  客户的钱包地址。
+</ResponseField>
+
+<ResponseField name="name" type="string | null">
+  客户名字。休息时加密。
+</ResponseField>
+
+<ResponseField name="email" type="string | null">
+  客户电子邮件。休息时加密。
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  供您自己使用的任意键值对。
+</ResponseField>
+
+<ResponseField name="total_spent" type="string">
+  在所有完成的交易中花费的总金额（以美元等值计）。
+</ResponseField>
+
+<ResponseField name="transaction_count" type="number">
+  完成的交易总数。
+</ResponseField>
+
+<ResponseField name="first_seen_at" type="string">
+  客户首次交易的 ISO 8601 时间戳。
+</ResponseField>
+
+<ResponseField name="last_seen_at" type="string">
+  客户最近一次交易的 ISO 8601 时间戳。
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  创建的 ISO 8601 时间戳。
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  最后更新的 ISO 8601 时间戳。
+</ResponseField>
+
+---
+
+## 列出客户
+
+检索带有可选搜索的客户的分页列表。
+
+<ParamField query="search" type="string">
+  通过钱包地址、姓名或电子邮件搜索客户。
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  分页的页码。
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  每页的结果数（最大 100）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.customers.list({
+  search: "acme",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "metadata": {
+            "company": "Acme Inc.",
+            "plan": "pro"
+          },
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-25T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 创建客户
+
+手动创建客户记录。这对于在客户付款之前预注册客户很有用。
+
+<ParamField body="wallet_address" type="string" required>
+  客户的钱包地址。
+</ParamField>
+
+<ParamField body="name" type="string">
+  客户名字。将在休息时加密。
+</ParamField>
+
+<ParamField body="email" type="string">
+  客户电子邮件。将在休息时加密。
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  任意键值对（例如，`{"plan": "pro"}`）。最多 50 个键，每个值 500 个字符。
+</ParamField>
+
+<Warning>
+  如果具有相同 `wallet_address` 的客户已经存在，请求将返回 `409 Conflict` 错误。使用更新端点来修改现有客户。
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/customers" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+    "name": "Alice Johnson",
+    "email": "alice@acme.com",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "pro"
+    }
+  }'
+```
+
+```typescript SDK
+const customer = await anyspend.customers.create({
+  walletAddress: "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+  name: "Alice Johnson",
+  email: "alice@acme.com",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "pro",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+      "name": "Alice Johnson",
+      "email": "alice@acme.com",
+      "metadata": {
+        "company": "Acme Inc.",
+        "plan": "pro"
+      },
+      "total_spent": "0.00",
+      "transaction_count": 0,
+      "first_seen_at": null,
+      "last_seen_at": null,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 检索客户
+
+<ParamField path="id" type="string" required>
+  客户 ID（例如，`cust_abc123`）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const customer = await anyspend.customers.retrieve("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回完整的[客户对象](#the-customer-object)。
+  </Tab>
+</Tabs>
+
+---
+
+## 更新客户
+
+更新现有客户。请求正文中包含的字段将被更新。
+
+<ParamField path="id" type="string" required>
+  客户 ID。
+</ParamField>
+
+<ParamField body="name" type="string">
+  更新的客户名字。
+</ParamField>
+
+<ParamField body="email" type="string">
+  更新的客户电子邮件。
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  更新的元数据。这将**替换**整个元数据对象。要添加单个键，请包含完整的现有元数据加上新键。
+</ParamField>
+
+<Tip>
+  `wallet_address` 在创建后不能更改。要将客户与不同的钱包关联，请创建新的客户记录。
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alice Johnson-Smith",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "enterprise",
+      "upgraded_at": "2026-02-27"
+    }
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.customers.update("cust_abc123", {
+  name: "Alice Johnson-Smith",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "enterprise",
+    upgraded_at: "2026-02-27",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回更新的[客户对象](#the-customer-object)。
+  </Tab>
+</Tabs>
+
+---
+
+## 删除客户
+
+永久删除客户记录。与此客户关联的交易历史将被保留，但客户引用将显示为已删除。
+
+<ParamField path="id" type="string" required>
+  客户 ID。
+</ParamField>
+
+<Warning>
+  此操作是不可逆的。所有个人身份信息（姓名，电子邮件）将被永久删除。
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.customers.delete("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 列出客户交易
+
+检索特定客户的交易历史。
+
+<ParamField path="id" type="string" required>
+  客户 ID。
+</ParamField>
+
+<ParamField query="status" type="string">
+  按交易状态过滤：`pending`, `confirming`, `completed`, `failed`。
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  页码。
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  每页的结果数（最大 100）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123/transactions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.customers.transactions("cust_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_tx001",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 导出客户
+
+以 CSV 或 JSON 格式导出您的客户数据。响应作为文件下载流式传输。
+
+<ParamField query="format" type="string" required>
+  导出格式。其中之一：`csv`, `json`。
+</ParamField>
+
+<ParamField query="search" type="string">
+  通过搜索词过滤导出的客户。
+</ParamField>
+
+<Info>
+  导出限制为 10,000 条记录。对于更大的数据集，请使用列表端点的分页功能。
+</Info>
+
+<CodeGroup>
+```bash cURL
+# 以 CSV 格式下载
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.csv
+
+# 以 JSON 格式下载
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.json
+```
+
+```typescript SDK
+// 以 ReadableStream 形式获取导出
+const csvStream = await anyspend.customers.export({ format: "csv" });
+
+// 或以 JSON 数组形式获取
+const customers = await anyspend.customers.export({ format: "json" });
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,wallet_address,name,email,total_spent,transaction_count,first_seen_at,last_seen_at,created_at
+    cust_abc123,0xaabb...5678,Alice Johnson,alice@acme.com,250.00,5,2026-01-15T10:30:00Z,2026-02-25T14:22:00Z,2026-01-15T10:30:00Z
+    cust_def456,0xccdd...9012,Bob Smith,bob@example.com,100.00,2,2026-02-01T09:00:00Z,2026-02-20T16:45:00Z,2026-02-01T09:00:00Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z"
+        }
+      ],
+      "total": 2
+    }
+    ```
+  </Tab>
+</Tabs>

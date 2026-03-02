@@ -1,0 +1,215 @@
+---
+title: Ekspor Data
+description: Ekspor data transaksi dan pelanggan dalam format CSV atau JSON
+lang: id
+originalPath: anyspend/api/export.mdx
+---
+Platform API AnySpend menyediakan titik akhir ekspor untuk mengunduh data transaksi dan pelanggan Anda secara massal. Ekspor mendukung format CSV dan JSON dengan penyaringan opsional.
+
+<Info>
+  Kedua titik akhir ekspor memerlukan kunci API dengan izin **baca**.
+</Info>
+
+## Titik Akhir
+
+| Titik Akhir | Deskripsi |
+|----------|-------------|
+| `GET /api/v1/transactions/export` | Ekspor transaksi |
+| `GET /api/v1/customers/export` | Ekspor pelanggan |
+
+## Ekspor Transaksi
+
+Ekspor catatan transaksi dengan penyaringan opsional untuk status, rentang tanggal, dan format.
+
+### Parameter
+
+| Parameter | Tipe | Wajib | Default | Deskripsi |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | Tidak | `csv` | Format keluaran: `csv` atau `json` |
+| `status` | `string` | Tidak | semua | Filter berdasarkan status: `completed`, `pending`, `failed` |
+| `from` | `string` | Tidak | -- | Tanggal mulai (ISO 8601, mis. `2025-01-01T00:00:00Z`) |
+| `to` | `string` | Tidak | -- | Tanggal akhir (ISO 8601) |
+
+### Keluaran CSV
+
+Ekspor CSV mencakup baris header diikuti oleh satu baris per transaksi:
+
+```csv
+id,payment_link_id,amount,token_address,chain_id,sender_address,recipient_address,tx_hash,status,created_at,completed_at
+txn_abc123,pl_def456,50000000,0x833589...02913,8453,0xSender...,0xRecipient...,0xTxHash...,completed,2025-06-01T10:00:00Z,2025-06-01T10:00:30Z
+txn_ghi789,pl_def456,25000000,0x833589...02913,8453,0xSender2...,0xRecipient...,0xTxHash2...,completed,2025-06-01T11:00:00Z,2025-06-01T11:00:15Z
+```
+
+### Keluaran JSON
+
+Ekspor JSON mengembalikan sebuah array dari objek transaksi:
+
+```json
+[
+  {
+    "id": "txn_abc123",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xSenderAddress",
+    "recipient_address": "0xRecipientAddress",
+    "tx_hash": "0xTransactionHash",
+    "status": "completed",
+    "created_at": "2025-06-01T10:00:00Z",
+    "completed_at": "2025-06-01T10:00:30Z"
+  }
+]
+```
+
+### Contoh
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o transactions.csv \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2025-01-01T00:00:00Z&to=2025-06-30T23:59:59Z" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o transactions.json \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-06-30T23:59:59Z",
+});
+
+writeFileSync("transactions.csv", csv);
+console.log("Transaksi diekspor ke transactions.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const transactions = await platform.transactions.export({
+  format: "json",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+});
+
+console.log(`Mengekspor ${transactions.length} transaksi`);
+
+// Proses dalam memori
+for (const txn of transactions) {
+  console.log(txn.id, txn.amount, txn.completed_at);
+}
+```
+
+</CodeGroup>
+
+## Ekspor Pelanggan
+
+Ekspor semua catatan pelanggan yang terkait dengan organisasi Anda.
+
+### Parameter
+
+| Parameter | Tipe | Wajib | Default | Deskripsi |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | Tidak | `csv` | Format keluaran: `csv` atau `json` |
+
+### Keluaran CSV
+
+```csv
+id,wallet_address,email,name,total_spent,transaction_count,first_seen,last_seen
+cust_abc123,0xWalletAddress,alice@example.com,Alice,150000000,3,2025-03-15T08:00:00Z,2025-06-01T10:00:00Z
+cust_def456,0xWalletAddress2,,Bob,50000000,1,2025-05-20T14:00:00Z,2025-05-20T14:00:00Z
+```
+
+### Keluaran JSON
+
+```json
+[
+  {
+    "id": "cust_abc123",
+    "wallet_address": "0xWalletAddress",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "total_spent": "150000000",
+    "transaction_count": 3,
+    "first_seen": "2025-03-15T08:00:00Z",
+    "last_seen": "2025-06-01T10:00:00Z"
+  }
+]
+```
+
+### Contoh
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o customers.csv \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o customers.json \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.customers.export({ format: "csv" });
+writeFileSync("customers.csv", csv);
+console.log("Pelanggan diekspor ke customers.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const customers = await platform.customers.export({ format: "json" });
+
+console.log(`Mengekspor ${customers.length} pelanggan`);
+for (const c of customers) {
+  console.log(c.name, c.wallet_address, c.total_spent);
+}
+```
+
+</CodeGroup>
+
+## Tips
+
+<CardGroup cols={2}>
+  <Card title="Jadwalkan ekspor secara rutin" icon="calendar">
+    Atur pekerjaan cron atau fungsi terjadwal untuk mengekspor data secara harian atau mingguan untuk cadangan dan rekonsiliasi.
+  </Card>
+  <Card title="Gunakan penyaringan tanggal untuk dataset besar" icon="filter">
+    Jika Anda memiliki ribuan transaksi, gunakan parameter `from` dan `to` untuk mengekspor dalam rentang tanggal yang lebih kecil untuk menghindari timeout.
+  </Card>
+  <Card title="CSV untuk spreadsheet" icon="table">
+    Ekspor CSV dapat langsung dibuka di Excel, Google Sheets, dan alat spreadsheet lainnya untuk analisis cepat.
+  </Card>
+  <Card title="JSON untuk penggunaan programatik" icon="code">
+    Ekspor JSON ideal untuk memasukkan data ke dalam pipeline analitik, basis data, atau dashboard khusus.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Ekspor tunduk pada pembatasan laju. Ekspor besar (lebih dari 10.000 catatan) mungkin memerlukan beberapa detik untuk dibuat. Permintaan akan diblokir sampai ekspor selesai -- rencanakan dengan tepat untuk dataset yang sangat besar.
+</Warning>

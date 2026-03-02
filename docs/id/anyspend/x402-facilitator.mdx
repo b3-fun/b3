@@ -1,0 +1,432 @@
+---
+title: Fasilitator AnySpend
+description: Prosesor pembayaran untuk pembayaran multi-token x402
+lang: id
+originalPath: anyspend/x402-facilitator.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositori GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Lihat kode sumber, contoh, dan berkontribusi
+</Card>
+
+<Card title="Paket npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  Instal paket @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Tinjauan Umum
+
+Fasilitator AnySpend x402 menangani pembayaran lintas-token, lintas-rantai untuk protokol x402. Ini mengurus pertukaran token, penghubungan lintas-rantai, dan penyelesaian sehingga pengembang dapat menerima pembayaran dalam token apa pun sambil menerima mata uang pilihan mereka.
+
+**Endpoint Produksi:** `https://mainnet.anyspend.com/x402`
+
+## Kemampuan Utama
+
+### Pengolahan pembayaran multi-token
+
+Terima pembayaran dalam token ERC-20 apa pun yang mendukung EIP-2612 (permit) atau EIP-3009 (transferWithAuthorization):
+
+- **Stablecoins**: USDC, USDT (di rantai yang didukung)
+- **Token asli**: ETH, SOL, BNB, MATIC
+- **Token kustom**: Token apa pun dengan dukungan permit, termasuk token proyek seperti B3
+- **19+ Jaringan**: Dukungan lintas rantai EVM (Base, Ethereum, Arbitrum, dll.) dan SVM (Solana)
+
+### Pengarahan lintas-rantai
+
+Secara otomatis menangani pembayaran lintas berbagai jaringan blockchain:
+
+- **Pembayaran lintas-rantai yang sama**: Transfer token langsung dengan overhead minimal
+- **Pembayaran lintas-rantai**: Penghubungan otomatis antar jaringan (mis., ETH → Base)
+- **Pembayaran lintas-VM**: Dukungan eksperimental untuk transfer Solana ↔ EVM
+- **Pemilihan rute optimal**: Pemilihan rute cerdas untuk eksekusi terbaik
+
+### Konversi token otomatis
+
+Mengonversi antara token yang didukung:
+
+- **Fleksibilitas pembeli**: Pengguna membayar dengan token apa pun yang mereka miliki
+- **Preferensi penjual**: Pedagang menerima mata uang penyelesaian pilihan mereka
+- **Harga terbaik**: Melalui sumber likuiditas DEX optimal
+- **Perlindungan slippage**: Pengaman otomatis terhadap dampak harga
+
+### Pembayaran tanpa gas
+
+Pengguna tidak pernah membayar biaya gas:
+
+- Fasilitator menanggung semua biaya gas on-chain
+- Pengguna hanya menandatangani pesan EIP-712
+- Tidak perlu memegang token asli untuk gas
+- Pengalaman pengguna yang mulus lintas semua rantai
+
+## Kepatuhan Standar
+
+### Sesuai protokol x402
+
+Fasilitator AnySpend menerapkan spesifikasi x402 lengkap:
+
+- Pembayaran asli HTTP melalui status `402 Payment Required`
+- Header standar (`X-PAYMENT`, `X-PAYMENT-RESPONSE`, `X-PREFERRED-TOKEN`)
+- Skema pembayaran yang tepat dengan verifikasi penerima dan jumlah
+- Otorisasi berbasis tanda tangan (EIP-712, EIP-2612, EIP-3009)
+- Verifikasi kriptografis tanpa pihak ketiga terpercaya
+
+### Pengganti langsung
+
+Sepenuhnya kompatibel dengan implementasi x402 apa pun:
+
+- **Kompatibilitas klien**: Bekerja dengan klien yang sesuai x402
+- **Kompatibilitas server**: Dapat digunakan dengan perangkat lunak antara x402 apa pun
+- **Tanpa kunci vendor**: API HTTP standar, beralih fasilitator kapan saja
+- **Interoperabilitas**: Terintegrasi dengan Coinbase CDP x402, PayAI, dan lainnya
+
+## Arsitektur
+
+### Alur pembayaran
+
+```
+┌──────────────┐
+│    Klien     │  Menandatangani otorisasi pembayaran
+│  (Token Apa Pun) │  preferredToken: USDT
+└──────┬───────┘
+       │
+       │ X-PAYMENT header
+       ▼
+┌──────────────────────────┐
+│   Server Sumber Daya     │
+│   (API Anda)             │
+│                          │
+│  Middleware AnySpend     │
+│  • Menyela permintaan    │
+│  • Mendapatkan kutipan   │
+│  • Mengembalikan 402     │
+└──────┬───────────────────┘
+       │
+       │ /verify, /settle
+       ▼
+┌──────────────────────────┐
+│  Fasilitator AnySpend    │
+│  mainnet.anyspend.com    │
+│                          │
+│  • Memvalidasi tanda tangan   │
+│  • Melaksanakan pertukaran token   │
+│  • Menyelesaikan ke penjual     │
+└──────┬───────────────────┘
+       │
+       │ Transaksi on-chain
+       ▼
+┌──────────────────────────┐
+│      Blockchain          │
+│  • Menerima pembayaran       │
+│  • Menukar token (jika perlu) │
+│  • Menyelesaikan ke pedagang    │
+└──────────────────────────┘
+```
+
+### Komponen infrastruktur
+
+**Lapisan API**
+- API HTTP RESTful untuk verifikasi pembayaran dan penyelesaian
+- Dukungan WebSocket untuk pembaruan status pembayaran real-time
+- Pembatasan laju dan perlindungan DDoS
+- SLA uptime 99,9%
+
+**Mesin Swap**
+- Mengagregasi likuiditas dari beberapa DEX
+- Rute optimal untuk harga eksekusi terbaik
+- Perlindungan slippage dan resistensi MEV
+- Integrasi penghubungan lintas-rantai
+
+**Sistem Penyelesaian**
+- Pemrosesan transaksi paralel
+- Manajemen nonce otomatis
+- Pemulihan transaksi gagal
+- Konfirmasi penyelesaian real-time
+
+**Keamanan**
+- Verifikasi tanda tangan EIP-712
+- Pencegahan serangan replay (pelacakan nonce)
+- Penegakan batas waktu
+- Audit kontrak pintar
+
+## Titik akhir API
+
+### POST /verify
+
+Memvalidasi tanda tangan pembayaran tanpa mengeksekusi on-chain.
+
+**Tujuan:**
+- Validasi cepat (di bawah 100ms)
+- Memeriksa keaslian tanda tangan
+- Memverifikasi batas waktu belum berakhir
+- Tanpa biaya gas
+
+**Permintaan:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": {
+    "scheme": "exact",
+    "network": "base-mainnet",
+    "amount": "1000000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "recipient": "0xMerchantAddress..."
+  }
+}
+```
+
+**Respons:**
+```json
+{
+  "valid": true
+}
+```
+
+---
+
+### POST /settle
+
+Menjalankan penyelesaian on-chain dan mengembalikan bukti transaksi.
+
+**Tujuan:**
+- Menjalankan otorisasi pembayaran
+- Menukar token jika diperlukan (token pembeli → token penjual)
+- Menyelesaikan ke server sumber daya
+- Mengembalikan hash transaksi untuk verifikasi
+
+**Permintaan:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": { /* ... */ }
+}
+```
+
+**Respons:**
+```json
+{
+  "txHash": "0xabc123...",
+  "network": "base-mainnet",
+  "metadata": {
+    "receiptTxHash": "0x...",
+    "swapTxHash": "0x...",
+    "settlementTxHash": "0x..."
+  }
+}
+```
+
+---
+
+### POST /quote
+
+Dapatkan tingkat konversi token untuk pembayaran multi-token.
+
+**Tujuan:**
+- Menghitung jumlah token yang tepat untuk pembayaran
+- Mendapatkan tingkat tukar saat ini
+- Memperkirakan waktu eksekusi swap
+
+**Permintaan:**
+```json
+{
+  "usdcAmount": "1000000",        // Jumlah target (1 USDC)
+  "paymentToken": "0xfde4...",    // Alamat USDT
+  "network": "base-mainnet"
+}
+```
+
+**Respons:**
+```json
+{
+  "tokenAmount": "1000000",  // 1.0 USDT diperlukan
+  "exchangeRate": "1.0",
+  "deadline": 1730000000,
+  "route": {
+    "srcToken": "0xfde4...",
+    "dstToken": "0x8335...",
+    "path": ["USDT", "USDC"]
+  }
+}
+```
+
+---
+
+### GET /supported
+
+Menyebutkan skema pembayaran dan jaringan yang didukung.
+
+**Respons:**
+```json
+{
+  "schemes": [{
+    "scheme": "exact",
+    "networks": [
+      "base",
+      "ethereum",
+      "arbitrum",
+      "optimism",
+      "polygon",
+      "bsc",
+      "avalanche",
+      "solana"
+    ]
+  }]
+}
+```
+
+## Integrasi
+
+### Server-Side (Express)
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/premium': {
+    amount: '1.00',
+    asset: 'USD'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourAddress...',
+  endpointConfig,
+  facilitator  // Dikonfigurasi sebelumnya ke mainnet.anyspend.com/x402
+));
+```
+
+### Server-Side (Custom)
+
+```typescript
+import { X402Facilitator } from '@b3dotfun/anyspend-x402';
+
+const facilitator = new X402Facilitator({
+  url: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.ANYSPEND_API_KEY  // Opsional
+});
+
+// Verifikasi pembayaran
+const { valid } = await facilitator.verify(paymentHeader, requirements);
+
+// Menyelesaikan pembayaran
+const { txHash } = await facilitator.settle(paymentHeader, requirements);
+```
+
+### Client-Side
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  facilitatorUrl: 'https://mainnet.anyspend.com/x402'  // Opsional, menggunakan ini secara default
+});
+
+const response = await client.request('https://api.example.com/premium');
+```
+
+## Keamanan
+
+### Verifikasi tanda tangan
+
+Semua pembayaran diverifikasi menggunakan tanda tangan data bertipe EIP-712:
+
+- **USDC**: EIP-3009 `transferWithAuthorization`
+- **Token lain**: EIP-2612 `permit`
+
+Tanda tangan divalidasi sebelum eksekusi on-chain.
+
+### Perlindungan replay
+
+**Nonce Acak (USDC):**
+- Setiap tanda tangan mencakup nonce bytes32 unik
+- Nonce hanya dapat digunakan sekali per alamat
+- Tidak ada ketergantungan urutan
+
+**Nonce Berurutan (Permit):**
+- Kontrak token memelihara penghitung nonce
+- Otomatis bertambah pada setiap eksekusi permit
+- Mencegah eksekusi yang tidak berurutan
+
+### Penegakan batas waktu
+
+Semua tanda tangan mencakup stempel waktu kedaluwarsa:
+- Default: 5 menit dari waktu tanda tangan
+- Mencegah otorisasi pembayaran yang kedaluwarsa
+- Penolakan otomatis tanda tangan yang kedaluwarsa
+
+### Tidak ada akses kunci pribadi
+
+Fasilitator **tidak pernah** memiliki akses ke kunci pribadi pengguna:
+- Pengguna menandatangani pesan di sisi klien
+- Hanya tanda tangan yang ditransmisikan
+- Arsitektur non-kustodial
+
+## Kinerja
+
+### Kecepatan
+
+- **Verifikasi**: Di bawah 100ms untuk validasi tanda tangan
+- **Penyelesaian lintas-rantai yang sama**: Rata-rata 2-10 detik
+- **Penyelesaian lintas-rantai**: 2-5 menit (tergantung pada penghubungan)
+- **Generasi kutipan**: Di bawah 200ms
+
+### Skalabilitas
+
+- Menangani 1000+ pembayaran bersamaan
+- Skalabilitas horizontal untuk throughput tinggi
+- Pemrosesan transaksi paralel
+- Load balancing lintas beberapa node
+
+### Keandalan
+
+- Jaminan uptime 99,9%
+- Failover otomatis dan redundansi
+- Logika pengulangan transaksi gagal
+- Pemantauan dan peringatan 24/7
+
+## Dukungan Jaringan
+
+### Jaringan utama EVM (12)
+
+Abstract, Arbitrum, Avalanche, B3, Base, BNB Chain, Ethereum, IoTeX, Optimism, Peaq, Polygon, Sei
+
+### Testnet EVM (5)
+
+Abstract Testnet, Avalanche Fuji, Base Sepolia, Polygon Amoy, Sei Testnet
+
+### Jaringan SVM (2)
+
+Solana Mainnet, Solana Devnet
+
+Lihat [Dukungan Jaringan](/anyspend/x402-network-support) untuk detail lengkap.
+
+## Memulai
+
+<CardGroup cols={2}>
+<Card title="Panduan Cepat untuk Penjual" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Mulai menerima pembayaran multi-token di API Anda
+</Card>
+
+<Card title="Panduan Cepat untuk Pembeli" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Bayar dengan token apa pun menggunakan klien AnySpend
+</Card>
+
+<Card title="Dukungan Jaringan" icon="network-wired" href="/anyspend/x402-network-support">
+  Lihat semua jaringan dan token yang didukung
+</Card>
+
+<Card title="Tinjauan" icon="book" href="/anyspend/x402-overview">
+  Pelajari cara kerja AnySpend x402
+</Card>
+</CardGroup>
+
+## Dukungan
+
+Butuh bantuan dengan fasilitator?
+
+- **Discord**: [discord.gg/b3dotfun](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Email**: support@b3.fun
+- **Dokumentasi**: [docs.b3.fun](https://docs.b3.fun)

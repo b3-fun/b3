@@ -1,0 +1,415 @@
+---
+title: Permit 与 TransferWithAuthorization 的区别
+description: 无需Gas的支付签名：EIP-2612 许可 和 EIP-3009 transferWithAuthorization
+lang: cn
+originalPath: anyspend/x402-signature-methods.mdx
+---
+## 概览
+
+AnySpend x402 使用加密签名代替传统的代币授权，为用户启用了**无需支付燃气费的支付**。服务商支付所有燃气费，而用户只需签署授权消息。
+
+支持两种主要的签名标准，每种都针对不同的代币类型进行了优化：
+
+- **EIP-3009 (transferWithAuthorization)** - 由 USDC 使用，一步直接转账
+- **EIP-2612 (permit)** - 由大多数现代 ERC-20 代币使用，两步审批 + 转账
+
+## 快速比较
+
+| 特性 | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
+|---------|-------------------|--------------------------------------|
+| **使用者** | 大多数现代 ERC-20s | USDC (所有网络) |
+| **执行** | 两步：授权 + 转账 | 一步：直接转账 |
+| **Nonce 类型** | 顺序（自动递增） | 随机 bytes32 |
+| **依赖性** | 必须等待前一个 nonce | 无需排序 |
+| **理想用途** | 通用 ERC-20 代币 | 稳定币支付 |
+| **重放保护** | 顺序 nonce | 随机 nonce 跟踪 |
+| **燃气效率** | 2 个交易（permit + transferFrom） | 1 个交易（直接转账） |
+
+## EIP-3009: transferWithAuthorization (USDC)
+
+### 概览
+
+直接转账授权 - 签名授权从发送者到接收者的即时转账，无需单独的授权步骤。
+
+**使用者：** 所有网络上的 USDC (Base, Ethereum, Arbitrum, Optimism, Polygon 等)
+
+### 主要优势
+
+- 一步执行 - 直接转账，无需授权
+- 随机 nonce - 无顺序依赖，可能并行交易
+- 即时结算 - 在单个交易中执行
+- 为支付方免燃气费 - 服务商支付燃气费
+- 无前运行 - 随机 nonce 防止 MEV 攻击
+
+### 消息结构
+
+```solidity
+transferWithAuthorization(
+    address from,          // 支付方地址
+    address to,            // 接收方地址
+    uint256 value,         // 转账金额
+    uint256 validAfter,    // 0 (立即有效)
+    uint256 validBefore,   // 截止时间戳
+    bytes32 nonce,         // 随机 nonce (防止重放)
+    bytes signature        // EIP-712 签名
+)
+```
+
+### 使用示例
+
+```typescript
+import { signTransferWithAuthorization } from 'anyspend-x402-client';
+
+const signature = await signTransferWithAuthorization({
+  from: payerAddress,
+  to: recipientAddress,
+  value: '1000000',              // 1 USDC (6 小数位)
+  validBefore: deadline,
+  nonce: randomBytes32()         // 生成随机 nonce
+});
+```
+
+### 工作原理
+
+<Steps>
+<Step title="用户签署授权">
+用户签署一个带有随机 nonce 的 EIP-712 消息以授权转账
+</Step>
+
+<Step title="服务商执行转账">
+服务商使用签名调用 `receiveWithAuthorization()`
+</Step>
+
+<Step title="USDC 转账">
+USDC 直接从用户转到服务商，一次性完成交易
+</Step>
+
+<Step title="Nonce 作废">
+随机 nonce 被标记为已使用，防止重放攻击
+</Step>
+</Steps>
+
+### EIP-712 类型数据结构
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'USD Coin',
+    version: '2',
+    chainId: 8453, // Base
+    verifyingContract: usdcAddress
+  },
+  types: {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' }
+    ]
+  },
+  message: {
+    from: payerAddress,
+    to: recipientAddress,
+    value: '1000000',
+    validAfter: 0,
+    validBefore: deadline,
+    nonce: randomNonce
+  }
+};
+```
+
+---
+
+## EIP-2612: Permit (标准 ERC-20)
+
+### 概览
+
+基于签名的授权，设置一个额度，随后通过单独的 `transferFrom()` 调用进行转账。这是大多数现代 ERC-20 代币的标准方法。
+
+**使用者：** 支持 permit 的大多数现代 ERC-20 代币
+
+### 主要优势
+
+- 广泛采用 - 许多代币的标准
+- 限时授权 - 基于截止日期的过期
+- 与 ERC-20 兼容 - 适用于现有基础设施
+- 为支付方免燃气费 - 服务商支付燃气费
+- 得到主要钱包和 dapps 的支持
+
+### 消息结构
+
+```solidity
+permit(
+    address owner,         // 代币拥有者
+    address spender,       // 获得授权的支出方（服务商）
+    uint256 value,         // 授权金额
+    uint256 deadline,      // 过期时间戳
+    uint8 v, bytes32 r, bytes32 s  // 签名组件
+)
+```
+
+### 使用示例
+
+```typescript
+import { signPermit } from 'anyspend-x402-client';
+
+const nonce = await token.nonces(ownerAddress);  // 获取当前 nonce
+
+const signature = await signPermit({
+  token: tokenAddress,
+  owner: ownerAddress,
+  spender: facilitatorAddress,
+  value: '1000000',  // 1 USDC (6 小数位)
+  deadline: deadline,
+  nonce: nonce                    // 顺序 nonce
+});
+```
+
+### 工作原理
+
+<Steps>
+<Step title="用户签署 Permit">
+用户使用当前顺序 nonce 签署一个 EIP-712 permit 消息
+</Step>
+
+<Step title="服务商调用 Permit">
+服务商调用 `permit()` 在链上设置额度
+</Step>
+
+<Step title="Nonce 自动递增">
+代币合约自动递增用户的 nonce
+</Step>
+
+<Step title="服务商转账代币">
+服务商调用 `transferFrom()` 使用授权转账代币
+</Step>
+</Steps>
+
+### EIP-712 类型数据结构
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'Dai Stablecoin',
+    version: '1',
+    chainId: 8453, // Base
+    verifyingContract: daiAddress
+  },
+  types: {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  },
+  message: {
+    owner: ownerAddress,
+    spender: facilitatorAddress,
+    value: '1000000000000000000',
+    nonce: currentNonce,
+    deadline: deadline
+  }
+};
+```
+
+---
+
+## 我的代币使用哪种方法？
+
+### 检查代币支持
+
+```typescript
+// 检查代币是否支持 EIP-3009 (USDC 风格)
+const hasTransferWithAuth = await token.read.transferWithAuthorization !== undefined;
+
+// 检查代币是否支持 EIP-2612 (标准 permit)
+const hasPermit = await token.read.permit !== undefined;
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+### 按方法分类的常见代币
+
+**EIP-3009 (transferWithAuthorization):**
+- USDC (所有链)
+- USDC.e (桥接版本)
+
+**EIP-2612 (permit):**
+- 大多数现代 ERC-20s
+- USDT (在某些链上 - Base, Arbitrum, Optimism)
+- 许多 DeFi 代币
+- 检查兼容性：[anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+**无免燃气支持:**
+- 以太坊主网上的 USDT (无 permit)
+- Polygon 上的 USDT (无 permit)
+- 旧 ERC-20 代币
+
+<Note>
+AnySpend x402 客户端根据代币合约自动检测使用哪种签名方法。您不需要手动指定。
+</Note>
+
+## Nonce 管理
+
+### 随机 nonce (EIP-3009)
+
+**优势:**
+- 无排序依赖 - 多个签名可以以任何顺序使用
+- 可能并行交易
+- 如果一个交易失败，不会阻塞状态
+
+**实现:**
+```typescript
+import { randomBytes } from 'crypto';
+
+// 生成加密安全的随机 nonce
+const nonce = '0x' + randomBytes(32).toString('hex');
+```
+
+**Nonce 跟踪:**
+```solidity
+// 检查 nonce 是否已被使用
+mapping(address => mapping(bytes32 => bool)) public authorizationState;
+
+function isAuthorizationUsed(address authorizer, bytes32 nonce)
+    external
+    view
+    returns (bool)
+{
+    return authorizationState[authorizer][nonce];
+}
+```
+
+### 顺序 nonce (EIP-2612)
+
+**优势:**
+- 简单且可预测
+- 燃气效率高（单个存储槽）
+- 所有 permit 实现都采用此标准
+
+**实现:**
+```typescript
+// 从代币合约获取当前 nonce
+const currentNonce = await token.read.nonces([ownerAddress]);
+
+// 使用当前 nonce 签署
+const signature = await signPermit({
+  // ...
+  nonce: currentNonce
+});
+```
+
+**Nonce 自动递增:**
+```solidity
+// 代币合约自动递增
+mapping(address => uint256) public nonces;
+
+function permit(/* ... */) external {
+    require(nonce == nonces[owner], "Invalid nonce");
+    nonces[owner]++; // 自动递增
+    // ... 其余 permit 逻辑
+}
+```
+
+## 安全考虑
+
+### 重放保护
+
+**EIP-3009:**
+- 随机 nonce 防止跨链和合约的重放
+- 每个 nonce 每个地址只能使用一次
+- Nonce 状态在链上以映射形式存储
+
+**EIP-2612:**
+- 顺序 nonce 防止重放
+- 必须使用当前 nonce（自动递增）
+- 失败的交易会阻塞后续签名，直到重新签名
+
+### 截止日期执行
+
+两种方法都强制执行截止日期以防止过时的签名：
+
+```typescript
+const deadline = Math.floor(Date.now() / 1000) + 300; // 从现在起 5 分钟
+```
+
+**最佳实践:**
+- 使用短截止日期（5-10 分钟）以确保安全
+- 如有需要，可使用较长截止日期（30-60 分钟）以提供更好的用户体验
+- 永远不要使用 `type(uint256).max` 进行无限授权
+
+### 签名验证
+
+两种方法都使用 EIP-712 验证签名：
+
+```typescript
+// 从签名中恢复签名者
+const recoveredAddress = recoverTypedDataAddress({
+  domain,
+  types,
+  primaryType,
+  message,
+  signature
+});
+
+// 验证签名者是否与预期地址匹配
+if (recoveredAddress !== expectedSigner) {
+  throw new Error('Invalid signature');
+}
+```
+
+## 客户端 SDK 集成
+
+AnySpend x402 客户端自动处理所有签名复杂性：
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: tokenAddress // USDC 或任何兼容代币
+});
+
+// 客户端自动：
+// 1. 检测代币是否使用 permit 或 transferWithAuthorization
+// 2. 获取当前 nonce（对于 permit）或生成随机 nonce
+// 3. 构造正确的 EIP-712 类型数据
+// 4. 提示用户签名
+// 5. 在 X-PAYMENT 头中包含签名
+
+const response = await client.request('https://api.example.com/data');
+```
+
+## 燃气成本比较
+
+| 方法 | 用户燃气 | 服务商燃气 | 总交易数 |
+|--------|----------|-----------------|-------------------|
+| EIP-3009 | 0 | 约 45,000 | 1 |
+| EIP-2612 | 0 | 约 70,000 (permit) + 约 45,000 (transfer) | 2 |
+
+<Note>
+所有燃气费用由服务商支付，并包含在 0.25% 的 AnySpend 费用中。用户从不直接支付燃气费。
+</Note>
+
+## 进一步阅读
+
+<CardGroup cols={2}>
+<Card title="EIP-2612 规范" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-2612">
+  官方 EIP-2612 permit 规范
+</Card>
+
+<Card title="EIP-3009 规范" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-3009">
+  官方 EIP-3009 transferWithAuthorization 规范
+</Card>
+
+<Card title="EIP-712 类型数据" icon="signature" href="https://eips.ethereum.org/EIPS/eip-712">
+  EIP-712 类型结构数据哈希和签名
+</Card>
+
+<Card title="网络支持" icon="globe" href="/anyspend/x402-network-support">
+  查看每个网络上支持哪些方法的代币
+</Card>
+</CardGroup>

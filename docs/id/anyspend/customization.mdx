@@ -1,0 +1,574 @@
+---
+title: Kustomisasi
+description: 'Slot, penggantian konten, tema, dan kelas CSS untuk komponen AnySpend'
+lang: id
+originalPath: anyspend/customization.mdx
+---
+Empat lapisan kustomisasi, masing-masing menargetkan kekhawatiran yang berbeda:
+
+<CardGroup cols={2}>
+<Card title="Slots" icon="puzzle-piece">
+  Gantikan bagian UI secara keseluruhan dengan komponen Anda sendiri
+</Card>
+<Card title="Content" icon="font">
+  Timpa teks dan pesan untuk berbagai keadaan
+</Card>
+<Card title="Theme" icon="palette">
+  Konfigurasi warna dan tampilan merek
+</Card>
+<Card title="Classes" icon="code">
+  Terapkan penggantian kelas CSS pada elemen tertentu
+</Card>
+</CardGroup>
+
+Semua komponen inti (`<AnySpend>`, `<AnySpendDeposit>`, `<AnySpendCheckout>`, `<AnySpendCheckoutTrigger>`) menerima properti `slots`, `content`, dan `theme`.
+
+---
+
+## Slots
+
+Slots memungkinkan Anda menggantikan bagian UI secara keseluruhan dengan komponen React Anda sendiri. Setiap slot menerima properti dari AnySpend yang dapat Anda gunakan dalam implementasi kustom Anda.
+
+```typescript title="AnySpendSlots Interface" icon="code"
+interface AnySpendSlots {
+  /** Gantikan tombol aksi/pembayaran utama */
+  actionButton?: (props: ActionButtonSlotProps) => ReactNode;
+  /** Gantikan tombol sambungkan dompet */
+  connectWalletButton?: (props: ConnectWalletButtonSlotProps) => ReactNode;
+  /** Gantikan header */
+  header?: (props: { mode: "page" | "modal" }) => ReactNode;
+  /** Gantikan footer */
+  footer?: ReactNode;
+  /** Gantikan layar sukses */
+  successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
+  /** Gantikan layar error */
+  errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** Gantikan panel formulir checkout (hanya checkout) */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** Gantikan pemilih metode pengiriman (hanya checkout) */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** Gantikan input kode diskon (hanya checkout) */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
+}
+```
+
+<Tip>
+  Slot `checkoutForm`, `shippingSelector`, dan `discountInput` hanya digunakan di `<AnySpendCheckout>` dan `<AnySpendCheckoutTrigger>`. Lihat [Panduan Checkout](/anyspend/checkout) untuk detail tentang fitur formulir/pengiriman/diskon.
+</Tip>
+
+### Antarmuka properti slot
+
+<AccordionGroup>
+<Accordion title="ActionButtonSlotProps">
+```typescript
+interface ActionButtonSlotProps {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  text: string;
+}
+```
+</Accordion>
+
+<Accordion title="ConnectWalletButtonSlotProps">
+```typescript
+interface ConnectWalletButtonSlotProps {
+  onPayment: () => void;
+  txLoading: boolean;
+  connectedAddress?: string;
+  paymentLabel: string;
+}
+```
+</Accordion>
+
+<Accordion title="SuccessScreenSlotProps">
+```typescript
+interface SuccessScreenSlotProps {
+  title: string;
+  description: string;
+  txHash?: string;
+  orderId?: string;
+  explorerUrl?: string;
+  onDone: () => void;
+  returnUrl?: string;
+  returnLabel?: string;
+}
+```
+</Accordion>
+
+<Accordion title="ErrorScreenSlotProps">
+```typescript
+interface ErrorScreenSlotProps {
+  title: string;
+  description: string;
+  errorType: "failure" | "expired" | "refunded";
+  orderId?: string;
+  onRetry?: () => void;
+  onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Contoh slot
+
+<Tabs>
+<Tab title="Tombol Aksi Kustom">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    actionButton: ({ onClick, disabled, loading, text }) => (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="my-custom-button"
+      >
+        {loading ? <MySpinner /> : text}
+      </button>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Layar Sukses Kustom">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    successScreen: ({ title, txHash, explorerUrl, onDone, returnUrl }) => (
+      <div className="my-success">
+        <Confetti />
+        <h2>{title}</h2>
+        {txHash && (
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+            Lihat Transaksi
+          </a>
+        )}
+        {returnUrl ? (
+          <a href={returnUrl}>Lanjutkan Belanja</a>
+        ) : (
+          <button onClick={onDone}>Selesai</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Header & Footer Kustom">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    header: ({ mode }) => (
+      <div className="my-header">
+        <img src="/logo.svg" alt="My App" />
+        {mode === "modal" && <CloseButton />}
+      </div>
+    ),
+    footer: (
+      <div className="my-footer">
+        <span>Ditenagai oleh MyApp</span>
+        <a href="/terms">Syarat</a>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Sambungkan Dompet Kustom">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    connectWalletButton: ({ onPayment, txLoading, connectedAddress, paymentLabel }) => (
+      <div className="my-wallet-section">
+        {connectedAddress ? (
+          <button onClick={onPayment} disabled={txLoading}>
+            {txLoading ? "Memproses..." : paymentLabel}
+          </button>
+        ) : (
+          <button onClick={onPayment}>Sambungkan & Bayar</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Formulir Checkout Kustom">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="Email untuk penerimaan"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">Pilih ukuran</option>
+          <option value="S">Kecil</option>
+          <option value="M">Sedang</option>
+          <option value="L">Besar</option>
+        </select>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Content
+
+Timpa teks dan pesan yang ditampilkan selama berbagai keadaan transaksi. Setiap bidang menerima `string` atau `ReactNode`.
+
+```typescript title="AnySpendContent Interface" icon="code"
+interface AnySpendContent {
+  // Keadaan sukses
+  successTitle?: string | ReactNode;
+  successDescription?: string | ReactNode;
+
+  // Keadaan gagal
+  failureTitle?: string | ReactNode;
+  failureDescription?: string | ReactNode;
+
+  // Keadaan kadaluarsa
+  expiredTitle?: string | ReactNode;
+  expiredDescription?: string | ReactNode;
+
+  // Keadaan dikembalikan
+  refundedTitle?: string | ReactNode;
+  refundedDescription?: string | ReactNode;
+
+  // Keadaan diproses
+  processingTitle?: string | ReactNode;
+  processingDescription?: string | ReactNode;
+
+  // Label tombol
+  returnButtonLabel?: string;
+  retryButtonLabel?: string;
+}
+```
+
+### Contoh konten
+
+<Tabs>
+<Tab title="E-commerce">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={cartItems}
+  content={{
+    successTitle: "Pesanan Dikonfirmasi!",
+    successDescription: "Pesanan Anda sedang dipersiapkan. Periksa email Anda untuk pembaruan pengiriman.",
+    failureTitle: "Pembayaran Gagal",
+    failureDescription: "Kartu Anda tidak dikenakan biaya. Silakan coba lagi atau gunakan metode pembayaran lain.",
+    processingTitle: "Memproses Pembayaran...",
+    processingDescription: "Mohon jangan tutup jendela ini. Biasanya memakan waktu kurang dari satu menit.",
+    returnButtonLabel: "Kembali ke Toko",
+    retryButtonLabel: "Coba Lagi",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Langganan">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  content={{
+    successTitle: "Langganan Diaktifkan!",
+    successDescription: (
+      <div>
+        <p>Selamat datang di Pro! Akun Anda telah ditingkatkan.</p>
+        <ul>
+          <li>Panggilan API tak terbatas</li>
+          <li>Dukungan prioritas</li>
+          <li>Analitik lanjutan</li>
+        </ul>
+      </div>
+    ),
+    returnButtonLabel: "Pergi ke Dashboard",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Gaming">
+```tsx
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  content={{
+    successTitle: "Token Ditambahkan!",
+    successDescription: "Saldo game Anda telah diperbarui. Kembali bermain!",
+    expiredTitle: "Sesi Kadaluarsa",
+    expiredDescription: "Jendela setoran Anda telah ditutup. Mulai setoran baru untuk melanjutkan.",
+    returnButtonLabel: "Kembali ke Game",
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Theme
+
+Konfigurasikan tampilan visual komponen AnySpend dengan warna merek.
+
+```typescript title="AnySpendTheme Interface" icon="code"
+interface AnySpendTheme {
+  /** Warna merek utama (hex). Diterapkan sebagai warna aksen utama. */
+  brandColor?: string;
+  /** Penggantian warna individu (nilai hex) */
+  colors?: Partial<{
+    primary: string;         // Warna teks utama
+    secondary: string;       // Warna teks sekunder
+    tertiary: string;        // Warna teks redup
+    surfacePrimary: string;  // Warna latar belakang utama
+    surfaceSecondary: string; // Latar belakang sekunder (kartu, panel)
+    brand: string;           // Warna aksen/merek (tombol, tautan)
+    borderPrimary: string;   // Warna batas utama
+    borderSecondary: string; // Warna batas sekunder
+  }>;
+}
+```
+
+<Note>
+  Properti `brandColor` adalah pintasan yang mengatur warna `brand`. Jika `brandColor` dan `colors.brand` keduanya disediakan, `colors.brand` memiliki prioritas.
+</Note>
+
+### Contoh tema
+
+<Tabs>
+<Tab title="Hanya Warna Merek">
+```tsx
+// Branding cepat — cukup atur warna merek Anda
+<AnySpend
+  recipientAddress="0x..."
+  theme={{ brandColor: "#6366f1" }}
+/>
+```
+</Tab>
+
+<Tab title="Tema Gelap">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  theme={{
+    brandColor: "#10b981",
+    colors: {
+      primary: "#f9fafb",
+      secondary: "#9ca3af",
+      tertiary: "#6b7280",
+      surfacePrimary: "#111827",
+      surfaceSecondary: "#1f2937",
+      borderPrimary: "#374151",
+      borderSecondary: "#4b5563",
+    },
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Penggantian Minimal">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={items}
+  theme={{
+    colors: {
+      brand: "#e11d48",      // Aksen mawar
+      surfaceSecondary: "#fef2f2", // Latar belakang mawar terang
+    },
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Penggantian kelas CSS
+
+Terapkan kelas CSS kustom pada elemen tertentu dalam komponen AnySpend. Setiap komponen memiliki antarmuka kelasnya sendiri.
+
+### AnySpendClasses
+
+Digunakan oleh `<AnySpend>`:
+
+```typescript title="AnySpendClasses" icon="code"
+interface AnySpendClasses {
+  container?: string;
+  header?: string;
+  tabSection?: string;
+  cryptoPaySection?: string;
+  cryptoReceiveSection?: string;
+  panelOnramp?: string;
+  paymentButton?: string;
+  navigationBar?: string;
+}
+```
+
+### AnySpendCheckoutClasses
+
+Digunakan oleh `<AnySpendCheckout>` dan `<AnySpendCheckoutTrigger>`:
+
+<AccordionGroup>
+<Accordion title="Tata Letak & Struktur" defaultOpen>
+```typescript
+interface AnySpendCheckoutClasses {
+  root?: string;               // Kontainer akar
+  layout?: string;             // Pembungkus tata letak dua panel
+  paymentColumn?: string;      // Kolom kiri (pembayaran + formulir)
+  cartColumn?: string;         // Kolom kanan (keranjang/ringkasan)
+}
+```
+</Accordion>
+
+<Accordion title="Panel Pembayaran">
+```typescript
+{
+  paymentPanel?: string;            // Kontainer panel pembayaran
+  paymentTitle?: string;            // Judul "Bayar dengan"
+  paymentMethodSelector?: string;   // Kontainer pemilih metode
+  paymentMethodButton?: string;     // Tombol metode individu
+  cryptoPanel?: string;             // Bagian pembayaran kripto
+  tokenSelector?: string;           // Dropdown token
+  quoteDisplay?: string;            // Tampilan kutipan/harga
+  payButton?: string;               // Tombol bayar
+  fiatPanel?: string;               // Bagian pembayaran fiat
+  stripeForm?: string;              // Kontainer formulir Stripe
+  stripeSubmitButton?: string;      // Tombol submit Stripe
+  coinbasePanel?: string;           // Panel Coinbase
+}
+```
+</Accordion>
+
+<Accordion title="Panel Keranjang">
+```typescript
+{
+  cartPanel?: string;               // Kontainer keranjang
+  cartTitle?: string;               // Judul keranjang
+  cartItemRow?: string;             // Baris item individu
+  cartItemImage?: string;           // Gambar item
+  cartItemName?: string;            // Nama item
+  cartItemDescription?: string;     // Deskripsi item
+  cartItemPrice?: string;           // Harga item
+  cartItemMetadata?: string;        // Kontainer metadata
+  cartItemMetadataLabel?: string;   // Label metadata
+  cartItemMetadataValue?: string;   // Nilai metadata
+  cartSummary?: string;             // Bagian ringkasan
+  cartSubtotal?: string;            // Baris subtotal
+  cartTotal?: string;               // Baris total
+  cartSummaryLine?: string;         // Baris ringkasan ekstra
+  cartSummaryLineLabel?: string;    // Label baris ringkasan
+  cartSummaryLineAmount?: string;   // Jumlah baris ringkasan
+  cartDiscount?: string;            // Baris diskon
+}
+```
+</Accordion>
+
+<Accordion title="Panel Formulir">
+```typescript
+{
+  formPanel?: string;          // Kontainer panel formulir
+  formField?: string;          // Bidang formulir individu
+  formFieldLabel?: string;     // Label bidang
+  formFieldInput?: string;     // Input bidang
+  shippingSelector?: string;   // Pemilih opsi pengiriman
+  discountInput?: string;      // Input kode diskon
+  addressForm?: string;        // Formulir alamat
+}
+```
+</Accordion>
+
+<Accordion title="Status & Branding">
+```typescript
+{
+  poweredBy?: string;          // Footer "Ditenagai oleh"
+  successPanel?: string;       // Layar sukses
+  returnButton?: string;       // Tombol kembali/pengalihan
+  orderStatusPanel?: string;   // Pelacak status pesanan
+  retryButton?: string;        // Tombol coba lagi
+  transactionLink?: string;    // Tautan eksplorer transaksi
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### AnySpendDepositClasses
+
+Digunakan oleh `<AnySpendDeposit>`:
+
+```typescript title="AnySpendDepositClasses" icon="code"
+interface AnySpendDepositClasses {
+  root?: string;
+  chainSelection?: string;
+  form?: string;
+  balance?: string;
+  options?: string;
+  chainsList?: string;
+  divider?: string;
+  backButton?: string;
+}
+```
+
+### AnySpendAllClasses
+
+Menggabungkan beberapa antarmuka kelas bersama-sama. Digunakan oleh `<AnySpendDeposit>` dan `<AnySpendWorkflowTrigger>`:
+
+```typescript

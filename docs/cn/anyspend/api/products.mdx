@@ -1,0 +1,464 @@
+---
+title: 产品
+description: 管理您的产品目录以用于支付链接和结账会话
+lang: cn
+originalPath: anyspend/api/products.mdx
+---
+产品代表您目录中的物品或服务。每个产品定义了可在多个支付链接和结账会话中重复使用的定价、代币和链配置。
+
+<Info>
+  产品支持三种定价类型：`one_time`用于单次购买，`subscription`用于周期性支付，以及`variable`用于客户选择的金额。
+</Info>
+
+## 产品对象
+
+<ResponseField name="id" type="string">
+  产品的唯一标识符（例如，`prod_abc123`）。
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  显示给客户的产品名称。
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  以代币的最小单位表示的价格。`variable`产品类型为Null。
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  定价代币的合约地址。
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  定价代币的链ID。
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  产品描述。
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  产品图片URL。
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  接收此产品支付的默认钱包地址。
+</ResponseField>
+
+<ResponseField name="product_type" type="string">
+  定价类型：`one_time`、`subscription`或`variable`。
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  供您自己使用的任意键值对。不显示给客户。
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  结账时收集的自定义表单字段。结构与[支付链接 form_schema](/anyspend/api/payment-links#the-payment-link-object)相同。
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  实体商品的运输选项。结构与[支付链接 shipping_options](/anyspend/api/payment-links#the-payment-link-object)相同。
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  产品是否激活。未激活的产品不能用于新的支付链接。
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 创建时间戳。
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 最后更新时间戳。
+</ResponseField>
+
+---
+
+## 列出产品
+
+检索您产品的分页列表。
+
+<ParamField query="page" type="number" default={1}>
+  分页的页码。
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  每页的结果数（最大100）。
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  按激活状态过滤。省略以返回所有产品。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products?page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.products.list({
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "prod_abc123",
+          "name": "Pro Plan",
+          "amount": "50000000",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Professional tier with unlimited access",
+          "image_url": "https://example.com/pro.png",
+          "recipient_address": "0x1234...abcd",
+          "product_type": "one_time",
+          "metadata": {
+            "sku": "PRO-001",
+            "internal_id": "tier_3"
+          },
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-10T09:00:00Z",
+          "updated_at": "2026-02-15T12:00:00Z"
+        },
+        {
+          "id": "prod_def456",
+          "name": "Donation",
+          "amount": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Support our project with any amount",
+          "image_url": null,
+          "recipient_address": "0x1234...abcd",
+          "product_type": "variable",
+          "metadata": null,
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-20T14:30:00Z",
+          "updated_at": "2026-01-20T14:30:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 2,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 创建产品
+
+<ParamField body="name" type="string" required>
+  产品名称。
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  定价代币的合约地址。
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  定价代币的链ID。
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  接收支付的默认钱包地址。
+</ParamField>
+
+<ParamField body="product_type" type="string" required>
+  定价类型。其中之一：`one_time`、`subscription`、`variable`。
+</ParamField>
+
+<ParamField body="amount" type="string">
+  以代币的最小单位表示的价格。对于`one_time`和`subscription`类型是必需的。
+</ParamField>
+
+<ParamField body="description" type="string">
+  产品描述。
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  产品图片URL。
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  任意键值对（例如，`{"sku": "PRO-001"}`）。最多50个键，每个值500个字符。
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  结账时收集的自定义表单字段。
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  实体商品的运输选项。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan",
+    "amount": "50000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "product_type": "one_time",
+    "description": "Professional tier with unlimited access",
+    "image_url": "https://example.com/pro.png",
+    "metadata": {
+      "sku": "PRO-001",
+      "internal_id": "tier_3"
+    }
+  }'
+```
+
+```typescript SDK
+const product = await anyspend.products.create({
+  name: "Pro Plan",
+  amount: "50000000",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  productType: "one_time",
+  description: "Professional tier with unlimited access",
+  imageUrl: "https://example.com/pro.png",
+  metadata: {
+    sku: "PRO-001",
+    internal_id: "tier_3",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "name": "Pro Plan",
+      "amount": "50000000",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "description": "Professional tier with unlimited access",
+      "image_url": "https://example.com/pro.png",
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "product_type": "one_time",
+      "metadata": {
+        "sku": "PRO-001",
+        "internal_id": "tier_3"
+      },
+      "form_schema": null,
+      "shipping_options": null,
+      "active": true,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 检索产品
+
+<ParamField path="id" type="string" required>
+  产品ID（例如，`prod_abc123`）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const product = await anyspend.products.retrieve("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回完整的[产品对象](#the-product-object)。
+  </Tab>
+</Tabs>
+
+---
+
+## 更新产品
+
+更新现有产品。请求体中包含的字段将被更新。
+
+<ParamField path="id" type="string" required>
+  产品ID。
+</ParamField>
+
+接受[创建端点](#create-a-product)中的所有体参数。此外：
+
+<ParamField body="active" type="boolean">
+  设置为`false`以停用产品。
+</ParamField>
+
+<Warning>
+  更新产品不会对从中创建的支付链接进行回溯性更新。每个支付链接维护其自己的配置。
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan (Annual)",
+    "amount": "500000000",
+    "description": "Professional tier - annual billing"
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.products.update("prod_abc123", {
+  name: "Pro Plan (Annual)",
+  amount: "500000000",
+  description: "Professional tier - annual billing",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回更新后的[产品对象](#the-product-object)。
+  </Tab>
+</Tabs>
+
+---
+
+## 删除产品
+
+软删除产品。产品将被标记为非活动状态，并且默认情况下不再出现在列表结果中。使用此产品的现有支付链接将继续工作。
+
+<ParamField path="id" type="string" required>
+  产品ID。
+</ParamField>
+
+<Tip>
+  删除产品是一种软删除。产品数据被保留，用于现有交易和支付链接中的历史参考。
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.products.delete("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 从产品生成支付链接
+
+自动创建一个预配置了产品设置的支付链接。这是一种便捷方法，使用产品的`name`、`amount`、`token_address`、`chain_id`、`recipient_address`、`description`、`image_url`、`form_schema`和`shipping_options`创建新的支付链接。
+
+<ParamField path="id" type="string" required>
+  产品ID。
+</ParamField>
+
+<ParamField body="name" type="string">
+  覆盖支付链接名称。默认为产品名称。
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  支付后重定向客户的URL。
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  生成链接的最大使用次数。
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  生成链接的ISO 8601过期时间戳。
+</ParamField>
+
+可以作为覆盖传递任何额外的[支付链接字段](/anyspend/api/payment-links#create-a-payment-link)。
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products/prod_abc123/generate-link" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "return_url": "https://example.com/thank-you",
+    "max_uses": 100,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }'
+```
+
+```typescript SDK
+const paymentLink = await anyspend.products.generateLink("prod_abc123", {
+  returnUrl: "https://example.com/thank-you",
+  maxUses: 100,
+  expiresAt: "2026-12-31T23:59:59Z",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回一个新的[支付链接对象](/anyspend/api/payment-links#the-payment-link-object)，其`product_id`设置为源产品。
+
+    ```json
+    {
+      "id": "pl_newlink789",
+      "name": "Pro Plan",
+      "url": "https://pay.anyspend.com/pl_newlink789",
+      "short_url": "https://as.pay/newlink789",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "description": "Professional tier with unlimited access",
+      "product_id": "prod_abc123",
+      "image_url": "https://example.com/pro.png",
+      "max_uses": 100,
+      "uses": 0,
+      "expires_at": "2026-12-31T23:59:59Z",
+      "active": true,
+      "return_url": "https://example.com/thank-you",
+      "created_at": "2026-02-27T10:15:00Z",
+      "updated_at": "2026-02-27T10:15:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>

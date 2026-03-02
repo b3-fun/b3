@@ -1,0 +1,434 @@
+---
+title: Panduan Cepat untuk Solana
+description: >-
+  Terima dan buat pembayaran di Solana menggunakan AnySpend X402 dengan USDC dan
+  token SPL
+lang: id
+originalPath: anyspend/x402-quickstart-solana.mdx
+---
+<Note>
+**Cobalah secara langsung!** Alami X402 di Solana di [x402-demo.anyspend.com](https://x402-demo.anyspend.com/) atau jelajahi [kode sumber di GitHub](https://github.com/b3-fun/anyspend-x402-demo).
+</Note>
+
+<CardGroup cols={3}>
+<Card title="Repositori GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Lihat kode sumber dan contoh
+</Card>
+
+<Card title="Paket npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+
+<Card title="Demo Langsung" icon="rocket" href="https://github.com/b3-fun/anyspend-x402-demo">
+  Aplikasi demo Solana yang berfungsi penuh
+</Card>
+</CardGroup>
+
+## Ikhtisar
+
+Panduan ini menunjukkan cara menggunakan **AnySpend X402** di **Solana** baik untuk aplikasi server (menerima pembayaran) maupun klien (melakukan pembayaran). AnySpend X402 di Solana memungkinkan pembayaran token SPL tanpa gas menggunakan tanda tangan transaksi, menjadikannya sempurna untuk API berbayar, agen AI, dan layanan premium.
+
+**Fitur Utama:**
+- **Transaksi tanpa gas** - Fasilitator mensponsori semua biaya transaksi
+- **Dukungan token SPL** - Bayar dengan USDC dan token SPL lainnya di Solana
+- **Integrasi dompet browser** - Bekerja dengan Phantom, Solflare, Ledger, dan lainnya
+- **Ramah agen AI** - Pembungkus fetch sederhana untuk pembayaran otomatis
+
+## Prasyarat
+
+- **Node.js 18+** terinstal
+- **Dompet Solana** dengan beberapa USDC (untuk pengujian)
+- **Pengetahuan dasar** tentang Solana atau Express.js (tergantung pada kasus penggunaan Anda)
+
+## Pengaturan Server
+
+Terima pembayaran USDC Solana hanya dengan beberapa baris kode.
+
+### Instalasi
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+### Contoh server dasar
+
+```typescript
+import express from 'express';
+import { paymentMiddleware } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+const FACILITATOR_URL = 'https://mainnet.anyspend.com/x402';
+
+// Alamat dompet Solana Anda
+const SOLANA_PAYTO_ADDRESS = 'YourSolanaWalletAddress...';
+
+// Konfigurasi endpoint pembayaran
+app.use(
+  paymentMiddleware(
+    SOLANA_PAYTO_ADDRESS,
+    {
+      "POST /api/solana/premium": {
+        price: {
+          amount: '10000', // 0.01 USDC (6 desimal)
+          asset: {
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC di Solana
+            decimals: 6,
+          },
+        },
+        network: 'solana',
+        config: {
+          description: 'Akses ke data premium melalui pembayaran USDC',
+          mimeType: 'application/json',
+        },
+      },
+    },
+    {
+      url: FACILITATOR_URL,
+    },
+  ),
+);
+
+// Rute yang dilindungi
+app.post('/api/solana/premium', (req, res) => {
+  res.json({
+    message: 'Pembayaran berhasil!',
+    data: 'Data Solana premium Anda di sini',
+  });
+});
+
+app.listen(3001, () => {
+  console.log('Server Solana X402 berjalan di port 3001');
+});
+```
+
+**Apa yang dilakukan ini:**
+1. Klien meminta endpoint
+2. Middleware mengembalikan `402 Payment Required` dengan detail pembayaran Solana
+3. Klien menandatangani transaksi Solana dengan transfer USDC
+4. Fasilitator memverifikasi dan mengirimkan transaksi (tanpa gas)
+5. Handler rute Anda dieksekusi setelah konfirmasi pembayaran
+
+---
+
+## Pengaturan Klien
+
+Ada dua cara untuk melakukan pembayaran di Solana tergantung pada kasus penggunaan Anda.
+
+### Opsi 1: menggunakan fetch (agen AI dan backend)
+
+Sempurna untuk skrip Node.js, agen AI, dan aplikasi sisi server.
+
+#### Instalasi
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### Contoh skrip
+
+```typescript
+import {
+  createSigner,
+  wrapFetchWithPayment,
+} from "@b3dotfun/anyspend-x402-fetch";
+
+const privateKey = process.env.SOLANA_PRIVATE_KEY; // Kunci privat Base58
+const url = "https://api.example.com/api/solana/premium";
+
+async function main() {
+  // Buat penandatangan Solana dari kunci privat
+  const signer = await createSigner("solana", privateKey);
+
+  // Bungkus fetch dengan dukungan pembayaran
+  const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+  // Lakukan permintaan pembayaran
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+
+  // Periksa respons pembayaran
+  const paymentHeader = response.headers.get("x-payment-response");
+  if (paymentHeader) {
+    const payment = JSON.parse(atob(paymentHeader));
+    // Transaksi tersedia di: https://solscan.io/tx/${payment.transaction}
+  }
+}
+
+main();
+```
+
+**Poin Kunci:**
+- Gunakan kunci privat yang dikodekan base58 (dari pasangan kunci Solana)
+- Secara otomatis menangani respons 402 dan alur pembayaran
+- Mengembalikan hash transaksi di header `x-payment-response`
+
+---
+
+### Opsi 2: menggunakan dompet browser (React/Next.js)
+
+Untuk aplikasi web menggunakan Phantom, Solflare, Ledger, atau dompet Solana lainnya.
+
+#### Instalasi
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### Contoh komponen React
+
+```tsx
+import {
+  createWalletAdapterSigner,
+  useWallet,
+  WalletMultiButton,
+} from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { wrapFetchWithPayment } from "@b3dotfun/anyspend-x402-fetch";
+
+function PremiumDataFetcher() {
+  const { publicKey, signAllTransactions, connected } = useWallet();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    try {
+      // Buat penandatangan dari adapter dompet
+      const signer = createWalletAdapterSigner(
+        publicKey.toBase58(),
+        signAllTransactions
+      );
+
+      // Bungkus fetch dengan dukungan pembayaran
+      const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+      // Lakukan permintaan berbayar
+      const response = await fetchWithPayment(
+        "https://api.example.com/api/solana/premium",
+        { method: "POST" }
+      );
+
+      const result = await response.json();
+      setData(result);
+
+      // Dapatkan hash transaksi
+      const paymentHeader = response.headers.get("x-payment-response");
+      if (paymentHeader) {
+        const payment = JSON.parse(atob(paymentHeader));
+        // Transaksi tersedia di: https://solscan.io/tx/${payment.transaction}
+      }
+    } catch (error) {
+      // Tangani kesalahan pembayaran
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <WalletMultiButton />
+      <button onClick={fetchPremiumData} disabled={!connected || loading}>
+        {loading ? "Memproses..." : "Dapatkan Data Premium (0.01 USDC)"}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+#### Pengaturan pembungkus aplikasi
+
+Bungkus aplikasi Anda dengan penyedia dompet:
+
+```tsx
+import { WalletProvider } from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { clusterApiUrl } from "@solana/web3.js";
+
+function App() {
+  const endpoint = clusterApiUrl("mainnet-beta");
+
+  return (
+    <WalletProvider endpoint={endpoint} autoConnect>
+      <PremiumDataFetcher />
+    </WalletProvider>
+  );
+}
+```
+
+**Poin Kunci:**
+- Bekerja dengan Phantom, Solflare, Ledger, Trust Wallet, dan lainnya
+- Meminta pengguna untuk menyetujui tanda tangan transaksi
+- Sepenuhnya tanpa gas - pengguna hanya menandatangani, fasilitator membayar biaya
+- Membangun jembatan antara Solana Wallet Adapter v1 dengan tanda tangan X402 v2
+
+---
+
+## Konfigurasi
+
+### Jaringan yang didukung
+
+- **`solana`** - Solana mainnet-beta
+- **`solana-devnet`** - Solana devnet (untuk pengujian)
+
+### Konfigurasi token
+
+Token SPL yang paling umum di Solana adalah USDC:
+
+```typescript
+{
+  address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC mint
+  decimals: 6,
+}
+```
+
+Untuk token SPL lainnya, tentukan alamat mint dan desimal.
+
+### URL Fasilitator
+
+Produksi: `https://mainnet.anyspend.com/x402`
+
+Fasilitator menangani:
+- Verifikasi transaksi
+- Pengajuan on-chain
+- Sponsor biaya gas
+- Penyelesaian pembayaran
+
+---
+
+## Pengujian
+
+### Dapatkan USDC uji coba
+
+Untuk pengujian Solana devnet:
+
+1. Dapatkan devnet SOL dari [Solana Faucet](https://faucet.solana.com/)
+2. Gunakan mint USDC devnet: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
+3. Atur jaringan ke `solana-devnet` dalam konfigurasi Anda
+
+### Uji integrasi Anda
+
+```typescript
+// Server - gunakan devnet
+network: 'solana-devnet'
+
+// Klien - gunakan RPC devnet
+const endpoint = 'https://api.devnet.solana.com';
+```
+
+---
+
+## Alamat token umum
+
+| Token | Alamat Mint | Desimal | Jaringan |
+|-------|--------------|----------|---------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | mainnet-beta |
+| USDC | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | devnet |
+
+---
+
+## Penanganan Kesalahan
+
+```typescript
+try {
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+} catch (error) {
+  if (error.message.includes("Dana tidak cukup")) {
+    // Tidak cukup USDC di dompet
+  } else if (error.message.includes("Pengguna menolak")) {
+    // Pengguna membatalkan transaksi
+  } else {
+    // Tangani kesalahan pembayaran
+  }
+}
+```
+
+---
+
+## Apa Selanjutnya
+
+<CardGroup cols={2}>
+<Card title="Ikhtisar X402" icon="book" href="/anyspend/x402-overview">
+  Pelajari cara kerja AnySpend X402
+</Card>
+
+<Card title="Dukungan Jaringan" icon="globe" href="/anyspend/x402-network-support">
+  Lihat semua rantai dan token yang didukung
+</Card>
+
+<Card title="Metode Tanda Tangan" icon="signature" href="/anyspend/x402-signature-methods">
+  Penjelasan mendalam tentang tanda tangan transaksi Solana
+</Card>
+
+<Card title="Panduan Pembeli" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Panduan pengaturan klien EVM
+</Card>
+</CardGroup>
+
+---
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+<Accordion title="Verifikasi tanda tangan transaksi gagal">
+Periksa bahwa:
+- Dompet Anda memiliki cukup USDC untuk pembayaran
+- Anda berada di jaringan yang benar (mainnet vs devnet)
+- URL fasilitator benar
+</Accordion>
+
+<Accordion title="Adapter dompet tidak berfungsi">
+Pastikan:
+- Anda telah membungkus aplikasi Anda dengan `WalletProvider`
+- Ekstensi dompet terinstal (Phantom, Solflare, dll.)
+- Anda menggunakan endpoint RPC yang benar
+</Accordion>
+
+<Accordion title="Pembayaran berhasil tetapi data tidak dikembalikan">
+Verifikasi:
+- Endpoint server dikonfigurasi dengan benar
+- Jumlah pembayaran sesuai dengan ekspektasi server
+- Periksa log server untuk kesalahan
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Mendapatkan Bantuan
+
+- **Demo Langsung**: Cobalah sendiri di [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)
+- **Kode Sumber Demo**: [github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)
+- **Discord**: Bergabung dengan komunitas [Discord kami](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Contoh**: Lihat contoh lengkap di [repositori](https://github.com/b3-fun/anyspend-x402/tree/main/examples/typescript)

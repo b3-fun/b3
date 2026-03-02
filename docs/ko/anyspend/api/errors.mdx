@@ -1,0 +1,373 @@
+---
+title: 오류
+description: AnySpend 플랫폼 API의 오류 처리
+lang: ko
+originalPath: anyspend/api/errors.mdx
+---
+# 오류
+
+AnySpend 플랫폼 API는 모든 엔드포인트에서 일관된 구조화된 오류 형식을 사용합니다. 오류는 Stripe 관례를 따릅니다 -- `error` 키를 포함하는 JSON 객체로, 오류의 유형, 코드, 사람이 읽을 수 있는 메시지 및 (해당하는 경우) 오류를 일으킨 매개변수를 포함합니다.
+
+## 오류 응답 형식
+
+모든 오류 응답은 이러한 형태를 가집니다:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "'name' 필드가 필요합니다.",
+    "param": "name"
+  }
+}
+```
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `type` | `string` | 오류의 범주입니다. 광범위한 오류 처리 로직에 사용하세요. |
+| `code` | `string` | 기계가 읽을 수 있는 오류 코드입니다. 구체적인 오류 처리에 사용하세요. |
+| `message` | `string` | 무엇이 잘못되었는지에 대한 사람이 읽을 수 있는 설명입니다. 개발자에게는 안전하게 표시할 수 있지만 최종 사용자에게는 그렇지 않습니다. |
+| `param` | `string` 또는 없음 | 오류를 일으킨 요청 매개변수입니다(해당하는 경우). |
+
+## 오류 유형
+
+오류 유형은 오류를 광범위한 범주로 그룹화합니다. 최상위 오류 처리에 이것들을 사용하세요.
+
+| 유형 | HTTP 상태 | 설명 |
+|------|-------------|-------------|
+| `invalid_request_error` | `400` | 요청이 잘못되었거나 유효하지 않은 매개변수를 포함했습니다. 문제를 일으킨 필드는 `param` 필드를 확인하세요. |
+| `authentication_error` | `401` | API 키가 누락되었거나 유효하지 않거나 만료되었거나 취소되었습니다. |
+| `permission_error` | `403` | API 키는 유효하지만 요청된 작업에 필요한 권한 수준이 부족합니다. |
+| `not_found_error` | `404` | 요청된 리소스가 존재하지 않거나 귀하의 조직에 속하지 않습니다. |
+| `rate_limit_error` | `429` | 인증 등급에 대한 비율 제한을 초과했습니다. |
+| `idempotency_error` | `409` | 다른 요청 본문으로 재사용된 멱등성 키입니다. |
+| `api_error` | `500` | 우리 측에서 예기치 않은 내부 오류가 발생했습니다. 이러한 오류는 드물며 자동으로 보고됩니다. |
+
+## 오류 코드
+
+오류 코드는 각 오류 조건에 대한 구체적이고 기계가 읽을 수 있는 식별자를 제공합니다.
+
+### 요청 유효성 검사 오류
+
+| 코드 | 유형 | HTTP | 설명 |
+|------|------|------|-------------|
+| `missing_required_field` | `invalid_request_error` | `400` | 요청 본문에 필수 필드가 포함되지 않았습니다. `param` 필드는 누락된 필드를 나타냅니다. |
+| `invalid_field_value` | `invalid_request_error` | `400` | 필드가 포함되었지만 그 값이 유효하지 않습니다(잘못된 유형, 형식 또는 범위를 벗어남). |
+| `invalid_address` | `invalid_request_error` | `400` | 이더리움 주소 필드가 유효한 `0x` + 40 16진수 문자 주소가 아닙니다. |
+| `no_updates_provided` | `invalid_request_error` | `400` | 업데이트할 유효한 필드 없이 `PATCH` 요청이 전송되었습니다. |
+| `invalid_status_transition` | `invalid_request_error` | `400` | 요청된 상태 변경이 허용되지 않습니다(예: 이미 만료된 세션을 완료하는 경우). |
+| `duplicate_resource` | `invalid_request_error` | `409` | 충돌하는 고유 필드가 있는 리소스가 이미 존재합니다. |
+
+### 인증 및 권한 오류
+
+| 코드 | 유형 | HTTP | 설명 |
+|------|------|------|-------------|
+| `key_missing` | `authentication_error` | `401` | `Authorization` 또는 `X-API-Key` 헤더에서 API 키를 찾을 수 없습니다. |
+| `key_invalid` | `authentication_error` | `401` | 제공된 API 키가 시스템의 어떤 키와도 일치하지 않습니다. |
+| `key_expired` | `authentication_error` | `401` | API 키가 `expires_at` 타임스탬프를 지났습니다. 새 키를 생성하거나 만료를 연장하세요. |
+| `key_revoked` | `authentication_error` | `401` | API 키가 명시적으로 취소되었습니다. 새 키를 생성하세요. |
+| `insufficient_permissions` | `permission_error` | `403` | API 키가 이 작업에 필요한 권한 수준을 가지고 있지 않습니다(예: `POST`를 시도하는 `read` 키). |
+
+### 리소스 오류
+
+| 코드 | 유형 | HTTP | 설명 |
+|------|------|------|-------------|
+| `resource_not_found` | `not_found_error` | `404` | 요청된 리소스가 존재하지 않거나 다른 조직에 속합니다. |
+
+### 비율 제한 및 멱등성 오류
+
+| 코드 | 유형 | HTTP | 설명 |
+|------|------|------|-------------|
+| `rate_limit_exceeded` | `rate_limit_error` | `429` | 현재 시간 창에서 너무 많은 요청이 발생했습니다. 오류 메시지에는 재시도 지연이 포함됩니다. |
+| `idempotency_conflict` | `idempotency_error` | `409` | `Idempotency-Key` 헤더가 원래 요청과 다른 요청 본문으로 재사용되었습니다. |
+
+### 서버 오류
+
+| 코드 | 유형 | HTTP | 설명 |
+|------|------|------|-------------|
+| `internal_error` | `api_error` | `500` | 예상치 못한 서버 오류입니다. 이러한 오류는 자동으로 추적됩니다. 지속되면 지원팀에 연락하세요. |
+
+## HTTP 상태 코드
+
+| 상태 | 의미 |
+|--------|---------|
+| `200` | 성공 -- 리소스가 검색되거나 업데이트되었습니다 |
+| `201` | 생성됨 -- 새 리소스가 성공적으로 생성되었습니다 |
+| `400` | 잘못된 요청 -- 요청이 유효하지 않습니다 |
+| `401` | 인증 실패 -- 인증에 실패했습니다 |
+| `403` | 금지됨 -- API 키가 필요한 권한을 가지고 있지 않습니다 |
+| `404` | 찾을 수 없음 -- 리소스가 존재하지 않습니다 |
+| `409` | 충돌 -- 멱등성 충돌 또는 중복 리소스 |
+| `429` | 너무 많은 요청 -- 비율 제한 초과 |
+| `500` | 내부 서버 오류 -- 우리 쪽에서 문제가 발생했습니다 |
+
+## 예제 오류 응답
+
+### 필수 필드 누락
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": "10000000" }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "'name' 필드가 필요합니다.",
+    "param": "name"
+  }
+}
+```
+
+### 유효하지 않은 이더리움 주소
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Link",
+    "token_address": "not-an-address",
+    "chain_id": 8453,
+    "recipient_address": "0xabc123..."
+  }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "invalid_address",
+    "message": "'token_address' 필드는 유효한 이더리움 주소(0x + 40 16진수 문자)여야 합니다.",
+    "param": "token_address"
+  }
+}
+```
+
+### 인증 실패
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_expired_key..."
+```
+
+```json
+{
+  "error": {
+    "type": "authentication_error",
+    "code": "key_expired",
+    "message": "이 API 키는 만료되었습니다."
+  }
+}
+```
+
+### 권한 부족
+
+```bash
+# 리소스를 생성하려는 읽기 전용 키
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_readonly_key..." \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Test" }'
+```
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "이 API 키는 'write' 권한이 없습니다."
+  }
+}
+```
+
+### 리소스를 찾을 수 없음
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links/pl_nonexistent \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+```json
+{
+  "error": {
+    "type": "not_found_error",
+    "code": "resource_not_found",
+    "message": "id가 'pl_nonexistent'인 payment_link을 찾을 수 없습니다."
+  }
+}
+```
+
+### 비율 제한 초과
+
+```json
+{
+  "error": {
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "비율 제한 초과. 42초 후에 다시 시도하세요."
+  }
+}
+```
+
+### 멱등성 충돌
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "다른 요청 본문으로 사용된 멱등성 키입니다."
+  }
+}
+```
+
+## 코드에서 오류 처리
+
+### TypeScript / JavaScript
+
+```typescript
+async function createPaymentLink(data: PaymentLinkInput) {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    const error = body.error;
+
+    switch (error.type) {
+      case "invalid_request_error":
+        // 요청 수정 -- 나쁜 필드에 대해 error.param을 확인하세요
+        console.error(`잘못된 요청: ${error.message} (필드: ${error.param})`);
+        break;
+
+      case "authentication_error":
+        // API 키를 확인하세요 -- 만료되었거나 취소될 수 있습니다
+        console.error(`인증 실패: ${error.message}`);
+        break;
+
+      case "permission_error":
+        // API 키 권한 업그레이드
+        console.error(`권한 부족: ${error.message}`);
+        break;
+
+      case "rate_limit_error":
+        // 뒤로 물러나서 재시도
+        console.warn(`비율 제한: ${error.message}`);
+        await sleep(5000);
+        return createPaymentLink(data); // 재시도
+        break;
+
+      case "not_found_error":
+        console.error(`찾을 수 없음: ${error.message}`);
+        break;
+
+      case "idempotency_error":
+        // 다른 데이터로 재사용된 멱등성 키
+        console.error(`멱등성 충돌: ${error.message}`);
+        break;
+
+      case "api_error":
+        // 서버 오류 -- 지수 백오프로 재시도
+        console.error(`서버 오류: ${error.message}`);
+        break;
+    }
+
+    throw new Error(`AnySpend API 오류: ${error.code} - ${error.message}`);
+  }
+
+  return body;
+}
+```
+
+### Python
+
+```python
+import requests
+import time
+
+def create_payment_link(data: dict) -> dict:
+    response = requests.post(
+        "https://platform-api.anyspend.com/api/v1/payment-links",
+        headers={
+            "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+            "Content-Type": "application/json",
+        },
+        json=data,
+    )
+
+    body = response.json()
+
+    if not response.ok:
+        error = body["error"]
+        error_type = error["type"]
+
+        if error_type == "rate_limit_error":
+            time.sleep(5)
+            return create_payment_link(data)  # 재시도
+
+        if error_type == "authentication_error":
+            raise PermissionError(f"인증 실패: {error['message']}")
+
+        if error_type == "invalid_request_error":
+            raise ValueError(
+                f"필드 '{error.get('param', 'unknown')}'에서 잘못된 요청: "
+                f"{error['message']}"
+            )
+
+        raise Exception(f"AnySpend API 오류: {error['code']} - {error['message']}")
+
+    return body
+```
+
+## 모범 사례
+
+<AccordionGroup>
+<Accordion title="항상 먼저 오류 유형을 확인하세요">
+`error.type`을 사용하여 광범위한 제어 흐름을 관리하세요(예: `rate_limit_error`에서 재시도, `authentication_error`에서 빠르게 실패). `error.code`를 사용하여 유형 내에서 구체적인 처리를 수행하세요.
+</Accordion>
+
+<Accordion title="폼 유효성 검사를 구축하기 위해 param 필드를 사용하세요">
+`error.param`이 존재하는 경우, 직접 폼 필드에 매핑하여 UI에서 인라인 유효성 검사 오류를 표시할 수 있습니다.
+</Accordion>
+
+<Accordion title="일시적인 오류에 대해 재시도 로직을 구현하세요">
+`rate_limit_error` 및 `api_error` (500)는 일시적입니다. 재시도할 때 지수 백오프를 사용하세요:
+
+```typescript
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const isRetryable =
+        err.status === 429 || err.status === 500;
+
+      if (!isRetryable || attempt === maxRetries) throw err;
+
+      const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("도달할 수 없음");
+}
+```
+</Accordion>
+
+<Accordion title="429를 제외하고 4xx 오류를 재시도하지 마세요">
+`400`, `401`, `403`, 및 `404`와 같은 클라이언트 오류는 재시도해도 해결되지 않습니다. 재시도하기 전에 요청이나 자격 증명을 수정하세요

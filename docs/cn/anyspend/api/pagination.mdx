@@ -1,0 +1,274 @@
+---
+title: 分页 & 筛选
+description: 通过列表端点进行分页和过滤结果
+lang: cn
+originalPath: anyspend/api/pagination.mdx
+---
+# 分页与过滤
+
+AnySpend 平台 API 的所有列表端点都返回分页响应。本页面介绍如何浏览大型结果集、过滤数据以及排序结果。
+
+## 列表响应格式
+
+每个列表端点返回一个一致的封装：
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium Membership" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic Plan" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+| 字段         | 类型      | 描述                                       |
+|------------|---------|------------------------------------------|
+| `object`   | `string` | 列表响应始终为 `"list"`。                      |
+| `data`     | `array`  | 当前页面的资源对象数组。每个项目都包含自己的 `object` 类型字段。 |
+| `has_more` | `boolean`| 如果此页面之后还有更多结果，则为 `true`。用于判断是否获取下一页。 |
+| `total_count` | `number` | 所有页面中匹配资源的总数。                  |
+| `url`      | `string` | 此列表的 API 端点路径。                       |
+
+## 分页参数
+
+使用 `page` 和 `limit` 查询参数来浏览结果。
+
+| 参数        | 类型       | 默认值  | 最大值 | 描述                          |
+|-----------|----------|-------|-----|-----------------------------|
+| `page`    | `integer` | `1`   | --  | 要检索的页码（从 1 开始）。         |
+| `limit`   | `integer` | `20`  | `100` | 每页的结果数量。                  |
+
+### 基本分页示例
+
+```bash
+# 第一页（默认：20 结果）
+curl "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 第二页，每页 50 结果
+curl "https://platform-api.anyspend.com/api/v1/payment-links?page=2&limit=50" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 浏览页面
+
+使用 `has_more` 字段来判断何时停止分页：
+
+```typescript
+async function fetchAllPaymentLinks(): Promise<PaymentLink[]> {
+  const allLinks: PaymentLink[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/payment-links?page=${page}&limit=100`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+    allLinks.push(...body.data);
+    hasMore = body.has_more;
+    page++;
+  }
+
+  return allLinks;
+}
+```
+
+## 过滤
+
+大多数列表端点支持查询参数以过滤结果。可用的过滤器取决于资源类型。
+
+### 支付链接
+
+| 参数       | 类型        | 描述                              |
+|----------|-----------|---------------------------------|
+| `search` | `string`  | 按名称或短码搜索（部分匹配）。             |
+| `active` | `"true"` 或 `"false"` | 按活动/非活动状态过滤。             |
+
+```bash
+# 搜索包含 "premium" 的支付链接
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 仅活动的支付链接
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 组合过滤器
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium&active=true&limit=10" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 结账会话
+
+| 参数      | 类型                              | 描述                 |
+|---------|---------------------------------|--------------------|
+| `status` | `"active"`, `"completed"`, `"expired"` | 按状态过滤会话。         |
+
+```bash
+# 一个支付链接的已完成会话
+curl "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/sessions?status=completed" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### 交易
+
+| 参数       | 类型       | 描述                   |
+|----------|----------|----------------------|
+| `status` | `string` | 按交易状态过滤。             |
+| `chain_id` | `number` | 按区块链网络过滤。           |
+
+```bash
+# Base 上的交易（链 ID 8453）
+curl "https://platform-api.anyspend.com/api/v1/transactions?chain_id=8453" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## 排序
+
+支持排序的列表端点接受 `sort` 和 `order` 参数。
+
+| 参数      | 类型       | 默认值       | 描述                   |
+|---------|----------|-----------|----------------------|
+| `sort`  | `string` | `created_at` | 要排序的字段。允许的值因资源而异。 |
+| `order` | `"asc"` 或 `"desc"` | `desc` | 排序方向。               |
+
+### 支付链接排序字段
+
+| 字段          | 描述                         |
+|-------------|----------------------------|
+| `created_at` | 创建支付链接的时间（默认）。         |
+| `updated_at` | 最后修改支付链接的时间。             |
+| `name`       | 按名称字母排序。                   |
+| `current_uses` | 完成的结账次数。                 |
+
+```bash
+# 最受欢迎的支付链接排在前面
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=current_uses&order=desc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# 按名称字母排序
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=name&order=asc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## 自动分页示例
+
+为了方便起见，您可以构建一个自动处理分页的异步迭代器：
+
+```typescript
+async function* paginate<T>(
+  endpoint: string,
+  params: Record<string, string> = {},
+  limit = 100,
+): AsyncGenerator<T> {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const queryParams = new URLSearchParams({
+      ...params,
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/${endpoint}?${queryParams}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+
+    for (const item of body.data) {
+      yield item as T;
+    }
+
+    hasMore = body.has_more;
+    page++;
+  }
+}
+
+// 使用 for-await
+async function main() {
+  for await (const link of paginate<PaymentLink>("payment-links", { active: "true" })) {
+    console.log(`${link.name}: ${link.current_uses} completions`);
+  }
+}
+```
+
+## 计算结果
+
+使用任何页面的 `total_count` 来获取匹配资源的总数，无需获取所有页面：
+
+```typescript
+async function countActivePaymentLinks(): Promise<number> {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links?active=true&limit=1",
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      },
+    }
+  );
+
+  const body = await response.json();
+  return body.total_count;
+}
+```
+
+设置 `limit=1` 在只需要计数时最小化响应负载。
+
+## 最佳实践
+
+<AccordionGroup>
+<Accordion title="对于批量操作使用 limit=100">
+当您需要获取所有记录（例如，用于数据导出或同步）时，使用最大 `limit=100` 来最小化 API 调用次数并保持在速率限制之内。
+</Accordion>
+
+<Accordion title="使用 has_more 而不是 total_count 进行分页循环">
+`has_more` 是获取下一页的权威信号。避免从 `total_count` 计算页数，因为总数可能在请求之间发生变化。
+</Accordion>
+
+<Accordion title="为 UI 分页控件缓存 total_count">
+构建分页 UI（例如，“第 3 页，共 8 页”）时，获取一次 `total_count` 并在会话中缓存。仅在用户刷新或应用新过滤器时重新获取。
+</Accordion>
+
+<Accordion title="将过滤器与分页结合使用">
+在分页之前应用过滤器以减少结果集。这比获取所有记录并在客户端过滤更高效：
+
+```bash
+# 而不是获取所有链接并在本地过滤...
+# 在服务器端过滤并分页过滤后的结果
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true&search=premium&limit=20" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+</Accordion>
+
+<Accordion title="在批量获取期间尊重速率限制">
+如果您正在分页浏览大型数据集，请注意每分钟 120 次请求的速率限制。对于非常大的数据集，在页面请求之间添加短暂延迟：
+
+```typescript
+async function fetchWithDelay() {
+  for await (const link of paginate("payment-links")) {
+    process.stdout.write(".");
+  }
+  // paginate 函数最多发出 ceil(total / 100) 次请求。
+  // 对于 10,000 条记录，即 100 次请求 -- 在 120/分钟限制内。
+}
+```
+</Accordion>
+</AccordionGroup>

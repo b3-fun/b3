@@ -1,0 +1,233 @@
+---
+title: Acara
+description: Jejak audit API dan log event
+lang: id
+originalPath: anyspend/api/events.mdx
+---
+Endpoint events menyediakan jejak audit dari semua aksi API yang diambil pada akun Anda. Setiap operasi pembuatan, pembaruan, dan penghapusan direkam dengan metadata termasuk metode permintaan, jalur, alamat IP, dan kode status.
+
+<Info>
+  Endpoint events memerlukan izin **read**.
+</Info>
+
+## Otentikasi
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Dasar: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoint
+
+### Daftar Events
+
+<ParamField path="GET /events" type="read">
+  Daftar event API dengan penyaringan opsional. Hasil dikembalikan dalam urutan kronologis terbalik (terbaru terlebih dahulu).
+</ParamField>
+
+<ParamField path="type" type="string" query>
+  Saring berdasarkan tipe event (mis., `payment_link.created`, `webhook.updated`, `discount_code.deleted`).
+</ParamField>
+
+<ParamField path="resource_type" type="string" query>
+  Saring berdasarkan tipe sumber daya (mis., `payment_link`, `webhook`, `discount_code`, `widget`, `notification`).
+</ParamField>
+
+<ParamField path="from" type="string" query>
+  Cap waktu ISO 8601. Hanya kembalikan event yang dibuat pada atau setelah waktu ini.
+</ParamField>
+
+<ParamField path="to" type="string" query>
+  Cap waktu ISO 8601. Hanya kembalikan event yang dibuat pada atau sebelum waktu ini.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  Nomor halaman untuk paginasi (default: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  Hasil per halaman (default: `20`, maks: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.created&from=2026-02-01T00:00:00Z&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const events = await client.events.list({
+      type: "payment_link.created",
+      from: "2026-02-01T00:00:00Z",
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "evt_abc123",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz789",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "evt_abc124",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz790",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-25T14:15:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 2,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+## Objek Event
+
+| Field | Type | Deskripsi |
+|-------|------|-------------|
+| `id` | `string` | Identifikasi unik event (mis., `evt_abc123`) |
+| `event_type` | `string` | Tipe aksi yang terjadi (lihat [Tipe Event](#event-types)) |
+| `resource_type` | `string` | Tipe sumber daya yang terpengaruh |
+| `resource_id` | `string` | ID dari sumber daya yang terpengaruh |
+| `ip_address` | `string` | Alamat IP pemanggil API |
+| `request_method` | `string` | Metode HTTP yang digunakan (`GET`, `POST`, `PATCH`, `DELETE`) |
+| `request_path` | `string` | Jalur API yang dipanggil |
+| `status_code` | `number` | Kode status HTTP yang dikembalikan |
+| `created_at` | `string` | Cap waktu ISO 8601 ketika event direkam |
+
+## Tipe Event
+
+Event mengikuti pola `{resource_type}.{action}`:
+
+| Tipe Event | Deskripsi |
+|------------|-------------|
+| `payment_link.created` | Sebuah link pembayaran dibuat |
+| `payment_link.updated` | Sebuah link pembayaran diperbarui |
+| `payment_link.deleted` | Sebuah link pembayaran dihapus |
+| `product.created` | Sebuah produk dibuat |
+| `product.updated` | Sebuah produk diperbarui |
+| `product.deleted` | Sebuah produk dihapus |
+| `webhook.created` | Sebuah endpoint webhook dibuat |
+| `webhook.updated` | Sebuah endpoint webhook diperbarui |
+| `webhook.deleted` | Sebuah endpoint webhook dihapus |
+| `discount_code.created` | Sebuah kode diskon dibuat |
+| `discount_code.updated` | Sebuah kode diskon diperbarui |
+| `discount_code.deleted` | Sebuah kode diskon dihapus |
+| `widget.created` | Sebuah widget dibuat |
+| `widget.updated` | Sebuah widget diperbarui |
+| `widget.deleted` | Sebuah widget dihapus |
+| `notification.updated` | Pengaturan notifikasi diperbarui |
+| `api_key.created` | Sebuah kunci API dibuat |
+| `api_key.revoked` | Sebuah kunci API dicabut |
+
+## Tipe Sumber Daya
+
+| Tipe Sumber Daya | Deskripsi |
+|---------------|-------------|
+| `payment_link` | Sumber daya link pembayaran |
+| `product` | Entri katalog produk |
+| `webhook` | Konfigurasi endpoint webhook |
+| `discount_code` | Entri kode diskon |
+| `widget` | Konfigurasi widget |
+| `notification` | Pengaturan notifikasi |
+| `api_key` | Manajemen kunci API |
+
+---
+
+## Contoh Penyaringan
+
+### Event untuk rentang tanggal tertentu
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?from=2026-02-01T00:00:00Z&to=2026-02-28T23:59:59Z" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      from: "2026-02-01T00:00:00Z",
+      to: "2026-02-28T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Semua event terkait webhook
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?resource_type=webhook&limit=50" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      resource_type: "webhook",
+      limit: 50,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Audit Penghapusan
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.deleted" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deletions = await client.events.list({
+      type: "payment_link.deleted",
+    });
+
+    deletions.data.forEach((event) => {
+      console.log(
+        `${event.resource_id} dihapus dari ${event.ip_address} pada ${event.created_at}`
+      );
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Event disimpan selama 90 hari. Untuk retensi lebih lama, ekspor event secara periodik menggunakan filter rentang tanggal.
+</Note>

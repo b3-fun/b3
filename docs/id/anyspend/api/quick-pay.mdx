@@ -1,0 +1,153 @@
+---
+title: Pembayaran Cepat
+description: Buat tautan pembayaran seketika tanpa otentikasi
+lang: id
+originalPath: anyspend/api/quick-pay.mdx
+---
+Quick Pay adalah satu endpoint yang memungkinkan Anda membuat tautan pembayaran **tanpa memerlukan kunci API**. Ini dirancang untuk prototyping cepat, faktur satu kali, tip jar, dan halaman donasi di mana beban membuat organisasi dan mengelola kunci API tidak diperlukan.
+
+<Info>
+  Quick Pay dibatasi hingga **5 permintaan per menit per alamat IP**. Untuk throughput yang lebih tinggi atau akses ke analitik, webhook, dan formulir kustom, [buat organisasi](/anyspend/api/sdk-client) dan gunakan kunci API.
+</Info>
+
+## Endpoint
+
+```
+POST /api/v1/quick-pay
+```
+
+Tidak diperlukan header `Authorization`.
+
+## Body Permintaan
+
+| Parameter | Tipe | Wajib | Default | Deskripsi |
+|-----------|------|----------|---------|-------------|
+| `recipient_address` | `string` | Ya | -- | Alamat Ethereum yang akan menerima pembayaran |
+| `amount` | `string` | Tidak | -- | Jumlah token dalam unit terkecil (mis. `"1000000"` untuk 1 USDC) |
+| `token_address` | `string` | Tidak | USDC on Base | Alamat kontrak token ERC-20 |
+| `chain_id` | `number` | Tidak | `8453` (Base) | ID rantai tujuan |
+| `name` | `string` | Tidak | -- | Nama yang mudah dibaca untuk tautan |
+| `description` | `string` | Tidak | -- | Deskripsi yang ditampilkan kepada pembayar |
+| `expires_in` | `number` | Tidak | `86400` (24 jam) | Detik sampai tautan kedaluwarsa. Maksimum adalah `86400`. |
+
+## Respons
+
+Permintaan yang berhasil mengembalikan objek `PaymentLink` lengkap:
+
+```json
+{
+  "id": "pl_abc123",
+  "url": "https://pay.anyspend.com/pl_abc123",
+  "recipient_address": "0x1234...abcd",
+  "amount": "1000000",
+  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "chain_id": 8453,
+  "name": "Tip Kopi",
+  "description": null,
+  "status": "aktif",
+  "expires_at": "2025-06-02T12:00:00Z",
+  "created_at": "2025-06-01T12:00:00Z",
+  "org_id": "anonim"
+}
+```
+
+Bagikan `url` dengan siapa saja -- mereka dapat membayar dari dompet apa pun di rantai yang didukung dan dana akan dialihkan ke penerima melalui AnySpend.
+
+## Contoh
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "5000000",
+    "name": "Beli saya kopi",
+    "description": "Terima kasih atas bantuannya!"
+  }'
+```
+
+```typescript SDK
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+// quickPay adalah metode statis -- tidak perlu kunci API
+const link = await AnySpendPlatformClient.quickPay({
+  recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "5000000",          // 5 USDC
+  name: "Beli saya kopi",
+  description: "Terima kasih atas bantuannya!",
+});
+
+console.log(link.url);
+// => https://pay.anyspend.com/pl_abc123
+```
+
+```python Python (requests)
+import requests
+
+resp = requests.post(
+    "https://platform-api.anyspend.com/api/v1/quick-pay",
+    json={
+        "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+        "amount": "5000000",
+        "name": "Beli saya kopi",
+    },
+)
+link = resp.json()
+print(link["url"])
+```
+
+</CodeGroup>
+
+## Kasus Penggunaan
+
+<CardGroup cols={2}>
+  <Card title="Tip Jar" icon="hand-holding-dollar">
+    Sematkan tautan Quick Pay di blog atau profil media sosial Anda untuk menerima tip tanpa pengaturan apa pun.
+  </Card>
+  <Card title="Halaman Donasi" icon="heart">
+    Organisasi nirlaba dan proyek sumber terbuka dapat menghasilkan tautan secara instan untuk donasi satu kali.
+  </Card>
+  <Card title="Faktur Cepat" icon="file-invoice-dollar">
+    Freelancer dapat mengirim tautan pembayaran melalui email atau obrolan untuk satu faktur.
+  </Card>
+  <Card title="Prototyping" icon="flask">
+    Uji alur integrasi Anda sebelum berkomitmen pada pengaturan kunci API penuh.
+  </Card>
+</CardGroup>
+
+## Keterbatasan
+
+<Warning>
+  Tautan Quick Pay sengaja dibatasi. Jika Anda memerlukan fitur di bawah ini, buat organisasi dan gunakan endpoint yang diautentikasi.
+</Warning>
+
+| Fitur | Quick Pay | API yang Diautentikasi |
+|---------|-----------|-------------------|
+| Analitik & pelacakan pengunjung | Tidak | Ya |
+| Notifikasi webhook | Tidak | Ya |
+| Formulir checkout kustom | Tidak | Ya |
+| Opsi pengiriman & kode diskon | Tidak | Ya |
+| Kedaluwarsa kustom (> 24 jam) | Tidak | Ya |
+| Pengeditan tautan setelah pembuatan | Tidak | Ya |
+| Branding organisasi | Tidak | Ya |
+| Batas laju | 5 req/menit/IP | 100 req/menit/kunci |
+
+## Respons Kesalahan
+
+| Status | Kode | Deskripsi |
+|--------|------|-------------|
+| `400` | `invalid_request` | `recipient_address` hilang atau parameter tidak valid |
+| `422` | `invalid_address` | `recipient_address` bukan alamat Ethereum yang valid |
+| `429` | `rate_limit_exceeded` | Lebih dari 5 permintaan dalam jendela menit saat ini |
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Batas laju terlampaui. Coba lagi dalam 45 detik.",
+    "retry_after": 45
+  }
+}
+```

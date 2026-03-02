@@ -1,0 +1,467 @@
+---
+title: Pelanggan
+description: Kelola catatan pelanggan dan riwayat pembayaran
+lang: id
+originalPath: anyspend/api/customers.mdx
+---
+Pelanggan mewakili orang-orang yang membayar melalui tautan pembayaran Anda. Catatan pelanggan secara otomatis dibuat ketika dompet menyelesaikan sesi checkout, tetapi Anda juga dapat membuat dan mengelolanya secara manual melalui API.
+
+<Info>
+  Bidang `name` dan `email` pelanggan dienkripsi saat tidak aktif untuk kepatuhan privasi. Mereka secara otomatis didekripsi saat diambil melalui API.
+</Info>
+
+## Objek Pelanggan
+
+<ResponseField name="id" type="string">
+  Pengenal unik untuk pelanggan (mis., `cust_abc123`).
+</ResponseField>
+
+<ResponseField name="wallet_address" type="string">
+  Alamat dompet pelanggan.
+</ResponseField>
+
+<ResponseField name="name" type="string | null">
+  Nama pelanggan. Di enkripsi saat tidak aktif.
+</ResponseField>
+
+<ResponseField name="email" type="string | null">
+  Email pelanggan. Di enkripsi saat tidak aktif.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Pasangan kunci-nilai sembarang untuk penggunaan Anda sendiri.
+</ResponseField>
+
+<ResponseField name="total_spent" type="string">
+  Jumlah total yang dihabiskan di semua transaksi yang selesai (dalam setara USD).
+</ResponseField>
+
+<ResponseField name="transaction_count" type="number">
+  Jumlah total transaksi yang selesai.
+</ResponseField>
+
+<ResponseField name="first_seen_at" type="string">
+  Cap waktu ISO 8601 dari transaksi pertama pelanggan.
+</ResponseField>
+
+<ResponseField name="last_seen_at" type="string">
+  Cap waktu ISO 8601 dari transaksi terbaru pelanggan.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Cap waktu pembuatan ISO 8601.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Cap waktu pembaruan terakhir ISO 8601.
+</ResponseField>
+
+---
+
+## Daftar pelanggan
+
+Ambil daftar pelanggan yang dipaginasi dengan pencarian opsional.
+
+<ParamField query="search" type="string">
+  Cari pelanggan berdasarkan alamat dompet, nama, atau email.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Nomor halaman untuk paginasi.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Jumlah hasil per halaman (maks 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.customers.list({
+  search: "acme",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "metadata": {
+            "company": "Acme Inc.",
+            "plan": "pro"
+          },
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-25T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Buat pelanggan
+
+Secara manual buat catatan pelanggan. Ini berguna untuk mendaftarkan pelanggan sebelum mereka melakukan pembayaran.
+
+<ParamField body="wallet_address" type="string" required>
+  Alamat dompet pelanggan.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nama pelanggan. Akan dienkripsi saat tidak aktif.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Email pelanggan. Akan dienkripsi saat tidak aktif.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Pasangan kunci-nilai sembarang (mis., `{"plan": "pro"}`). Sampai dengan 50 kunci, nilai karakter 500.
+</ParamField>
+
+<Warning>
+  Jika pelanggan dengan `wallet_address` yang sama sudah ada, permintaan akan mengembalikan kesalahan `409 Conflict`. Gunakan endpoint pembaruan untuk memodifikasi pelanggan yang ada.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/customers" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+    "name": "Alice Johnson",
+    "email": "alice@acme.com",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "pro"
+    }
+  }'
+```
+
+```typescript SDK
+const customer = await anyspend.customers.create({
+  walletAddress: "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+  name: "Alice Johnson",
+  email: "alice@acme.com",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "pro",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+      "name": "Alice Johnson",
+      "email": "alice@acme.com",
+      "metadata": {
+        "company": "Acme Inc.",
+        "plan": "pro"
+      },
+      "total_spent": "0.00",
+      "transaction_count": 0,
+      "first_seen_at": null,
+      "last_seen_at": null,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Ambil pelanggan
+
+<ParamField path="id" type="string" required>
+  ID pelanggan (mis., `cust_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const customer = await anyspend.customers.retrieve("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Mengembalikan [Objek Pelanggan](#the-customer-object) lengkap.
+  </Tab>
+</Tabs>
+
+---
+
+## Perbarui pelanggan
+
+Perbarui pelanggan yang ada. Hanya bidang yang Anda masukkan dalam badan permintaan yang akan diperbarui.
+
+<ParamField path="id" type="string" required>
+  ID pelanggan.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nama pelanggan yang diperbarui.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Email pelanggan yang diperbarui.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Metadata yang diperbarui. Ini **menggantikan** seluruh objek metadata. Untuk menambahkan satu kunci, sertakan metadata yang ada lengkap ditambah kunci baru.
+</ParamField>
+
+<Tip>
+  `wallet_address` tidak dapat diubah setelah pembuatan. Untuk mengaitkan pelanggan dengan dompet yang berbeda, buat catatan pelanggan baru.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alice Johnson-Smith",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "enterprise",
+      "upgraded_at": "2026-02-27"
+    }
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.customers.update("cust_abc123", {
+  name: "Alice Johnson-Smith",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "enterprise",
+    upgraded_at: "2026-02-27",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Mengembalikan [Objek Pelanggan](#the-customer-object) yang diperbarui.
+  </Tab>
+</Tabs>
+
+---
+
+## Hapus pelanggan
+
+Hapus secara permanen catatan pelanggan. Riwayat transaksi yang terkait dengan pelanggan ini dipertahankan tetapi referensi pelanggan akan ditampilkan sebagai terhapus.
+
+<ParamField path="id" type="string" required>
+  ID pelanggan.
+</ParamField>
+
+<Warning>
+  Tindakan ini tidak dapat dibatalkan. Semua informasi yang dapat mengidentifikasi pribadi (nama, email) akan dihapus secara permanen.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.customers.delete("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Daftar transaksi pelanggan
+
+Ambil riwayat transaksi untuk pelanggan tertentu.
+
+<ParamField path="id" type="string" required>
+  ID pelanggan.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter berdasarkan status transaksi: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Nomor halaman.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Hasil per halaman (maks 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123/transactions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.customers.transactions("cust_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_tx001",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Ekspor pelanggan
+
+Ekspor data pelanggan Anda dalam format CSV atau JSON. Respons dikirimkan sebagai unduhan file.
+
+<ParamField query="format" type="string" required>
+  Format ekspor. Salah satu dari: `csv`, `json`.
+</ParamField>
+
+<ParamField query="search" type="string">
+  Filter pelanggan yang diekspor berdasarkan istilah pencarian.
+</ParamField>
+
+<Info>
+  Ekspor dibatasi hingga 10.000 catatan. Untuk dataset yang lebih besar, gunakan paginasi dengan endpoint daftar.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# Unduh sebagai CSV
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.csv
+
+# Unduh sebagai JSON
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.json
+```
+
+```typescript SDK
+// Dapatkan ekspor sebagai ReadableStream
+const csvStream = await anyspend.customers.export({ format: "csv" });
+
+// Atau dapatkan sebagai array JSON
+const customers = await anyspend.customers.export({ format: "json" });
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,wallet_address,name,email,total_spent,transaction_count,first_seen_at,last_seen_at,created_at
+    cust_abc123,0xaabb...5678,Alice Johnson,alice@acme.com,250.00,5,2026-01-15T10:30:00Z,2026-02-25T14:22:00Z,2026-01-15T10:30:00Z
+    cust_def456,0xccdd...9012,Bob Smith,bob@example.com,100.00,2,2026-02-01T09:00:00Z,2026-02-20T16:45:00Z,2026-02-01T09:00:00Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z"
+        }
+      ],
+      "total": 2
+    }
+    ```
+  </Tab>
+</Tabs>

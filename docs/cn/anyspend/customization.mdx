@@ -1,0 +1,557 @@
+---
+title: 定制化
+description: Slots、内容覆盖、主题和 AnySpend 组件的 CSS 类
+lang: cn
+originalPath: anyspend/customization.mdx
+---
+四层定制，每层针对不同的关注点：
+
+<CardGroup cols={2}>
+<Card title="Slots" icon="puzzle-piece">
+  用您自己的组件替换整个 UI 部分
+</Card>
+<Card title="内容" icon="font">
+  覆盖不同状态下的文本和消息
+</Card>
+<Card title="主题" icon="palette">
+  配置颜色和品牌外观
+</Card>
+<Card title="类" icon="code">
+  对特定元素应用 CSS 类覆盖
+</Card>
+</CardGroup>
+
+所有核心组件（`<AnySpend>`、`<AnySpendDeposit>`、`<AnySpendCheckout>`、`<AnySpendCheckoutTrigger>`）接受 `slots`、`content` 和 `theme` 属性。
+
+---
+
+## Slots
+
+Slots 允许您用自己的 React 组件替换整个 UI 部分。每个 slot 都从 AnySpend 接收属性，您可以在自定义实现中使用这些属性。
+
+```typescript title="AnySpendSlots 接口" icon="code"
+interface AnySpendSlots {
+  /** 替换主要动作/支付按钮 */
+  actionButton?: (props: ActionButtonSlotProps) => ReactNode;
+  /** 替换连接钱包按钮 */
+  connectWalletButton?: (props: ConnectWalletButtonSlotProps) => ReactNode;
+  /** 替换头部 */
+  header?: (props: { mode: "page" | "modal" }) => ReactNode;
+  /** 替换底部 */
+  footer?: ReactNode;
+  /** 替换成功屏幕 */
+  successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
+  /** 替换错误屏幕 */
+  errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** 替换结账表单面板（仅限结账时使用） */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** 替换运输方式选择器（仅限结账时使用） */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** 替换折扣码输入（仅限结账时使用） */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
+}
+```
+
+<Tip>
+  `checkoutForm`、`shippingSelector` 和 `discountInput` slots 仅在 `<AnySpendCheckout>` 和 `<AnySpendCheckoutTrigger>` 中使用。有关表单/运输/折扣功能的详细信息，请参阅[结账指南](/anyspend/checkout)。
+</Tip>
+
+### Slot 属性接口
+
+<AccordionGroup>
+<Accordion title="ActionButtonSlotProps">
+```typescript
+interface ActionButtonSlotProps {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  text: string;
+}
+```
+</Accordion>
+
+<Accordion title="ConnectWalletButtonSlotProps">
+```typescript
+interface ConnectWalletButtonSlotProps {
+  onPayment: () => void;
+  txLoading: boolean;
+  connectedAddress?: string;
+  paymentLabel: string;
+}
+```
+</Accordion>
+
+<Accordion title="SuccessScreenSlotProps">
+```typescript
+interface SuccessScreenSlotProps {
+  title: string;
+  description: string;
+  txHash?: string;
+  orderId?: string;
+  explorerUrl?: string;
+  onDone: () => void;
+  returnUrl?: string;
+  returnLabel?: string;
+}
+```
+</Accordion>
+
+<Accordion title="ErrorScreenSlotProps">
+```typescript
+interface ErrorScreenSlotProps {
+  title: string;
+  description: string;
+  errorType: "failure" | "expired" | "refunded";
+  orderId?: string;
+  onRetry?: () => void;
+  onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Slot 示例
+
+<Tabs>
+<Tab title="自定义动作按钮">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    actionButton: ({ onClick, disabled, loading, text }) => (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="my-custom-button"
+      >
+        {loading ? <MySpinner /> : text}
+      </button>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="自定义成功屏幕">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    successScreen: ({ title, txHash, explorerUrl, onDone, returnUrl }) => (
+      <div className="my-success">
+        <Confetti />
+        <h2>{title}</h2>
+        {txHash && (
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+            查看交易
+          </a>
+        )}
+        {returnUrl ? (
+          <a href={returnUrl}>继续购物</a>
+        ) : (
+          <button onClick={onDone}>完成</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="自定义头部 & 底部">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    header: ({ mode }) => (
+      <div className="my-header">
+        <img src="/logo.svg" alt="My App" />
+        {mode === "modal" && <CloseButton />}
+      </div>
+    ),
+    footer: (
+      <div className="my-footer">
+        <span>由 MyApp 提供技术支持</span>
+        <a href="/terms">条款</a>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="自定义连接钱包">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    connectWalletButton: ({ onPayment, txLoading, connectedAddress, paymentLabel }) => (
+      <div className="my-wallet-section">
+        {connectedAddress ? (
+          <button onClick={onPayment} disabled={txLoading}>
+            {txLoading ? "处理中..." : paymentLabel}
+          </button>
+        ) : (
+          <button onClick={onPayment}>连接 & 支付</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="自定义结账表单">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="收据的电子邮件"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">选择尺寸</option>
+          <option value="S">小号</option>
+          <option value="M">中号</option>
+          <option value="L">大号</option>
+        </select>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## 内容
+
+覆盖在不同交易状态下显示的文本和消息。每个字段接受 `string` 或 `ReactNode`。
+
+```typescript title="AnySpendContent 接口" icon="code"
+interface AnySpendContent {
+  // 成功状态
+  successTitle?: string | ReactNode;
+  successDescription?: string | ReactNode;
+
+  // 失败状态
+  failureTitle?: string | ReactNode;
+  failureDescription?: string | ReactNode;
+
+  // 过期状态
+  expiredTitle?: string | ReactNode;
+  expiredDescription?: string | ReactNode;
+
+  // 退款状态
+  refundedTitle?: string | ReactNode;
+  refundedDescription?: string | ReactNode;
+
+  // 处理状态
+  processingTitle?: string | ReactNode;
+  processingDescription?: string | ReactNode;
+
+  // 按钮标签
+  returnButtonLabel?: string;
+  retryButtonLabel?: string;
+}
+```
+
+### 内容示例
+
+<Tabs>
+<Tab title="电子商务">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={cartItems}
+  content={{
+    successTitle: "订单已确认！",
+    successDescription: "您的订单正在准备中。请检查您的电子邮件以获取运输更新。",
+    failureTitle: "支付失败",
+    failureDescription: "您的卡未被收费。请再试一次或使用另一种支付方式。",
+    processingTitle: "正在处理支付...",
+    processingDescription: "请不要关闭此窗口。这通常需要不到一分钟。",
+    returnButtonLabel: "返回商店",
+    retryButtonLabel: "再试一次",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="订阅">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  content={{
+    successTitle: "订阅已激活！",
+    successDescription: (
+      <div>
+        <p>欢迎来到 Pro！您的账户已升级。</p>
+        <ul>
+          <li>无限 API 调用</li>
+          <li>优先支持</li>
+          <li>高级分析</li>
+        </ul>
+      </div>
+    ),
+    returnButtonLabel: "前往仪表盘",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="游戏">
+```tsx
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  content={{
+    successTitle: "代币已存入！",
+    successDescription: "您的游戏余额已更新。继续游戏吧！",
+    expiredTitle: "会话已过期",
+    expiredDescription: "您的存款窗口已关闭。开始新的存款以继续。",
+    returnButtonLabel: "返回游戏",
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## 主题
+
+使用品牌颜色配置 AnySpend 组件的视觉外观。
+
+```typescript title="AnySpendTheme 接口" icon="code"
+interface AnySpendTheme {
+  /** 主要品牌颜色（十六进制）。作为主要强调色应用。 */
+  brandColor?: string;
+  /** 个别颜色覆盖（十六进制值） */
+  colors?: Partial<{
+    primary: string;         // 主要文本颜色
+    secondary: string;       // 次要文本颜色
+    tertiary: string;        // 弱化的文本颜色
+    surfacePrimary: string;  // 主要背景颜色
+    surfaceSecondary: string; // 次要背景（卡片，面板）
+    brand: string;           // 强调/品牌颜色（按钮，链接）
+    borderPrimary: string;   // 主要边框颜色
+    borderSecondary: string; // 次要边框颜色
+  }>;
+}
+```
+
+<Note>
+  `brandColor` 属性是一个快捷方式，它设置了 `brand` 颜色。如果同时提供了 `brandColor` 和 `colors.brand`，则 `colors.brand` 优先。
+</Note>
+
+### 主题示例
+
+<Tabs>
+<Tab title="仅品牌颜色">
+```tsx
+// 快速品牌化 — 只需设置您的品牌颜色
+<AnySpend
+  recipientAddress="0x..."
+  theme={{ brandColor: "#6366f1" }}
+/>
+```
+</Tab>
+
+<Tab title="深色主题">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  theme={{
+    brandColor: "#10b981",
+    colors: {
+      primary: "#f9fafb",
+      secondary: "#9ca3af",
+      tertiary: "#6b7280",
+      surfacePrimary: "#111827",
+      surfaceSecondary: "#1f2937",
+      borderPrimary: "#374151",
+      borderSecondary: "#4b5563",
+    },
+  }}
+/>
+```
+</Tab>
+
+<Tab title="最小覆盖">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={items}
+  theme={{
+    colors: {
+      brand: "#e11d48",      // 玫瑰色强调
+      surfaceSecondary: "#fef2f2", // 浅玫瑰背景
+    },
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## CSS 类覆盖
+
+对 AnySpend 组件内的特定元素应用自定义 CSS 类。每个组件都有自己的类接口。
+
+### AnySpendClasses
+
+由 `<AnySpend>` 使用：
+
+```typescript title="AnySpendClasses" icon="code"
+interface AnySpendClasses {
+  container?: string;
+  header?: string;
+  tabSection?: string;
+  cryptoPaySection?: string;
+  cryptoReceiveSection?: string;
+  panelOnramp?: string;
+  paymentButton?: string;
+  navigationBar?: string;
+}
+```
+
+### AnySpendCheckoutClasses
+
+由 `<AnySpendCheckout>` 和 `<AnySpendCheckoutTrigger>` 使用：
+
+<AccordionGroup>
+<Accordion title="布局 & 结构" defaultOpen>
+```typescript
+interface AnySpendCheckoutClasses {
+  root?: string;               // 根容器
+  layout?: string;             // 两栏布局包装器
+  paymentColumn?: string;      // 左栏（支付 + 表单）
+  cartColumn?: string;         // 右栏（购物车/摘要）
+}
+```
+</Accordion>
+
+<Accordion title="支付面板">
+```typescript
+{
+  paymentPanel?: string;            // 支付面板容器
+  paymentTitle?: string;            // “支付方式”标题
+  paymentMethodSelector?: string;   // 方法选择器容器
+  paymentMethodButton?: string;     // 各个方法按钮
+  cryptoPanel?: string;             // 加密支付部分
+  tokenSelector?: string;           // 代币下拉菜单
+  quoteDisplay?: string;            // 报价/价格显示
+  payButton?: string;               // 支付按钮
+  fiatPanel?: string;               // 法币支付部分
+  stripeForm?: string;              // Stripe 表单容器
+  stripeSubmitButton?: string;      // Stripe 提交按钮
+  coinbasePanel?: string;           // Coinbase 面板
+}
+```
+</Accordion>
+
+<Accordion title="购物车面板">
+```typescript
+{
+  cartPanel?: string;               // 购物车容器
+  cartTitle?: string;               // 购物车头部
+  cartItemRow?: string;             // 单个商品行
+  cartItemImage?: string;           // 商品图片
+  cartItemName?: string;            // 商品名称
+  cartItemDescription?: string;     // 商品描述
+  cartItemPrice?: string;           // 商品价格
+  cartItemMetadata?: string;        // 元数据容器
+  cartItemMetadataLabel?: string;   // 元数据标签
+  cartItemMetadataValue?: string;   // 元数据值
+  cartSummary?: string;             // 摘要部分
+  cartSubtotal?: string;            // 小计行
+  cartTotal?: string;               // 总计行
+  cartSummaryLine?: string;         // 额外摘要行
+  cartSummaryLineLabel?: string;    // 摘要行标签
+  cartSummaryLineAmount?: string;   // 摘要行金额
+  cartDiscount?: string;            // 折扣行
+}
+```
+</Accordion>
+
+<Accordion title="表单面板">
+```typescript
+{
+  formPanel?: string;          // 表单面板容器
+  formField?: string;          // 单个表单字段
+  formFieldLabel?: string;     // 字段标签
+  formFieldInput?: string;     // 字段输入
+  shippingSelector?: string;   // 运输选项选择器
+  discountInput?: string;      // 折扣码输入
+  addressForm?: string;        // 地址表单
+}
+```
+</Accordion>
+
+<Accordion title="状态 & 品牌">
+```typescript
+{
+  poweredBy?: string;          // “由...提供技术支持”页脚
+  successPanel?: string;       // 成功屏幕
+  returnButton?: string;       // 返回/重定向按钮
+  orderStatusPanel?: string;   // 订单状态跟踪器
+  retryButton?: string;        // 重试按钮
+  transactionLink?: string;    // 交易浏览器链接
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### AnySpendDepositClasses
+
+由 `<AnySpendDeposit>` 使用：
+
+```typescript title="AnyS

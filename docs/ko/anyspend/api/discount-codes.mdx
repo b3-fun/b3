@@ -1,0 +1,435 @@
+---
+title: 할인 코드
+description: 결제 링크를 위한 할인 코드 생성 및 관리
+lang: ko
+originalPath: anyspend/api/discount-codes.mdx
+---
+할인 코드를 사용하면 결제 링크에 대해 비율 기준 또는 고정 금액 할인을 제공할 수 있습니다. 개별 코드를 생성하고, 대량으로 배치를 생성하며, 결제 시 코드를 검증할 수 있습니다.
+
+<Info>
+  할인 코드 관리는 **admin** 권한이 필요합니다. `/validate` 엔드포인트는 **읽기** 권한이 필요하며, 이는 클라이언트 측 결제 흐름에서 안전하게 호출할 수 있음을 의미합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 할인 코드 목록
+
+<ParamField path="GET /discount-codes" type="read">
+  선택적 필터링 및 페이지네이션을 사용하여 모든 할인 코드를 나열합니다.
+</ParamField>
+
+<ParamField path="search" type="string" query>
+  코드 문자열로 검색합니다 (대소문자 구분 없는 부분 일치).
+</ParamField>
+
+<ParamField path="active" type="boolean" query>
+  활성 상태로 필터링합니다. 생략하면 모든 코드를 반환합니다.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  페이지네이션을 위한 페이지 번호 (기본값: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  페이지 당 결과 수 (기본값: `20`, 최대: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/discount-codes?search=SUMMER&active=true&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const codes = await client.discountCodes.list({
+      search: "SUMMER",
+      active: true,
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "dc_abc123",
+      "code": "SUMMER25",
+      "type": "percentage",
+      "value": 25,
+      "payment_link_id": "pl_xyz789",
+      "max_uses": 100,
+      "current_uses": 42,
+      "min_order_amount": "5000000",
+      "expires_at": "2026-09-01T00:00:00Z",
+      "is_active": true,
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+### 할인 코드 생성
+
+<ParamField path="POST /discount-codes" type="admin">
+  단일 할인 코드를 생성합니다.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  할인 코드 문자열 (예: `SUMMER25`). 반드시 고유해야 합니다. 자동으로 대문자로 변환됩니다.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  할인 유형: `percentage` 또는 `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  할인 값. `percentage`의 경우 1-100 사이의 숫자. `fixed`의 경우 토큰의 최소 단위 금액 (예: 5 USDC의 경우 `5000000`).
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  이 코드를 특정 결제 링크에 제한합니다. 생략하면 모든 결제 링크에서 작동합니다.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  이 코드를 사용할 수 있는 최대 횟수. 생략하면 무제한 사용 가능합니다.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  이 코드를 사용하기 위해 필요한 최소 주문 금액, 토큰의 최소 단위로.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  ISO 8601 만료 타임스탬프. 생략하면 만료되지 않는 코드입니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "type": "percentage",
+        "value": 25,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 100,
+        "min_order_amount": "5000000",
+        "expires_at": "2026-09-01T00:00:00Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const code = await client.discountCodes.create({
+      code: "SUMMER25",
+      type: "percentage",
+      value: 25,
+      payment_link_id: "pl_xyz789",
+      max_uses: 100,
+      min_order_amount: "5000000",
+      expires_at: "2026-09-01T00:00:00Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dc_abc123",
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "payment_link_id": "pl_xyz789",
+    "max_uses": 100,
+    "current_uses": 0,
+    "min_order_amount": "5000000",
+    "expires_at": "2026-09-01T00:00:00Z",
+    "is_active": true,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### 할인 코드 업데이트
+
+<ParamField path="PATCH /discount-codes/:id" type="admin">
+  기존 할인 코드를 업데이트합니다. 모든 필드는 선택 사항입니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "max_uses": 200,
+        "expires_at": "2026-12-31T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.discountCodes.update("dc_abc123", {
+      max_uses: 200,
+      expires_at: "2026-12-31T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 할인 코드 삭제
+
+<ParamField path="DELETE /discount-codes/:id" type="admin">
+  할인 코드를 영구적으로 삭제합니다. 이 코드를 사용하는 활성 세션에는 영향을 주지 않습니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.discountCodes.delete("dc_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 할인 코드 검증
+
+<ParamField path="POST /discount-codes/validate" type="read">
+  할인 코드를 결제 링크 및 주문 금액에 대해 검증합니다. 유효한 경우 할인 세부 정보를 반환하거나, 코드가 유효하지 않은 이유를 설명하는 오류 메시지를 반환합니다.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  검증할 할인 코드.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string" required>
+  코드가 적용되는 결제 링크.
+</ParamField>
+
+<ParamField path="amount" type="string" required>
+  `min_order_amount`을 확인하고 할인된 총액을 계산하는 데 사용되는 주문 금액, 토큰의 최소 단위로.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/validate \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "payment_link_id": "pl_xyz789",
+        "amount": "20000000"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.discountCodes.validate({
+      code: "SUMMER25",
+      payment_link_id: "pl_xyz789",
+      amount: "20000000",
+    });
+
+    if (result.valid) {
+      console.log("Discount:", result.discount_amount);
+      console.log("New total:", result.final_amount);
+    } else {
+      console.log("Invalid:", result.error);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**유효한 응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "discount_amount": "5000000",
+    "final_amount": "15000000"
+  }
+}
+```
+
+**유효하지 않은 응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": false,
+    "error": "Code has reached maximum number of uses"
+  }
+}
+```
+
+<Note>
+  validate 엔드포인트는 사용 횟수를 소모하지 **않습니다**. 할인이 적용된 결제가 완료될 때만 사용 횟수가 계산됩니다.
+</Note>
+
+---
+
+### 대량 할인 코드 생성
+
+<ParamField path="POST /discount-codes/batch" type="admin">
+  공유 구성을 사용하여 한 번에 여러 할인 코드를 대량 생성합니다. 프로모션 캠페인이나 고유한 일회용 코드를 생성하는 데 유용합니다.
+</ParamField>
+
+<ParamField path="codes" type="string[]" required>
+  생성할 코드 문자열의 배열. 각각은 고유해야 합니다.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  모든 코드에 적용되는 할인 유형: `percentage` 또는 `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  모든 코드에 적용되는 할인 값.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  모든 코드를 특정 결제 링크에 제한합니다.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  코드당 최대 사용 횟수. 일회용 코드의 경우 `1`로 설정합니다.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  모든 코드에 대한 최소 주문 금액.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  모든 코드에 대한 ISO 8601 만료 타임스탬프.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/batch \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "codes": ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+        "type": "fixed",
+        "value": 2000000,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 1,
+        "expires_at": "2026-06-30T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const batch = await client.discountCodes.batchCreate({
+      codes: ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+      type: "fixed",
+      value: 2000000,
+      payment_link_id: "pl_xyz789",
+      max_uses: 1,
+      expires_at: "2026-06-30T23:59:59Z",
+    });
+
+    console.log(`Created ${batch.created} codes`);
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "created": 3,
+    "codes": [
+      { "id": "dc_001", "code": "PROMO-A1B2" },
+      { "id": "dc_002", "code": "PROMO-C3D4" },
+      { "id": "dc_003", "code": "PROMO-E5F6" }
+    ]
+  }
+}
+```
+
+---
+
+## 할인 코드 객체
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `id` | `string` | 고유 식별자 (예: `dc_abc123`) |
+| `code` | `string` | 할인 코드 문자열 (대문자로 변환됨) |
+| `type` | `string` | `percentage` 또는 `fixed` |
+| `value` | `number` | 할인 값 (비율 1-100, 또는 최소 단위의 고정 금액) |
+| `payment_link_id` | `string \| null` | 제한된 결제 링크, 또는 `null`은 모든 링크에 대해 |
+| `max_uses` | `number \| null` | 최대 사용 횟수, 또는 `null`은 무제한 |
+| `current_uses` | `number` | 지금까지 사용된 횟수 |
+| `min_order_amount` | `string \| null` | 사용하기 위해 필요한 최소 주문 금액 |
+| `expires_at` | `string \| null` | ISO 8601 만료, 또는 `null`은 만료 없음 |
+| `is_active` | `boolean` | 코드가 현재 사용 가능한지 여부 |
+| `created_at` | `string` | ISO 8601 생성 타임스탬프 |
+| `updated_at` | `string` | ISO 8601 마지막 업데이트 타임스탬프 |
+
+## 유효성 검사 규칙
+
+다음 중 하나라도 참인 경우 할인 코드는 **유효하지 않은** 것으로 간주됩니다:
+
+| 조건 | 오류 메시지 |
+|-----------|---------------|
+| 코드가 존재하지 않음 | `Invalid discount code` |
+| 코드가 비활성화됨 (`is_active: false`) | `Discount code is not active` |
+| 코드가 만료됨 | `Discount code has expired` |
+| `current_uses >= max_uses` | `Code has reached maximum number of uses` |
+| 코드가 다른 결제 링크에 제한됨 | `Code is not valid for this payment link` |
+| 주문 금액이 `min_order_amount`보다 낮음 | `Order amount is below minimum required` |

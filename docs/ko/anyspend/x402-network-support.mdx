@@ -1,0 +1,196 @@
+---
+title: 네트워크 & 토큰 지원
+description: 'AnySpend x402 결제를 위한 지원되는 블록체인, 토큰, 그리고 계약 주소'
+lang: ko
+originalPath: anyspend/x402-network-support.mdx
+---
+## 개요
+
+AnySpend x402는 EVM 호환 체인과 Solana (SVM)을 포함한 여러 블록체인 네트워크에서의 결제를 지원합니다. 이 페이지는 지원되는 네트워크, 토큰 및 그들의 계약 주소에 대한 완전한 참조를 제공합니다.
+
+## EVM 메인넷 네트워크
+
+AnySpend x402는 다음 EVM 메인넷 체인을 지원합니다:
+
+| Network | Identifier | Chain ID | Type |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**생산에 권장되는 체인:** Base (낮은 수수료, 빠름), Ethereum (최대 유동성), Arbitrum (균형잡힘)
+</Note>
+
+## EVM 테스트넷 네트워크
+
+개발 및 테스트를 위해, AnySpend는 다음 테스트넷을 지원합니다:
+
+| Network | Identifier | Chain ID | Faucet |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Abstract Faucet](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji Faucet](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
+
+## SVM 네트워크 (Solana)
+
+AnySpend는 또한 Solana 가상 머신(SVM) 네트워크를 지원합니다:
+
+| Network | Identifier | Chain ID | Type |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
+
+<Info>
+Solana 지원은 사용자가 SOL 또는 SPL 토큰으로 결제할 수 있게 하고 리소스 서버는 EVM 체인에서 스테이블코인을 받을 수 있게 합니다.
+</Info>
+
+## 토큰 호환성
+
+<Note>
+X402와 함께 토큰을 사용하려면 **EIP-3009** (`transferWithAuthorization`) 또는 **EIP-2612** (`permit`)을 구현해야 합니다.
+</Note>
+
+지원되는 토큰의 정적 목록을 유지하는 대신, 실시간으로 어떤 토큰의 호환성을 검증할 수 있는 도구를 구축했습니다.
+
+## X402 토큰 호환성 검사기
+
+<Note>
+**새 도구 사용 가능**: 통합 전에 어떤 ERC-20 토큰이 X402 결제와 호환되는지 확인하세요.
+</Note>
+
+X402와 호환되려면 토큰은 다음 중 하나를 구현해야 합니다:
+- **EIP-3009** (`transferWithAuthorization`) - USDC에서 사용됨
+- **EIP-2612** (`permit`) - 일부 체인에서 USDT(및 많은 다른 현대적인 ERC-20 토큰)에서 사용됨
+
+### 공개 검사기 사용하기
+
+AnySpend에서 지원하는 체인에서 어떤 ERC-20 토큰이든 확인하세요:
+
+**웹 인터페이스**: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+토큰 주소를 입력하고 네트워크를 선택하여 즉시 X402 호환성을 확인하세요.
+
+**직접 API**: API를 직접 쿼리할 수도 있습니다:
+
+```bash
+curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+```
+
+이는 JSON 형식으로 토큰 메타데이터와 호환성 정보를 반환합니다.
+
+### npm 패키지 사용하기
+
+토큰 호환성 검사를 애플리케이션에 통합하는 개발자를 위해:
+
+**npm 패키지**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+
+```bash
+npm install @b3dotfun/anyspend-x402-token-compat
+```
+
+**사용법:**
+```typescript
+import { TokenCompatClient } from '@b3dotfun/anyspend-x402-token-compat';
+
+const client = new TokenCompatClient();
+
+// 토큰 메타데이터와 호환성 가져오기
+const metadata = await client.getTokenMetadata('base', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913');
+console.log(metadata.supportsEip2612); // true - permit 지원
+console.log(metadata.supportsEip3009); // true - transferWithAuth 지원
+
+// 빠른 호환성 검사
+const hasPermit = await client.supportsEip2612('base', tokenAddress);
+```
+
+
+### 작동 방식
+
+**지원되는 크로스 체인 경로:**
+AnySpend는 지원되는 모든 EVM 네트워크 간의 크로스 체인 라우팅을 지원합니다:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 모든 지원 체인 간 브리징
+- 크로스 VM: Solana ↔ EVM 체인 (실험적)
+
+<Info>
+크로스 체인 결제는 브리징 시간으로 인해 더 오래 걸리며 (2-5분) 추가 수수료(~0.5% 총)가 발생합니다. 최상의 사용자 경험을 위해 동일 체인 결제를 권장합니다.
+</Info>
+
+
+<Note>
+Cloudflare의 글로벌 인프라에 구축되어 즉각적인 결과를 위한 지능형 캐싱을 제공합니다.
+</Note>
+
+검사기는 실시간 온체인 검증과 검증된 토큰의 성장하는 데이터베이스를 결합합니다:
+
+- 스마트 캐싱을 통한 밀리초 수준의 응답 시간
+- 더 많은 토큰이 검사됨에 따라 자동으로 성장하는 데이터베이스
+- 캐시되지 않은 토큰에 대한 온체인 검증
+- 전 세계적으로 낮은 지연 시간을 위한 Cloudflare Workers에서 실행
+
+### x402에 통합
+
+토큰 호환성 검사기는 이미 AnySpend X402 SDK에 통합되어 있습니다:
+
+- 결제 전에 토큰 호환성을 사전에 검증
+- 지원되지 않는 토큰에 대해 명확하고 실행 가능한 오류 반환
+- 호환되지 않는 토큰으로 인한 실패한 거래 방지
+
+**실시간으로 시도해보세요**: [https://x402-demo.anyspend.com/](https://x402-demo.anyspend.com/)
+
+<Warning>
+**중요**: 새 토큰을 결제 흐름에 통합하기 전에 항상 토큰 호환성을 확인하세요. 호환되지 않는 토큰은 결제 서명 실패로 이어집니다.
+</Warning>
+
+## 추가 자료
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  RPC 엔드포인트 및 체인 메타데이터
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  체인 전반에 걸친 검증된 토큰 주소
+</Card>
+
+<Card title="Coinbase Faucet" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  개발을 위한 테스트넷 토큰 받기
+</Card>
+
+<Card title="AnySpend Facilitator" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  생산용 퍼실리테이터 API 엔드포인트
+</Card>
+</CardGroup>
+
+## 다음 단계
+
+<CardGroup cols={2}>
+<Card title="구매자를 위한 퀵스타트" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  이 토큰들을 사용하여 서비스에 대한 결제를 시작하세요
+</Card>
+
+<Card title="판매자를 위한 퀵스타트" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  이 토큰들을 받아들이도록 API를 구성하세요
+</Card>
+</CardGroup>
+
+## 도움 받기
+
+특정 토큰이나 네트워크를 지원받고 싶다면:
+
+- **Discord**: [#anyspend-support](https://discord.gg/b3dotfun)에서 요청하세요
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)에서 이슈를 열어주세요
+- **이메일**: support@b3.fun

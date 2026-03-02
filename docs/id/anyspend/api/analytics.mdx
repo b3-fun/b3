@@ -1,0 +1,252 @@
+---
+title: Analitik
+description: Ikhtisar analitik pendapatan dan konversi
+lang: id
+originalPath: anyspend/api/analytics.mdx
+---
+Endpoint analitik menyediakan gambaran menyeluruh tentang kinerja pembayaran Anda, termasuk total pendapatan, jumlah pelanggan, tingkat konversi, dan rincian per hari, tautan pembayaran, token, dan rantai.
+
+<Info>
+  Endpoint analitik memerlukan izin **baca**.
+</Info>
+
+## Autentikasi
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Dasar: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoint
+
+### Dapatkan Ikhtisar Analitik
+
+<ParamField path="GET /analytics/overview" type="read">
+  Mengembalikan ikhtisar analitik teragregasi untuk periode waktu yang ditentukan.
+</ParamField>
+
+<ParamField path="period" type="string" query>
+  Periode waktu untuk metrik. Salah satu dari: `7d`, `30d`, `90d`, `all`. Default ke `30d`.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/analytics/overview?period=30d" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const analytics = await client.analytics.overview({ period: "30d" });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "period_usd": 45230.50,
+      "period_transactions": 312,
+      "all_time_usd": 182450.75,
+      "all_time_transactions": 1847
+    },
+    "customers": {
+      "total": 892,
+      "new_in_period": 156
+    },
+    "payment_links": {
+      "total": 24,
+      "active": 18
+    },
+    "conversion_rate": 0.68,
+    "daily": [
+      {
+        "date": "2026-02-27",
+        "transactions": 14,
+        "revenue_usd": 1820.00
+      },
+      {
+        "date": "2026-02-26",
+        "transactions": 18,
+        "revenue_usd": 2340.50
+      },
+      {
+        "date": "2026-02-25",
+        "transactions": 11,
+        "revenue_usd": 1450.25
+      }
+    ],
+    "top_payment_links": [
+      {
+        "id": "pl_abc123",
+        "name": "Pro Plan Monthly",
+        "revenue_usd": 12500.00,
+        "transactions": 125
+      },
+      {
+        "id": "pl_def456",
+        "name": "Enterprise Annual",
+        "revenue_usd": 9800.00,
+        "transactions": 14
+      },
+      {
+        "id": "pl_ghi789",
+        "name": "Starter Pack",
+        "revenue_usd": 7200.00,
+        "transactions": 96
+      }
+    ],
+    "top_tokens": [
+      {
+        "symbol": "USDC",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain_id": 8453,
+        "revenue_usd": 32100.00,
+        "transactions": 245
+      },
+      {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "chain_id": 8453,
+        "revenue_usd": 8400.00,
+        "transactions": 42
+      }
+    ],
+    "top_chains": [
+      {
+        "chain_id": 8453,
+        "name": "Base",
+        "revenue_usd": 38200.00,
+        "transactions": 278
+      },
+      {
+        "chain_id": 1,
+        "name": "Ethereum",
+        "revenue_usd": 7030.50,
+        "transactions": 34
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Bidang Respon
+
+### Pendapatan
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `period_usd` | `number` | Total pendapatan dalam USD untuk periode yang dipilih |
+| `period_transactions` | `number` | Jumlah transaksi yang selesai dalam periode tersebut |
+| `all_time_usd` | `number` | Total pendapatan seumur hidup dalam USD |
+| `all_time_transactions` | `number` | Jumlah total transaksi seumur hidup |
+
+### Pelanggan
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `total` | `number` | Total pelanggan unik (berdasarkan alamat dompet) |
+| `new_in_period` | `number` | Pelanggan baru yang diperoleh dalam periode yang dipilih |
+
+### Tautan Pembayaran
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `total` | `number` | Total tautan pembayaran yang dibuat |
+| `active` | `number` | Tautan pembayaran yang saat ini aktif |
+
+### Tingkat Konversi
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `conversion_rate` | `number` | Rasio checkout yang selesai terhadap sesi yang dimulai (0.0 hingga 1.0) |
+
+### Rincian Harian
+
+Setiap entri dalam array `daily` berisi:
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `date` | `string` | Tanggal dalam format `YYYY-MM-DD` |
+| `transactions` | `number` | Transaksi yang selesai pada tanggal tersebut |
+| `revenue_usd` | `number` | Pendapatan dalam USD pada tanggal tersebut |
+
+### Tautan Pembayaran Teratas
+
+Diberi peringkat berdasarkan pendapatan dalam periode yang dipilih:
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `id` | `string` | ID tautan pembayaran |
+| `name` | `string` | Nama tautan pembayaran |
+| `revenue_usd` | `number` | Pendapatan dalam USD |
+| `transactions` | `number` | Jumlah transaksi |
+
+### Token Teratas
+
+Diberi peringkat berdasarkan pendapatan dalam periode yang dipilih:
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `symbol` | `string` | Simbol token (mis., `USDC`) |
+| `address` | `string` | Alamat kontrak token |
+| `chain_id` | `number` | ID rantai tempat token diterima |
+| `revenue_usd` | `number` | Pendapatan dalam USD |
+| `transactions` | `number` | Jumlah transaksi |
+
+### Rantai Teratas
+
+Diberi peringkat berdasarkan pendapatan dalam periode yang dipilih:
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `chain_id` | `number` | ID Rantai |
+| `name` | `string` | Nama Rantai |
+| `revenue_usd` | `number` | Pendapatan dalam USD |
+| `transactions` | `number` | Jumlah transaksi |
+
+---
+
+## Opsi Periode
+
+| Nilai | Deskripsi |
+|-------|-------------|
+| `7d` | 7 hari terakhir |
+| `30d` | 30 hari terakhir (default) |
+| `90d` | 90 hari terakhir |
+| `all` | Semua waktu |
+
+<Note>
+  Array `daily` mengembalikan satu entri per hari untuk periode yang dipilih. Untuk `all`, array harian dibatasi pada 90 hari terakhir.
+</Note>
+
+## Contoh: Grafik Dashboard
+
+```typescript
+const analytics = await client.analytics.overview({ period: "30d" });
+
+// Plot pendapatan harian
+analytics.daily.forEach(({ date, revenue_usd, transactions }) => {
+  console.log(`${date}: $${revenue_usd.toFixed(2)} (${transactions} txns)`);
+});
+
+// Tampilkan tingkat konversi sebagai persentase
+console.log(`Konversi: ${(analytics.conversion_rate * 100).toFixed(1)}%`);
+
+// Tampilkan tautan pembayaran dengan kinerja terbaik
+const top = analytics.top_payment_links[0];
+if (top) {
+  console.log(`Tautan terbaik: ${top.name} - $${top.revenue_usd.toFixed(2)}`);
+}
+```

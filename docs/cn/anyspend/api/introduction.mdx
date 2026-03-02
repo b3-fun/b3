@@ -1,0 +1,245 @@
+---
+title: 平台 API
+description: 通过编程方式访问 AnySpend - 创建支付链接、管理产品、跟踪交易等等
+lang: cn
+originalPath: anyspend/api/introduction.mdx
+---
+# 平台 API
+
+AnySpend 平台 API 为您的支付基础设施提供完全的编程控制。通过一个干净、类 Stripe 风格的 REST API 构建集成、自动化工作流程，并让 AI 代理管理您的商务堆栈。
+
+## 这是为谁准备的？
+
+- **开发者** 使用 AnySpend 构建自定义集成
+- **AI 代理** 创建支付链接、管理产品或提取分析数据
+- **自动化平台** 编排商务工作流程（Zapier、n8n、自定义脚本）
+- **后端服务** 需要以编程方式创建结账会话或跟踪交易
+
+## 快速开始
+
+用 3 行代码创建一个支付链接：
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+API 以类 Stripe 风格的响应返回创建的资源：
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "short_code": "xK9mQ2",
+  "amount": "10000000",
+  "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "chain_id": 8453,
+  "recipient_address": "0xYourAddress...",
+  "url": "https://platform-api.anyspend.com/pay/xK9mQ2",
+  "is_active": true,
+  "items": [],
+  "created_at": 1709078400000,
+  "updated_at": 1709078400000
+}
+```
+
+## 将支付与客户关联
+
+有两种模式将 AnySpend 支付回溯到您的用户：
+
+### 模式 1：URL 参数（简单）
+
+将 `client_reference_id` 和 `metadata` 追加到您的支付链接 URL：
+
+```
+https://anyspend.com/pay/xK9mQ2?client_reference_id=order_123&metadata[user_id]=clerk_abc
+```
+
+这些值会自动流入您的 `payment.completed` webhook。
+
+### 模式 2：服务器端会话（企业级）
+
+在您的后端创建一个带有完整客户上下文的结账会话：
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/checkout-sessions \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123def456",
+    "client_reference_id": "order_456",
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "metadata": { "user_id": "clerk_abc", "plan": "pro" },
+    "success_url": "https://example.com/success?session_id={SESSION_ID}"
+  }'
+```
+
+响应包含一个 `url` 字段 -- 将您的客户重定向到那里进行支付。所有数据都包含在支付完成时的 webhook 中。
+
+<Tip>
+  请参阅 [Webhooks 指南](/anyspend/api/webhooks-guide#reconciling-payments-with-your-system) 以获取在您的 webhook 处理程序中对支付进行对账的完整示例。
+</Tip>
+
+## 基础 URL
+
+所有 API 请求都发送到：
+
+```
+https://platform-api.anyspend.com/api/v1
+```
+
+## 认证等级
+
+API 根据端点使用三个认证等级：
+
+| 等级 | 需要认证 | 速率限制 | 使用案例 |
+|------|--------------|------------|----------|
+| **开放** | 无（基于 IP 的速率限制） | 每个 IP 每分钟 5 次请求 | 快速支付 -- 无需账户的一次性支付 |
+| **API 密钥** | 通过头部的 `asp_xxx` 密钥 | 每个密钥每分钟 120 次请求 | 所有标准 API 操作 -- 在支付链接、产品、交易等上进行 CRUD |
+| **JWT** | 仪表板会话令牌 | 标准会话限制 | 仅限仪表板路由（由 web 应用自动管理） |
+
+大多数开发者将使用 API 密钥认证。请参阅 [认证](/anyspend/api/authentication) 页面了解创建和管理密钥的详情。
+
+## 响应格式
+
+每个 API 响应都遵循一致的类 Stripe 格式。
+
+### 单一资源
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "amount": "10000000",
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+`object` 字段告诉您资源类型。`id` 字段是唯一标识符。
+
+### 资源列表
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+有关导航列表响应的详细信息，请参阅 [分页与过滤](/anyspend/api/pagination) 页面。
+
+### 错误响应
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "The 'name' field is required.",
+    "param": "name"
+  }
+}
+```
+
+有关完整的错误分类，请参阅 [错误](/anyspend/api/errors) 页面。
+
+### 已删除资源
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "deleted": true
+}
+```
+
+## 速率限制
+
+速率限制根据认证等级而异。当您超过限制时，API 返回一个 `429` 状态和一个 `rate_limit_error`：
+
+| 等级 | 限制 | 窗口 |
+|------|-------|--------|
+| 开放（快速支付） | 5 次请求 | 1 分钟 |
+| API 密钥 | 120 次请求 | 1 分钟 |
+
+响应头包括速率限制信息：
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 117
+X-RateLimit-Reset: 1709078460
+```
+
+## 幂等性
+
+为了在 `POST` 和 `PATCH` 请求上安全重试，请包含一个 `Idempotency-Key` 头。带有相同键和正文的重复请求返回缓存的响应。详情请参阅 [幂等性](/anyspend/api/idempotency) 页面。
+
+## 可用资源
+
+<CardGroup cols={2}>
+<Card title="认证" icon="key" href="/anyspend/api/authentication">
+  创建和管理 API 密钥，了解权限级别，并遵循安全最佳实践。
+</Card>
+
+<Card title="支付链接" icon="link" href="/anyspend/api/payment-links">
+  创建、更新和管理带有项目、统计、会话和访客跟踪的支付链接。
+</Card>
+
+<Card title="产品" icon="box" href="/anyspend/api/products">
+  管理您的产品目录 -- 创建可以附加到支付链接的产品。
+</Card>
+
+<Card title="结账会话" icon="credit-card" href="/anyspend/api/checkout-sessions-api">
+  创建和跟踪结账会话，监控支付状态，并处理完成情况。
+</Card>
+
+<Card title="交易" icon="arrow-right-arrow-left" href="/anyspend/api/transactions">
+  查询交易历史，按状态过滤，并提取结算详情。
+</Card>
+
+<Card title="客户" icon="users" href="/anyspend/api/customers">
+  跟踪客户钱包，查看购买历史，并管理客户记录。
+</Card>
+
+<Card title="Webhooks" icon="bell" href="/anyspend/api/webhooks-api">
+  注册 webhook 端点以实时接收支付事件的通知。
+</Card>
+
+<Card title="折扣码" icon="tag" href="/anyspend/api/discount-codes">
+  为您的支付链接创建和管理折扣码。
+</Card>
+</CardGroup>
+
+## 下一步
+
+<Steps>
+<Step title="获取您的 API 密钥">
+  转到您的 [AnySpend 仪表板](https://anyspend.com/dashboard) 下的 **设置 > API 密钥** 并创建一个具有您需要的权限的密钥。
+</Step>
+
+<Step title="发出您的第一个请求">
+  使用上面的 curl 示例或您偏好的 HTTP 客户端创建一个支付链接。
+</Step>
+
+<Step title="设置 webhooks">
+  注册一个 webhook 端点以实时接收支付完成时的通知。
+</Step>
+</Steps>

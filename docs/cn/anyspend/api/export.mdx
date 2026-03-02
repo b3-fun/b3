@@ -1,0 +1,215 @@
+---
+title: 数据导出
+description: 以 CSV 或 JSON 格式导出交易和客户数据
+lang: cn
+originalPath: anyspend/api/export.mdx
+---
+AnySpend 平台 API 提供了用于批量下载您的交易和客户数据的导出端点。导出支持 CSV 和 JSON 格式，并支持可选的过滤。
+
+<Info>
+  两个导出端点都需要具有 **read** 权限的 API 密钥。
+</Info>
+
+## 端点
+
+| 端点 | 描述 |
+|----------|-------------|
+| `GET /api/v1/transactions/export` | 导出交易 |
+| `GET /api/v1/customers/export` | 导出客户 |
+
+## 交易导出
+
+导出交易记录，可选过滤器包括状态、日期范围和格式。
+
+### 参数
+
+| 参数 | 类型 | 必需 | 默认值 | 描述 |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | 否 | `csv` | 输出格式：`csv` 或 `json` |
+| `status` | `string` | 否 | all | 按状态过滤：`completed`, `pending`, `failed` |
+| `from` | `string` | 否 | -- | 开始日期（ISO 8601，例如 `2025-01-01T00:00:00Z`） |
+| `to` | `string` | 否 | -- | 结束日期（ISO 8601） |
+
+### CSV 输出
+
+CSV 导出包括一个标题行，后跟每笔交易的一行：
+
+```csv
+id,payment_link_id,amount,token_address,chain_id,sender_address,recipient_address,tx_hash,status,created_at,completed_at
+txn_abc123,pl_def456,50000000,0x833589...02913,8453,0xSender...,0xRecipient...,0xTxHash...,completed,2025-06-01T10:00:00Z,2025-06-01T10:00:30Z
+txn_ghi789,pl_def456,25000000,0x833589...02913,8453,0xSender2...,0xRecipient...,0xTxHash2...,completed,2025-06-01T11:00:00Z,2025-06-01T11:00:15Z
+```
+
+### JSON 输出
+
+JSON 导出返回一个交易对象数组：
+
+```json
+[
+  {
+    "id": "txn_abc123",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xSenderAddress",
+    "recipient_address": "0xRecipientAddress",
+    "tx_hash": "0xTransactionHash",
+    "status": "completed",
+    "created_at": "2025-06-01T10:00:00Z",
+    "completed_at": "2025-06-01T10:00:30Z"
+  }
+]
+```
+
+### 示例
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o transactions.csv \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2025-01-01T00:00:00Z&to=2025-06-30T23:59:59Z" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o transactions.json \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-06-30T23:59:59Z",
+});
+
+writeFileSync("transactions.csv", csv);
+console.log("Exported transactions to transactions.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const transactions = await platform.transactions.export({
+  format: "json",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+});
+
+console.log(`Exported ${transactions.length} transactions`);
+
+// 内存中处理
+for (const txn of transactions) {
+  console.log(txn.id, txn.amount, txn.completed_at);
+}
+```
+
+</CodeGroup>
+
+## 客户导出
+
+导出与您的组织关联的所有客户记录。
+
+### 参数
+
+| 参数 | 类型 | 必需 | 默认值 | 描述 |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | 否 | `csv` | 输出格式：`csv` 或 `json` |
+
+### CSV 输出
+
+```csv
+id,wallet_address,email,name,total_spent,transaction_count,first_seen,last_seen
+cust_abc123,0xWalletAddress,alice@example.com,Alice,150000000,3,2025-03-15T08:00:00Z,2025-06-01T10:00:00Z
+cust_def456,0xWalletAddress2,,Bob,50000000,1,2025-05-20T14:00:00Z,2025-05-20T14:00:00Z
+```
+
+### JSON 输出
+
+```json
+[
+  {
+    "id": "cust_abc123",
+    "wallet_address": "0xWalletAddress",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "total_spent": "150000000",
+    "transaction_count": 3,
+    "first_seen": "2025-03-15T08:00:00Z",
+    "last_seen": "2025-06-01T10:00:00Z"
+  }
+]
+```
+
+### 示例
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o customers.csv \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o customers.json \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.customers.export({ format: "csv" });
+writeFileSync("customers.csv", csv);
+console.log("Exported customers to customers.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const customers = await platform.customers.export({ format: "json" });
+
+console.log(`Exported ${customers.length} customers`);
+for (const c of customers) {
+  console.log(c.name, c.wallet_address, c.total_spent);
+}
+```
+
+</CodeGroup>
+
+## 小贴士
+
+<CardGroup cols={2}>
+  <Card title="安排定期导出" icon="calendar">
+    设置一个 cron 作业或计划函数，以每日或每周导出数据，用于备份和对账。
+  </Card>
+  <Card title="对于大型数据集使用日期过滤器" icon="filter">
+    如果您有成千上万的交易，使用 `from` 和 `to` 参数导出较小的日期范围，以避免超时。
+  </Card>
+  <Card title="CSV 适用于电子表格" icon="table">
+    CSV 导出可以直接在 Excel、Google Sheets 和其他电子表格工具中打开，以便快速分析。
+  </Card>
+  <Card title="JSON 适用于程序化使用" icon="code">
+    JSON 导出非常适合将数据输入到分析管道、数据库或自定义仪表板中。
+  </Card>
+</CardGroup>
+
+<Warning>
+  导出受到速率限制。大型导出（超过 10,000 条记录）可能需要几秒钟才能生成。请求将阻塞直到导出完成 -- 对于非常大的数据集请相应规划。
+</Warning>

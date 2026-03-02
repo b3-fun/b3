@@ -3,7 +3,7 @@ title: Lanzador de Juegos
 description: >-
   Lanza juegos de forma nativa dentro de la plataforma BSMNT (basement.fun) y
   construye experiencias adictivas en cadena sin tener que preocuparte por los
-  componentes criptográficos
+  componentes cripto
 lang: es
 originalPath: basement/game-launcher.mdx
 ---
@@ -28,7 +28,7 @@ originalPath: basement/game-launcher.mdx
   ```
 </Step>
 
-<Step title="Auth" icon="key">
+<Step title="Autenticación" icon="key">
   Puedes cargar el perfil del jugador decodificando el JWT, o utilizando nuestra API. Nosotros nos encargamos de las conexiones de billetera, verificación y onboarding.
   
   ```json Perfil del Jugador
@@ -44,10 +44,10 @@ originalPath: basement/game-launcher.mdx
   ```
 </Step>
 
-<Step title="Activar" icon="bolt">
-  Permite que el usuario juegue tu juego. Cuando suceda algo, puedes activar una acción a través de nuestro motor de reglas estilo Zapier, o directamente a través de la API.
+<Step title="Disparador" icon="bolt">
+  Permite que el usuario juegue tu juego. Cuando suceda algo, puedes disparar una acción a través de nuestro motor de reglas al estilo Zapier, o directamente vía API.
   
-  ```bash Ejemplo de API de Activación
+  ```bash Ejemplo de API Disparador
   curl --location 'https://api.basement.fun/launcher/' \
   --header 'X-Service-Method: triggerRulesEngine' \
   --data '{
@@ -65,11 +65,11 @@ originalPath: basement/game-launcher.mdx
   </Card>
   
   <Card title="Playground del Lanzador" icon="play" href="https://basement.fun/playground" cta="Prueba Ahora">
-    Prueba la integración del lanzador en un entorno sandbox
+    Prueba la integración del lanzador en un entorno de sandbox
   </Card>
 </CardGroup>
 
-## ¿Qué puedes hacer con el lanzador BSMNT?
+## ¿Qué puedes hacer con el lanzador de BSMNT?
 
 El verdadero poder del lanzador de juegos está en la abstracción de UX cripto. Tu juego puede enviar eventos onchain de forma segura a través de una simple API REST, ejecutable del lado del cliente.
 
@@ -89,11 +89,11 @@ El verdadero poder del lanzador de juegos está en la abstracción de UX cripto.
   </Card>
   
   <Card title="Emitir Tokens & NFTs" icon="coins">
-    Envía ERC20s y ERC721 & 1155 NFTs basados en acciones del juego.
+    Envía ERC20s y NFTs ERC721 & 1155 basados en acciones del juego.
   </Card>
   
   <Card title="Pagar con Tokens" icon="credit-card">
-    Solicita a los usuarios que envíen o transfieran tokens para pagar por acciones o activos dentro del juego.
+    Solicita a los usuarios enviar o transferir tokens para pagar por acciones o activos en el juego.
   </Card>
 </CardGroup>
 
@@ -115,7 +115,7 @@ El verdadero poder del lanzador de juegos está en la abstracción de UX cripto.
   </Card>
   
   <Card title="Recoger Reseñas" icon="star">
-    Sistema integrado de reseñas y calificaciones para juegos.
+    Sistema integrado de reseñas y valoraciones para juegos.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>PRÓXIMAMENTE</span>
     </div>
@@ -144,7 +144,7 @@ El verdadero poder del lanzador de juegos está en la abstracción de UX cripto.
 </CardGroup>
 
 <Note>
-¡Y más acciones por venir - el futuro se ve brillante!
+¡Y más acciones próximamente - el futuro luce brillante!
 </Note>
 
 ## Empezando
@@ -165,7 +165,7 @@ El verdadero poder del lanzador de juegos está en la abstracción de UX cripto.
   
   <CardGroup cols={2}>
     <Card title="Playground del Lanzador de Juegos" icon="play" href="https://basement.fun/playground">
-      Prueba tu integración en un entorno sandbox
+      Prueba tu integración en un entorno de sandbox
     </Card>
     
     <Card title="Documentación de la API de BSMNT" icon="book" href="https://docs.basement.fun/api">
@@ -187,17 +187,17 @@ El verdadero poder del lanzador de juegos está en la abstracción de UX cripto.
 
 ## ¿Qué es Basement.fun?
 
-Basement es el lugar para descubrir y jugar juegos onchain. Además de ser una plataforma de descubrimiento para encontrar grandes juegos onchain, Basement ofrece una manera para que los desarrolladores de juegos construyan experiencias nativas, integradas y sin fisuras dentro de Basement.
+Basement es el lugar para descubrir y jugar juegos onchain. Aparte de ser una plataforma de descubrimiento para encontrar grandes juegos onchain, Basement ofrece una manera para que los desarrolladores de juegos construyan experiencias nativas, integradas y sin fisuras dentro de Basement.
 
 Tu juego se carga dentro de nuestro lanzador de juegos, donde los usuarios se conectan a Basement, y su contexto de jugador se pasa a tu juego.
 
-Desde allí, puedes aprovechar cualquiera de nuestras funciones de ayuda genéricas (como guardar estado y puntuaciones) + activar cualquier número de UX cripto integradas (sin que tengas que integrar nada onchain en tu juego).
+Desde allí, puedes aprovechar cualquiera de nuestras funciones de ayuda genéricas (como guardar estado y puntuaciones) + disparar cualquier número de UX cripto integradas (sin que tengas que integrar nada onchain en tu juego).
 
 ## Acceso a Datos del Jugador
 
 El lanzador de juegos utiliza un JWT (JSON Web Token) para codificar de forma segura un contexto de jugador verificado y autenticado, que se envía a tu juego.
 
-La carga útil se lee de los parámetros GET, por lo que cualquier juego web alojado puede acceder y decodificarlo fácilmente utilizando cualquier número de bibliotecas JWT (o utilizando nuestras APIs de lanzador).
+El payload se lee de los parámetros GET, por lo que cualquier juego web alojado puede accederlo y decodificarlo fácilmente usando cualquier número de bibliotecas JWT (o utilizando nuestras APIs de lanzador).
 
 ### Los Datos Básicos del Jugador Incluyen:
 
@@ -215,12 +215,12 @@ La carga útil se lee de los parámetros GET, por lo que cualquier juego web alo
 </Accordion>
 
 <Accordion title="Datos Adicionales">
-  Datos específicos del jugador del juego, información de sesión y más - consulta nuestra Documentación de la API del Lanzador
+  Datos específicos del jugador del juego, información de sesión y más - ver nuestra Documentación de la API del Lanzador
 </Accordion>
 </AccordionGroup>
 
 <Tip>
-Opcionalmente, puedes almacenar cualquier dato específico del jugador del juego utilizando nuestras APIs de estado del jugador.
+Opcionalmente, puedes almacenar cualquier dato específico del juego del jugador usando nuestras APIs de estado del jugador.
 </Tip>
 
 <Card title="Explorar APIs del Lanzador" icon="code" href="https://docs.basement.fun/api" cta="Ver Documentación" horizontal>
@@ -229,17 +229,17 @@ Opcionalmente, puedes almacenar cualquier dato específico del jugador del juego
 
 ## Abstracción de UX Integrada
 
-Nuestra experiencia mínima con el lanzador de juegos significa que el enfoque permanece en tu juego.
+Nuestra experiencia mínima del lanzador de juegos significa que el enfoque permanece en tu juego.
 
-Hay varias personalizaciones disponibles en el lanzador de juegos, para que BSMNT pueda proporcionar una experiencia casi invisible, manejando todos los desafíos de UX cripto por ti.
+Hay varias personalizaciones disponibles en el lanzador de juegos, para que BSMNT pueda proporcionar una experiencia casi invisible, manejando todos los desafíos de UX cripto básicos por ti.
 
 ### APIs Útiles Disponibles:
 
-- **Almacenar y recuperar puntuaciones y clasificaciones** - Gestión del estado del juego persistente
+- **Almacenar y recuperar puntuaciones y clasificaciones** - Gestión persistente del estado del juego
 - **Enviar notificaciones** - Alertar a los jugadores sobre eventos del juego
 - **Registrar y transmitir actividad del juego** - Análisis y seguimiento del comportamiento del jugador  
 - **Almacenar estado del jugador y sesiones de juego** - Guardar el progreso del juego automáticamente
-- **¡Y más por venir!** - Nuevas características añadidas regularmente
+- **¡Y más próximamente!** - Nuevas características añadidas regularmente
 
 <Card title="Explorar APIs del Lanzador" icon="api" href="https://docs.basement.fun/api" cta="Ver Documentación" horizontal>
   Referencia completa de la API para todas las características del lanzador disponibles

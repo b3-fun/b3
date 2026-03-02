@@ -1,0 +1,518 @@
+---
+title: 맞춤 설정
+description: 'AnySpend 컴포넌트를 위한 슬롯, 콘텐츠 오버라이드, 테마, 그리고 CSS 클래스'
+lang: ko
+originalPath: anyspend/customization.mdx
+---
+다양한 관심사를 대상으로 하는 네 가지 커스터마이제이션 계층:
+
+<CardGroup cols={2}>
+<Card title="Slots" icon="puzzle-piece">
+  전체 UI 섹션을 자체 컴포넌트로 교체
+</Card>
+<Card title="Content" icon="font">
+  다양한 상태에 대한 텍스트 및 메시지 재정의
+</Card>
+<Card title="Theme" icon="palette">
+  색상 및 브랜드 외관 구성
+</Card>
+<Card title="Classes" icon="code">
+  특정 요소에 CSS 클래스 재정의 적용
+</Card>
+</CardGroup>
+
+모든 핵심 컴포넌트(`<AnySpend>`, `<AnySpendDeposit>`, `<AnySpendCheckout>`, `<AnySpendCheckoutTrigger>`)는 `slots`, `content`, 및 `theme` props를 받습니다.
+
+---
+
+## Slots
+
+Slots를 사용하면 전체 UI 섹션을 자체 React 컴포넌트로 교체할 수 있습니다. 각 슬롯은 AnySpend에서 props를 받아 사용자 정의 구현에 사용할 수 있습니다.
+
+```typescript title="AnySpendSlots Interface" icon="code"
+interface AnySpendSlots {
+  /** 메인 액션/결제 버튼 교체 */
+  actionButton?: (props: ActionButtonSlotProps) => ReactNode;
+  /** 지갑 연결 버튼 교체 */
+  connectWalletButton?: (props: ConnectWalletButtonSlotProps) => ReactNode;
+  /** 헤더 교체 */
+  header?: (props: { mode: "page" | "modal" }) => ReactNode;
+  /** 푸터 교체 */
+  footer?: ReactNode;
+  /** 성공 화면 교체 */
+  successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
+  /** 오류 화면 교체 */
+  errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** 체크아웃 양식 패널 교체 (체크아웃 전용) */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** 배송 방법 선택기 교체 (체크아웃 전용) */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** 할인 코드 입력 교체 (체크아웃 전용) */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
+}
+```
+
+<Tip>
+  `checkoutForm`, `shippingSelector`, 및 `discountInput` 슬롯은 `<AnySpendCheckout>` 및 `<AnySpendCheckoutTrigger>`에서만 사용됩니다. 양식/배송/할인 기능에 대한 자세한 내용은 [체크아웃 가이드](/anyspend/checkout)를 참조하세요.
+</Tip>
+
+### Slot prop 인터페이스
+
+<AccordionGroup>
+<Accordion title="ActionButtonSlotProps">
+```typescript
+interface ActionButtonSlotProps {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  text: string;
+}
+```
+</Accordion>
+
+<Accordion title="ConnectWalletButtonSlotProps">
+```typescript
+interface ConnectWalletButtonSlotProps {
+  onPayment: () => void;
+  txLoading: boolean;
+  connectedAddress?: string;
+  paymentLabel: string;
+}
+```
+</Accordion>
+
+<Accordion title="SuccessScreenSlotProps">
+```typescript
+interface SuccessScreenSlotProps {
+  title: string;
+  description: string;
+  txHash?: string;
+  orderId?: string;
+  explorerUrl?: string;
+  onDone: () => void;
+  returnUrl?: string;
+  returnLabel?: string;
+}
+```
+</Accordion>
+
+<Accordion title="ErrorScreenSlotProps">
+```typescript
+interface ErrorScreenSlotProps {
+  title: string;
+  description: string;
+  errorType: "failure" | "expired" | "refunded";
+  orderId?: string;
+  onRetry?: () => void;
+  onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Slot 예시
+
+<Tabs>
+<Tab title="Custom Action Button">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    actionButton: ({ onClick, disabled, loading, text }) => (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="my-custom-button"
+      >
+        {loading ? <MySpinner /> : text}
+      </button>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Custom Success Screen">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    successScreen: ({ title, txHash, explorerUrl, onDone, returnUrl }) => (
+      <div className="my-success">
+        <Confetti />
+        <h2>{title}</h2>
+        {txHash && (
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+            거래 보기
+          </a>
+        )}
+        {returnUrl ? (
+          <a href={returnUrl}>쇼핑 계속하기</a>
+        ) : (
+          <button onClick={onDone}>완료</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Custom Header & Footer">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    header: ({ mode }) => (
+      <div className="my-header">
+        <img src="/logo.svg" alt="My App" />
+        {mode === "modal" && <CloseButton />}
+      </div>
+    ),
+    footer: (
+      <div className="my-footer">
+        <span>MyApp 제공</span>
+        <a href="/terms">약관</a>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Custom Connect Wallet">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  slots={{
+    connectWalletButton: ({ onPayment, txLoading, connectedAddress, paymentLabel }) => (
+      <div className="my-wallet-section">
+        {connectedAddress ? (
+          <button onClick={onPayment} disabled={txLoading}>
+            {txLoading ? "처리 중..." : paymentLabel}
+          </button>
+        ) : (
+          <button onClick={onPayment}>연결 및 결제</button>
+        )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Custom Checkout Form">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="영수증을 위한 이메일"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">사이즈 선택</option>
+          <option value="S">작은</option>
+          <option value="M">중간</option>
+          <option value="L">큰</option>
+        </select>
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Content
+
+다양한 거래 상태에서 표시되는 텍스트와 메시지를 재정의합니다. 각 필드는 `string` 또는 `ReactNode`를 받습니다.
+
+```typescript title="AnySpendContent Interface" icon="code"
+interface AnySpendContent {
+  // 성공 상태
+  successTitle?: string | ReactNode;
+  successDescription?: string | ReactNode;
+
+  // 실패 상태
+  failureTitle?: string | ReactNode;
+  failureDescription?: string | ReactNode;
+
+  // 만료 상태
+  expiredTitle?: string | ReactNode;
+  expiredDescription?: string | ReactNode;
+
+  // 환불 상태
+  refundedTitle?: string | ReactNode;
+  refundedDescription?: string | ReactNode;
+
+  // 처리 중 상태
+  processingTitle?: string | ReactNode;
+  processingDescription?: string | ReactNode;
+
+  // 버튼 레이블
+  returnButtonLabel?: string;
+  retryButtonLabel?: string;
+}
+```
+
+### Content 예시
+
+<Tabs>
+<Tab title="E-commerce">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={cartItems}
+  content={{
+    successTitle: "주문 확인됨!",
+    successDescription: "주문이 준비 중입니다. 배송 업데이트를 위해 이메일을 확인하세요.",
+    failureTitle: "결제 실패",
+    failureDescription: "카드가 청구되지 않았습니다. 다시 시도하거나 다른 결제 수단을 사용해 주세요.",
+    processingTitle: "결제 처리 중...",
+    processingDescription: "이 창을 닫지 마세요. 보통 1분 이내에 완료됩니다.",
+    returnButtonLabel: "상점으로 돌아가기",
+    retryButtonLabel: "다시 시도",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Subscription">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  content={{
+    successTitle: "구독 활성화됨!",
+    successDescription: (
+      <div>
+        <p>Pro에 오신 것을 환영합니다! 계정이 업그레이드되었습니다.</p>
+        <ul>
+          <li>무제한 API 호출</li>
+          <li>우선 지원</li>
+          <li>고급 분석</li>
+        </ul>
+      </div>
+    ),
+    returnButtonLabel: "대시보드로 가기",
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Gaming">
+```tsx
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  content={{
+    successTitle: "토큰 입금됨!",
+    successDescription: "게임 잔액이 업데이트되었습니다. 다시 시작하세요!",
+    expiredTitle: "세션 만료",
+    expiredDescription: "입금 창이 닫혔습니다. 계속하려면 새 입금을 시작하세요.",
+    returnButtonLabel: "게임으로 돌아가기",
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## Theme
+
+브랜드 색상으로 AnySpend 컴포넌트의 시각적 외관을 구성합니다.
+
+```typescript title="AnySpendTheme Interface" icon="code"
+interface AnySpendTheme {
+  /** 기본 브랜드 색상 (hex). 주요 강조 색상으로 적용됩니다. */
+  brandColor?: string;
+  /** 개별 색상 재정의 (hex 값) */
+  colors?: Partial<{
+    primary: string;         // 주요 텍스트 색상
+    secondary: string;       // 보조 텍스트 색상
+    tertiary: string;        // 미묘한 텍스트 색상
+    surfacePrimary: string;  // 기본 배경 색상
+    surfaceSecondary: string; // 보조 배경 (카드, 패널)
+    brand: string;           // 강조/브랜드 색상 (버튼, 링크)
+    borderPrimary: string;   // 기본 테두리 색상
+    borderSecondary: string; // 보조 테두리 색상
+  }>;
+}
+```
+
+<Note>
+  `brandColor` prop은 `brand` 색상을 설정하는 단축키입니다. `brandColor`와 `colors.brand` 둘 다 제공되는 경우, `colors.brand`가 우선합니다.
+</Note>
+
+### Theme 예시
+
+<Tabs>
+<Tab title="Brand Color Only">
+```tsx
+// 빠른 브랜딩 — 브랜드 색상만 설정
+<AnySpend
+  recipientAddress="0x..."
+  theme={{ brandColor: "#6366f1" }}
+/>
+```
+</Tab>
+
+<Tab title="Dark Theme">
+```tsx
+<AnySpend
+  recipientAddress="0x..."
+  theme={{
+    brandColor: "#10b981",
+    colors: {
+      primary: "#f9fafb",
+      secondary: "#9ca3af",
+      tertiary: "#6b7280",
+      surfacePrimary: "#111827",
+      surfaceSecondary: "#1f2937",
+      borderPrimary: "#374151",
+      borderSecondary: "#4b5563",
+    },
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Minimal Override">
+```tsx
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8453}
+  items={items}
+  theme={{
+    colors: {
+      brand: "#e11d48",      // 로즈 강조
+      surfaceSecondary: "#fef2f2", // 연한 로즈 배경
+    },
+  }}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+## CSS 클래스 재정의
+
+AnySpend 컴포넌트 내 특정 요소에 사용자 정의 CSS 클래스를 적용합니다. 각 컴포넌트는 자체 클래스 인터페이스를 가집니다.
+
+### AnySpendClasses
+
+`<AnySpend>`에서 사용됩니다:
+
+```typescript title="AnySpendClasses" icon="code"
+interface AnySpendClasses {
+  container?: string;
+  header?: string;
+  tabSection?: string;
+  cryptoPaySection?: string;
+  cryptoReceiveSection?: string;
+  panelOnramp?: string;
+  paymentButton?: string;
+  navigationBar?: string;
+}
+```
+
+### AnySpendCheckoutClasses
+
+`<AnySpendCheckout>` 및 `<AnySpendCheckoutTrigger>`에서 사용됩니다:
+
+<AccordionGroup>
+<Accordion title="Layout & Structure" defaultOpen>
+```typescript
+interface AnySpendCheckoutClasses {
+  root?: string;               // 루트 컨테이너
+  layout?: string;             // 두 패널 레이아웃 래퍼
+  paymentColumn?: string;      // 왼쪽 열 (결제 + 양식)
+  cartColumn?: string;         // 오른쪽 열 (장바구니/요약)
+}
+```
+</Accordion>
+
+<Accordion title="Payment Panel">
+```typescript
+{
+  paymentPanel?: string;            // 결제 패널 컨테이너
+  paymentTitle?: string;            // "Pay with" 제목
+  paymentMethodSelector?: string;   // 방법 선택기 컨테이너
+  paymentMethodButton?: string;     // 개별 방법 버튼
+  cryptoPanel?: string;             // 암호화폐 결제 섹션
+  tokenSelector?: string;           // 토큰 드롭다운
+  quoteDisplay?: string;            // 견적/가격 표시
+  payButton?: string;               // 결제 버튼
+  fiatPanel?: string;               // 법정화폐 결제 섹션
+  stripeForm?: string;              // Stripe 양식 컨테이너
+  stripeSubmitButton?: string;      // Stripe 제출 버튼
+  coinbasePanel?: string;           // Coinbase 패널
+}
+```
+</Accordion>
+
+<Accordion title="Cart Panel">
+```typescript
+{
+  cartPanel?: string;               // 장바구니 컨테이너
+  cartTitle?: string;               // 장바구니 헤더
+  cartItemRow?: string;             // 개별 아이템 행
+  cartItemImage?: string;           // 아이템 이미지
+  cartItemName?: string;            // 아이템 이름
+  cartItemDescription?: string;     // 아이템 설명
+  cartItemPrice?: string;           // 아이템 가격
+  cartItemMetadata?: string;        // 메타데이터 컨테이너
+  cartItemMetadataLabel?: string;   // 메타데이터 레이블
+  cartItemMetadataValue?: string;   // 메타데이터 값
+  cartSummary?: string;             // 요약 섹션
+  cartSubtotal?: string;            // 소계 행
+  cartTotal?: string;               // 총계 행
+  cartSummaryLine?: string;         // 추가 요약 행
+  cartSummaryLineLabel?: string;    // 요약 행 레이

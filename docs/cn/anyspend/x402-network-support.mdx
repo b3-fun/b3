@@ -1,0 +1,196 @@
+---
+title: 网络 & 代币支持
+description: 支持的区块链、代币和 AnySpend x402 支付的合约地址
+lang: cn
+originalPath: anyspend/x402-network-support.mdx
+---
+## 概览
+
+AnySpend x402 支持跨多个区块链网络的支付，包括兼容 EVM 的链和 Solana (SVM)。本页面提供了支持的网络、代币及其合约地址的完整参考。
+
+## EVM 主网网络
+
+AnySpend x402 支持以下 EVM 主网链：
+
+| 网络 | 标识符 | 链 ID | 类型 |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - 乐观卷积 |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - 乐观卷积 |
+| BNB 智能链 | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - 乐观卷积 |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | 侧链 |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**推荐用于生产的链：** Base（低费用，快速），Ethereum（最大流动性），Arbitrum（平衡）
+</Note>
+
+## EVM 测试网网络
+
+用于开发和测试，AnySpend 支持以下测试网：
+
+| 网络 | 标识符 | 链 ID | 水龙头 |
+|---------|-----------|----------|--------|
+| Abstract 测试网 | `abstract-testnet` | 11124 | [Abstract 水龙头](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji 水龙头](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase 水龙头](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon 水龙头](https://faucet.polygon.technology/) |
+| Sei 测试网 | `sei-testnet` | 1328 | [Sei 水龙头](https://atlantic-2.app.sei.io/faucet) |
+
+## SVM 网络（Solana）
+
+AnySpend 也支持 Solana 虚拟机（SVM）网络：
+
+| 网络 | 标识符 | 链 ID | 类型 |
+|---------|-----------|----------|------|
+| Solana 主网 | `solana` | 101 | 主网 |
+| Solana 开发网 | `solana-devnet` | 103 | 测试网 |
+
+<Info>
+Solana 支持使得可以进行跨 VM 支付 - 用户可以使用 SOL 或 SPL 代币支付，而资源服务器在 EVM 链上接收稳定币。
+</Info>
+
+## 代币兼容性
+
+<Note>
+要使用 X402 的代币，它必须实现 **EIP-3009**（`transferWithAuthorization`）或 **EIP-2612**（`permit`）以支持无 Gas 签名。
+</Note>
+
+我们构建了工具来帮助您实时验证任何代币的兼容性，而不是维护一份静态的支持代币列表。
+
+## X402 代币兼容性检查器
+
+<Note>
+**新工具可用**：在集成前验证任何 ERC-20 代币是否与 X402 支付兼容。
+</Note>
+
+要与 X402 兼容的代币必须实现：
+- **EIP-3009**（`transferWithAuthorization`）- 由 USDC 使用
+- **EIP-2612**（`permit`）- 由某些链上的 USDT 和许多其他现代 ERC-20 代币使用
+
+### 使用公共检查器
+
+检查 AnySpend 支持的链上的任何 ERC-20 代币：
+
+**Web 界面**：[anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+只需输入代币地址并选择网络，即可立即验证 X402 兼容性。
+
+**直接 API**：您也可以直接查询 API：
+
+```bash
+curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+```
+
+这将以 JSON 格式返回代币元数据和兼容性信息。
+
+### 使用 npm 包
+
+对于将代币兼容性检查集成到其应用程序中的开发者：
+
+**npm 包**：[@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+
+```bash
+npm install @b3dotfun/anyspend-x402-token-compat
+```
+
+**用法：**
+```typescript
+import { TokenCompatClient } from '@b3dotfun/anyspend-x402-token-compat';
+
+const client = new TokenCompatClient();
+
+// 获取代币元数据和兼容性
+const metadata = await client.getTokenMetadata('base', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913');
+console.log(metadata.supportsEip2612); // true - 支持 permit
+console.log(metadata.supportsEip3009); // true - 支持 transferWithAuth
+
+// 快速兼容性检查
+const hasPermit = await client.supportsEip2612('base', tokenAddress);
+```
+
+
+### 工作原理
+
+**支持的跨链路由：**
+AnySpend 支持在任何支持的 EVM 网络之间的跨链路由，包括：
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 在所有支持的链上桥接
+- 跨 VM：Solana ↔ EVM 链（实验性）
+
+<Info>
+跨链支付需要更长时间（2-5 分钟）因为桥接时间，并且会产生额外费用（总计约 0.5%）。为了最佳用户体验，推荐使用同链支付。
+</Info>
+
+
+<Note>
+基于 Cloudflare 的全球基础设施构建，具有智能缓存，以实现即时结果。
+</Note>
+
+检查器结合了实时链上验证和不断增长的已验证代币数据库：
+
+- 通过智能缓存实现毫秒级响应时间
+- 随着更多代币被检查，数据库自动增长
+- 对未缓存代币进行链上验证
+- 在 Cloudflare Workers 上运行，实现全球低延迟访问
+
+### 在 x402 中的集成
+
+代币兼容性检查器已经集成到 AnySpend X402 SDK 中：
+
+- 在支付前验证代币兼容性
+- 返回不支持代币的清晰、可操作的错误
+- 防止因不兼容代币而导致的交易失败
+
+**现场试用**：[https://x402-demo.anyspend.com/](https://x402-demo.anyspend.com/)
+
+<Warning>
+**重要**：在将新代币集成到您的支付流程中之前，始终验证代币兼容性。不兼容的代币将导致支付签名失败。
+</Warning>
+
+## 额外资源
+
+<CardGroup cols={2}>
+<Card title="链列表" icon="link" href="https://chainlist.org">
+  RPC 端点和链元数据
+</Card>
+
+<Card title="代币列表" icon="list" href="https://tokenlists.org">
+  跨链的已验证代币地址
+</Card>
+
+<Card title="Coinbase 水龙头" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  获取测试网代币进行开发
+</Card>
+
+<Card title="AnySpend 代理" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  生产代理 API 端点
+</Card>
+</CardGroup>
+
+## 下一步
+
+<CardGroup cols={2}>
+<Card title="买家快速入门" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  开始使用这些代币支付服务
+</Card>
+
+<Card title="卖家快速入门" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  配置您的 API 以接受这些代币
+</Card>
+</CardGroup>
+
+## 获取帮助
+
+如果您需要支持特定的代币或网络：
+
+- **Discord**：在 [#anyspend-support](https://discord.gg/b3dotfun) 请求
+- **GitHub**：在 [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402) 开启一个问题
+- **电子邮件**：support@b3.fun

@@ -1,0 +1,386 @@
+---
+title: Transações
+description: 'Visualizar histórico de transações, estatísticas e exportar dados'
+lang: pt-BR
+originalPath: anyspend/api/transactions.mdx
+---
+Transações representam pagamentos completos ou em andamento por meio de seus links de pagamento e sessões de checkout. A API de transações é somente leitura -- as transações são criadas automaticamente quando os clientes pagam através do seu fluxo de checkout.
+
+<Info>
+  Os valores das transações são armazenados na menor unidade do token (por exemplo, 6 decimais para USDC). O campo `amount_usd` fornece o equivalente em USD no momento da transação.
+</Info>
+
+## O objeto Transação
+
+<ResponseField name="id" type="string">
+  Identificador único para a transação (por exemplo, `tx_abc123`).
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Status atual da transação. Um de: `pending`, `confirming`, `completed`, `failed`.
+</ResponseField>
+
+<ResponseField name="amount" type="string">
+  Quantidade da transação na menor unidade do token.
+</ResponseField>
+
+<ResponseField name="amount_usd" type="string">
+  Equivalente em USD da quantidade da transação no momento do pagamento.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Endereço do contrato do token recebido.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  Chain ID onde o pagamento foi recebido.
+</ResponseField>
+
+<ResponseField name="tx_hash" type="string | null">
+  Hash da transação on-chain. Nulo enquanto `pending`.
+</ResponseField>
+
+<ResponseField name="payer_address" type="string">
+  Endereço da carteira do pagador.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Endereço da carteira que recebeu o pagamento.
+</ResponseField>
+
+<ResponseField name="customer_id" type="string | null">
+  ID do cliente associado, se o pagador for um cliente conhecido.
+</ResponseField>
+
+<ResponseField name="payment_link_id" type="string | null">
+  Link de pagamento que originou esta transação.
+</ResponseField>
+
+<ResponseField name="session_id" type="string | null">
+  Sessão de checkout que originou esta transação.
+</ResponseField>
+
+<ResponseField name="source_chain_id" type="number | null">
+  Se o pagador pagou de uma chain diferente, esta é a chain de onde ele pagou.
+</ResponseField>
+
+<ResponseField name="source_token_address" type="string | null">
+  Se o pagador pagou com um token diferente, este é o token com o qual ele pagou.
+</ResponseField>
+
+<ResponseField name="source_amount" type="string | null">
+  A quantidade que o pagador enviou (antes da troca/ponte), na menor unidade do token de origem.
+</ResponseField>
+
+<ResponseField name="fee_amount" type="string | null">
+  Quantidade da taxa da plataforma na menor unidade do token recebido.
+</ResponseField>
+
+<ResponseField name="form_data" type="object | null">
+  Dados de formulário personalizados submetidos pelo cliente durante o checkout.
+</ResponseField>
+
+<ResponseField name="shipping_address" type="object | null">
+  Endereço de entrega fornecido pelo cliente.
+  <Expandable title="campos do endereço de entrega">
+    <ResponseField name="name" type="string">Nome do destinatário.</ResponseField>
+    <ResponseField name="line1" type="string">Linha de endereço 1.</ResponseField>
+    <ResponseField name="line2" type="string | null">Linha de endereço 2.</ResponseField>
+    <ResponseField name="city" type="string">Cidade.</ResponseField>
+    <ResponseField name="state" type="string">Estado ou província.</ResponseField>
+    <ResponseField name="postal_code" type="string">Código postal ou ZIP.</ResponseField>
+    <ResponseField name="country" type="string">Código de dois dígitos do país.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_option" type="object | null">
+  Opção de envio selecionada.
+  <Expandable title="campos da opção de envio">
+    <ResponseField name="id" type="string">ID da opção de envio.</ResponseField>
+    <ResponseField name="name" type="string">Nome da opção de envio.</ResponseField>
+    <ResponseField name="amount" type="string">Custo do envio.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Metadados da sessão de checkout.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Carimbo de data/hora ISO 8601 quando a transação foi iniciada.
+</ResponseField>
+
+<ResponseField name="confirmed_at" type="string | null">
+  Carimbo de data/hora ISO 8601 quando a transação alcançou o status `confirming`.
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  Carimbo de data/hora ISO 8601 quando a transação alcançou o status `completed`.
+</ResponseField>
+
+### Status das transações
+
+| Status | Descrição |
+|--------|-------------|
+| `pending` | Transação iniciada, aguardando submissão on-chain. |
+| `confirming` | Transação submetida on-chain, aguardando confirmações de bloco. |
+| `completed` | Transação confirmada e pagamento recebido pelo destinatário. |
+| `failed` | Transação falhou devido a revert, timeout ou fundos insuficientes. |
+
+---
+
+## Listar transações
+
+Recupere uma lista paginada de transações com filtros opcionais.
+
+<ParamField query="status" type="string">
+  Filtrar por status: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="customer_id" type="string">
+  Filtrar por ID do cliente.
+</ParamField>
+
+<ParamField query="payment_link_id" type="string">
+  Filtrar por ID do link de pagamento.
+</ParamField>
+
+<ParamField query="from" type="string">
+  Filtrar transações criadas em ou após esta data ISO 8601 (por exemplo, `2026-01-01`).
+</ParamField>
+
+<ParamField query="to" type="string">
+  Filtrar transações criadas em ou antes desta data ISO 8601 (por exemplo, `2026-02-28`).
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Número da página para paginação.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Número de resultados por página (máximo 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions?status=completed&from=2026-02-01&to=2026-02-28&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.transactions.list({
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Resposta">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "source_chain_id": 8453,
+          "source_token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "source_amount": "50000000",
+          "fee_amount": "500000",
+          "form_data": {
+            "company_name": "Acme Inc."
+          },
+          "shipping_address": null,
+          "shipping_option": null,
+          "metadata": null,
+          "created_at": "2026-02-25T08:15:00Z",
+          "confirmed_at": "2026-02-25T08:15:45Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 156,
+        "total_pages": 8,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Recuperar uma transação
+
+<ParamField path="id" type="string" required>
+  O ID da transação (por exemplo, `tx_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/tx_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const transaction = await anyspend.transactions.retrieve("tx_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Resposta">
+    Retorna o objeto [Transação](#o-objeto-transação) completo.
+  </Tab>
+</Tabs>
+
+---
+
+## Obter estatísticas de transações
+
+Recupere estatísticas agregadas de todas as suas transações.
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/stats" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const stats = await anyspend.transactions.stats();
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Resposta">
+    ```json
+    {
+      "total_transactions": 1250,
+      "completed_transactions": 1180,
+      "failed_transactions": 45,
+      "pending_transactions": 25,
+      "total_volume_usd": "58750.00",
+      "last_24h": {
+        "transactions": 18,
+        "completed": 17,
+        "volume_usd": "920.00"
+      },
+      "status_breakdown": {
+        "pending": 15,
+        "confirming": 10,
+        "completed": 1180,
+        "failed": 45
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Exportar transações
+
+Exporte dados de transação em formato CSV ou JSON. A resposta é transmitida como um download de arquivo.
+
+<ParamField query="format" type="string" required>
+  Formato de exportação. Um de: `csv`, `json`.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filtrar por status: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="from" type="string">
+  Filtrar transações criadas em ou após esta data ISO 8601.
+</ParamField>
+
+<ParamField query="to" type="string">
+  Filtrar transações criadas em ou antes desta data ISO 8601.
+</ParamField>
+
+<Info>
+  As exportações são limitadas a 50.000 registros. Para conjuntos de dados maiores, use filtros de intervalo de datas para dividir as exportações em partes menores.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# Exportar transações completadas para fevereiro de 2026 como CSV
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2026-02-01&to=2026-02-28" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.csv
+
+# Exportar como JSON
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.json
+```
+
+```typescript SDK
+// Exportar como fluxo CSV
+const csvStream = await anyspend.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+});
+
+// Exportar como array JSON
+const transactions = await anyspend.transactions.export({
+  format: "json",
+  status: "completed",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Resposta CSV">
+    ```csv
+    id,status,amount,amount_usd,token_address,chain_id,tx_hash,payer_address,recipient_address,customer_id,payment_link_id,created_at,completed_at
+    tx_abc123,completed,50000000,50.00,0xA0b8...eB48,1,0x9f8e...1f0e,0xaabb...5678,0x1234...5678,cust_abc123,pl_abc123,2026-02-25T08:15:00Z,2026-02-25T08:16:30Z
+    tx_def456,completed,25000000,25.00,0xA0b8...eB48,1,0x1a2b...3c4d,0xccdd...9012,0x1234...5678,cust_def456,pl_abc123,2026-02-24T12:00:00Z,2026-02-24T12:01:15Z
+    ```
+  </Tab>
+  <Tab title="Resposta JSON">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "total": 1180
+    }
+    ```
+  </Tab>
+</Tabs>

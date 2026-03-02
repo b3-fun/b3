@@ -1,0 +1,535 @@
+---
+title: x402 Anuncios de Criptomonedas
+description: Anuncia en sitios de criptomonedas sin comisiones de gas usando x402
+lang: es
+originalPath: anyspend/marketplace-ads.mdx
+---
+[Revisa el x402 Ad Marketplace (UI)](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+# x402 Ad Marketplace
+
+Compra espacio publicitario en más de 100 sitios de contenido cripto usando USDC con **cero tarifas de gas** gracias a los pagos sin gas de x402.
+
+<CardGroup cols={2}>
+  <Card title="Sin Tarifas de Gas" icon="gas-pump">
+    Paga solo el precio del anuncio - cero tarifas de transacción
+  </Card>
+  <Card title="Reserva Instantánea" icon="bolt">
+    Una firma y estás en vivo
+  </Card>
+  <Card title="Más de 100 Sitios" icon="globe">
+    Elige entre noticias cripto, DeFi, sitios de NFT
+  </Card>
+  <Card title="Contenido Impulsado por IA" icon="brain">
+    Envía artículos con validación y generación por IA
+  </Card>
+  <Card title="Analíticas Reales" icon="chart-line">
+    Ve datos de tráfico antes de comprar
+  </Card>
+  <Card title="Rastrea Todo" icon="list-check">
+    Monitorea tus anuncios y solicitudes de artículos en tiempo real
+  </Card>
+</CardGroup>
+
+## Inicio Rápido
+
+<Tabs>
+  <Tab title="Anuncios Publicitarios">
+    <Steps>
+      <Step title="Conectar Cartera">
+        Visita [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) y conecta tu cartera en la red Base
+      </Step>
+      <Step title="Explorar Sitios">
+        Explora sitios con estadísticas de tráfico, elige tu audiencia objetivo
+      </Step>
+      <Step title="Elegir Formato y Tiempo">
+        Selecciona el formato de anuncio (Banner/Barra lateral/Leaderboard) y el intervalo de tiempo
+      </Step>
+      <Step title="Subir Anuncio">
+        Proporciona la URL de la imagen y la página de destino
+      </Step>
+      <Step title="Firmar y Pagar">
+        Una firma con USDC - cero tarifas de gas - confirmación instantánea
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Envío de Artículos">
+    <Steps>
+      <Step title="Conectar Cartera">
+        Visita [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) y conecta tu cartera en la red Base
+      </Step>
+      <Step title="Seleccionar Sitio Objetivo">
+        Elige entre sitios de noticias cripto que aceptan envíos de artículos
+      </Step>
+      <Step title="Enviar Tu Idea">
+        Proporciona una URL de tweet, tema o título completo del artículo
+      </Step>
+      <Step title="Validación por IA">
+        Obtén retroalimentación instantánea de IA con puntuación (0-100) y sugerencias
+      </Step>
+      <Step title="Revisar y Enviar">
+        Si es aprobado (puntuación ≥70), envía con una firma x402
+      </Step>
+      <Step title="Rastrear Progreso">
+        Monitorea el estado y recibe notificaciones cuando se publique
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>
+  ¿Necesitas USDC en Base? Puentea desde Ethereum usando [Base Bridge](https://bridge.base.org)
+</Note>
+
+## Formatos y Precios de Anuncios
+
+<Tabs>
+  <Tab title="Banner amplio">
+    **970×250 píxeles** - Formato de banner amplio
+    
+    **Precio:** 1 USDC/hora
+    
+    Mejor para campañas rentables con buena visibilidad
+  </Tab>
+  <Tab title="Barra lateral">
+    **300×600 píxeles** - Colocación vertical lateral
+    
+    **Precio:** 2 USDC/hora
+    
+    Mejor para visibilidad persistente mientras los usuarios se desplazan
+  </Tab>
+  <Tab title="Leaderboard">
+    **728×90 píxeles** - Posición de banner superior
+    
+    **Precio:** 3 USDC/hora
+    
+    Mejor para máxima visibilidad y reconocimiento de marca
+  </Tab>
+</Tabs>
+
+**Duración:** 1 hora mínima, 7 días (168 horas) máximo
+
+## Envío de Artículos
+
+Envía ideas de artículos a sitios de contenido cripto. La IA valida tu tema y genera títulos y descripciones optimizados.
+
+### Cómo Funciona
+
+<Steps>
+  <Step title="Enviar Tema o Tweet">
+    Proporciona una URL de tweet, idea de tema o título completo del artículo
+  </Step>
+  <Step title="Validación por IA (Gratis)">
+    La IA puntúa tu contenido (0-100) y genera sugerencias si es necesario
+  </Step>
+  <Step title="Obtener Aprobación">
+    - **Puntuación ≥80:** Tu entrada es perfecta, aceptada tal cual
+    - **Puntuación 70-79:** Aprobada con sugerencias mejoradas por IA
+    - **Puntuación &lt;70:** Rechazada - intenta con un tema diferente
+  </Step>
+  <Step title="Enviar y Pagar">
+    Una firma x402 para enviar tu solicitud de artículo
+  </Step>
+  <Step title="Publicación">
+    El sitio publica tu artículo y recibes la URL en vivo
+  </Step>
+</Steps>
+
+### Precios
+
+Los precios varían según el sitio, típicamente **$3-50 USDC** por artículo. Cada sitio establece su propia tarifa basada en el tráfico y la audiencia.
+
+<Note>
+  ¡La validación es gratuita! Puedes validar tantas ideas como quieras antes de comprometerte al pago.
+</Note>
+
+## Referencia de la API
+
+### Detalles de la Red y el Pago
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 decimales
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  Firmas ERC-20 Permit
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  Precio máximo por reserva
+</ParamField>
+
+### Compra de Espacio Publicitario (Pago x402)
+
+```bash
+POST https://x402.anyspend.com/ads/buy
+```
+
+Compra espacios publicitarios programáticamente usando pagos sin gas x402. Este endpoint requiere autorización de pago x402.
+
+**Cuerpo de la Solicitud:**
+
+<CodeGroup>
+```json Request
+{
+  "productId": "slot_abc123",
+  "buyerAddress": "0x742d35Cc6...",
+  "startTime": "2025-01-15T14:00:00Z",
+  "endTime": "2025-01-15T18:00:00Z",
+  "adContent": {
+    "imageUrl": "https://...",
+    "linkUrl": "https://...",
+    "altText": "Texto alternativo",
+    "title": "Título del anuncio",
+    "description": "Descripción"
+  }
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "purchaseId": "purch_123...",
+    "bookingId": "booking_456...",
+    "totalPrice": "5000000",
+    "status": "confirmed"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "Espacio ya reservado durante este tiempo"
+}
+```
+</CodeGroup>
+
+**Parámetros:**
+- `productId` (requerido) - El ID del espacio publicitario de `/ads/slots`
+- `buyerAddress` (requerido) - Tu dirección de cartera
+- `startTime` (requerido) - Hora de inicio en formato ISO 8601
+- `endTime` (requerido) - Hora de fin en formato ISO 8601
+- `adContent.imageUrl` (requerido) - URL directa a la imagen del anuncio
+- `adContent.linkUrl` (requerido) - URL de la página de destino
+- `adContent.altText` (requerido) - Texto alternativo de la imagen
+- `adContent.title` (opcional) - Título del anuncio
+- `adContent.description` (opcional) - Descripción del anuncio
+
+**Ejemplo en JavaScript/TypeScript:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Crear cliente de cartera
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+// Envolver fetch con pago x402
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Máximo 1000 USDC
+);
+
+// Comprar espacio publicitario
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/ads/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'slot_abc123',
+      buyerAddress: '0x742d35Cc6...',
+      startTime: '2025-01-15T14:00:00Z',
+      endTime: '2025-01-15T18:00:00Z',
+      adContent: {
+        imageUrl: 'https://example.com/ad.jpg',
+        linkUrl: 'https://example.com',
+        altText: 'Mi anuncio',
+        title: '¡Conoce nuestro producto!',
+        description: 'Oferta limitada'
+      }
+    })
+  }
+);
+
+const result = await response.json();
+console.log('ID de reserva:', result.data.bookingId);
+```
+
+<Note>
+  Consulta la [documentación del SDK x402](/anyspend/x402-overview) para más detalles sobre el uso de `wrapFetchWithPayment`.
+</Note>
+
+### Explorar Sitios (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+Lista todos los sitios disponibles con paginación. Este endpoint es gratuito.
+
+Parámetros de consulta:
+- `page` - Número de página (por defecto: 1)
+- `limit` - Resultados por página (por defecto: 20, máximo: 100)
+- `search` - Buscar por nombre/dominio/palabras clave
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?search=defi&limit=10"
+```
+
+```javascript JavaScript
+const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
+  .then(r => r.json());
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "abc123",
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com",
+      "siteDomain": "cryptonews.com",
+      "description": "Noticias y análisis diarios de cripto",
+      "keywords": ["crypto", "bitcoin", "defi"],
+      "availableSlots": ["leaderboard", "sidebar", "banner"],
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+### Listar Todos los Espacios (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots
+```
+
+Lista todos los espacios publicitarios disponibles en todos los sitios. Este endpoint es gratuito.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots"
+```
+
+```javascript JavaScript
+const slots = await fetch('https://x402.anyspend.com/ads/slots')
+  .then(r => r.json());
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "slotId": "slot_abc123",
+      "siteId": "site_123",
+      "slotType": "leaderboard",
+      "pricePerHour": "5000000"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### Obtener Detalles del Espacio (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId
+```
+
+Devuelve información estática del espacio incluyendo precios, formato y detalles del sitio asociado. Este endpoint es gratuito.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123"
+```
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "slot": {
+      "slotId": "slot_banner_abc123",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "pricePerHour": "1000000",
+      "available": true
+    },
+    "site": {
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com"
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Verificar Anuncio Actual (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
+```
+
+Devuelve el anuncio que se está ejecutando actualmente en este espacio, o indica si el espacio está disponible. Este endpoint es gratuito.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123/current-ad"
+```
+
+```json Ad Running
+{
+  "success": true,
+  "data": {
+    "type": "paid",
+    "ad": {
+      "imageUrl": "https://example.com/ad.png",
+      "linkUrl": "https://example.com/landing"
+    },
+    "booking": {
+      "bookingId": "booking_xyz789",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z"
+    }
+  }
+}
+```
+
+```json Slot Available
+{
+  "success": true,
+  "data": {
+    "type": "empty"
+  }
+}
+```
+</CodeGroup>
+
+### Ver Tus Campañas (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/bookings/buyer/:address
+```
+
+Rastrea todas tus reservas de anuncios - activas, pendientes y completadas. Este endpoint es gratuito.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "bookingId": "booking_xyz789",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z",
+      "adContent": {
+        "imageUrl": "https://mysite.com/ad.png",
+        "linkUrl": "https://mysite.com/landing"
+      },
+      "totalPrice": "3000000",
+      "status": "active",
+      "paymentTxHash": "0xabcdef...",
+      "createdAt": "2024-01-22T16:30:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Valores de estado:**
+- `active` - Actualmente en ejecución
+- `pending` - Programado para el futuro
+- `completed` - Campaña finalizada
+
+<Info>
+  Los precios en las respuestas de la API están en wei de USDC (6 decimales). Divide por 1,000,000 para obtener la cantidad en USDC.
+</Info>
+
+---
+
+## Envío de Artículos Endpoints
+
+### Validar Idea de Artículo (Gratis)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Valida una idea de artículo y obtén un título y descripción generados por IA. Este endpoint es gratuito - no se requiere pago.
+
+**Cuerpo de la Solicitud:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "Cómo Usar Base Pay para Creadores en Tu DApp"
+}
+```
+
+```json Approved Response (Score ≥70)
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 92,
+    "reasoning": "Excelente coincidencia de tema para el contenido del ecosistema Base",
+    "estimatedPrice": "15000000",
+    "suggestedTitle": "Cómo Usar Base Pay para Creadores en Tu DApp",
+    "suggestedDescription": "Aprende cómo integrar Base Pay...",
+    "userProvidedTitle": true,
+    "message": "Tu entrada está aprobada tal cual"
+  }
+}
+```
+
+```json Rejected Response (Score <70)
+{
+  "success": false,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "El tema no se alinea con el enfoque del sitio en el ecosistema Base",
+    "estimatedPrice": "15000000",
+    "message": "El contenido no se ajusta al enfoque del sitio"
+  }
+}
+```
+</CodeGroup>
+
+**Parámetros:**
+- `siteDomain` (requerido) - Dominio del sitio objetivo (por ejemplo, "baseradar.com", "solanaecho.com")
+- `userInput` (requerido) - Puede ser:
+  - Título completo del artículo (10-200 caracteres)
+  - URL de Tweet (por ejemplo, "https://x.com/username/status/...")
+  - Tema o idea (por ejemplo, "base pay para creadores")
+
+**Puntuación de IA:**
+- **Puntuación ≥

@@ -1,0 +1,480 @@
+---
+title: Guia Rápido para Compradores
+description: >-
+  Pague por APIs e serviços com paywall usando qualquer token com o AnySpend
+  x402 Client SDK
+lang: pt-BR
+originalPath: anyspend/x402-quickstart-buyers.mdx
+---
+## Visão Geral
+
+Este guia mostra como usar o **AnySpend x402 Client SDK** para pagar por recursos com paywall usando tokens compatíveis com suporte a EIP-2612 ou EIP-3009. O SDK gerencia todo o fluxo de pagamento automaticamente, incluindo a geração de assinatura e lógica de tentativas.
+
+Você pode usar este mesmo cliente para pagar por qualquer serviço habilitado para x402, não apenas aqueles que usam AnySpend.
+
+<Card title="Verificador de Compatibilidade de Tokens" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Navegue por tokens compatíveis com suporte a EIP-2612 ou EIP-3009 em mais de 19 redes
+</Card>
+
+## Pré-requisitos
+
+Antes de começar, certifique-se de ter:
+
+- **Node.js 18+** ou runtime JavaScript compatível
+- **Uma carteira cripto** com tokens compatíveis (USDC, DAI ou outros tokens EIP-2612/EIP-3009)
+- **Uma biblioteca de carteira** como [viem](https://viem.sh) ou [ethers.js](https://docs.ethers.org)
+- **Acesso a um serviço habilitado para x402** (como uma API com paywall)
+
+<Note>
+**Importante**: Apenas tokens com suporte a EIP-2612 (Permit) ou EIP-3009 (TransferWithAuthorization) são compatíveis com AnySpend x402 para pagamentos sem gás. Use o [Verificador de Compatibilidade de Tokens](https://anyspend.com/x402-tokens) para verificar se o seu token é suportado.
+</Note>
+
+## Instalação
+
+Instale o x402 client SDK:
+
+<CodeGroup>
+```bash npm
+npm install anyspend-x402-client viem
+```
+
+```bash yarn
+yarn add anyspend-x402-client viem
+```
+
+```bash pnpm
+pnpm add anyspend-x402-client viem
+```
+</CodeGroup>
+
+O SDK usa [viem](https://viem.sh) para operações de carteira e geração de assinatura.
+
+## Uso Básico
+
+### 1. Crie um cliente de carteira
+
+Primeiro, configure seu cliente de carteira usando viem:
+
+```typescript
+import { createWalletClient, custom } from 'viem';
+import { base } from 'viem/chains';
+
+// Para navegador com MetaMask ou outra extensão de carteira
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// Obtenha o endereço do usuário
+const [address] = await walletClient.getAddresses();
+```
+
+### 2. Inicialize o cliente x402
+
+Crie uma instância do cliente x402:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const x402Client = new X402Client({
+  walletClient,           // Seu cliente de carteira viem
+  preferredToken: '0x...', // Opcional: token padrão para pagamento
+  autoRetry: true          // Auto-gerenciar respostas 402 (padrão: verdadeiro)
+});
+```
+
+### 3. Faça uma solicitação paga
+
+Use o cliente para acessar recursos com paywall:
+
+```typescript
+try {
+  const response = await x402Client.request(
+    'https://api.example.com/premium-data',
+    {
+      method: 'GET',
+    }
+  );
+
+  console.log('Dados:', response.data);
+  console.log('TX de Pagamento:', response.paymentResponse?.txHash);
+} catch (error) {
+  console.error('Pagamento falhou:', error);
+}
+```
+
+**O que acontece:**
+
+1. Cliente faz solicitação inicial
+2. API retorna `402 Payment Required` com detalhes do pagamento
+3. X402Client assina automaticamente a autorização de pagamento
+4. Cliente tenta novamente a solicitação com pagamento
+5. API verifica e liquida o pagamento
+6. Cliente recebe os dados solicitados
+
+## Uso Avançado
+
+### Especificar token de pagamento
+
+Existem duas maneiras de especificar com qual token você deseja pagar:
+
+#### Opção 1: usando X402Client
+
+Pague com um token específico definindo `preferredToken`:
+
+```typescript
+const response = await x402Client.request(
+  'https://ai-agent-api.com/inference',
+  {
+    method: 'POST',
+    body: { prompt: 'Gerar uma imagem de um gato' },
+    preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC na Base
+  }
+);
+```
+
+#### Opção 2: usando wrapFetchWithPayment (avançado)
+
+Para mais controle, use a função `wrapFetchWithPayment` de nível mais baixo:
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC na Base
+const selectedChain = 8453; // Base
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // ou use getNetworkName(selectedChain)
+};
+
+// Envolva fetch com tratamento automático de pagamento
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // Valor máximo de pagamento (1 USDC em 6 decimais)
+  undefined, // Use o seletor padrão de requisitos de pagamento
+  undefined, // Use a configuração padrão
+  paymentPreferences, // Especifique seu token e rede preferidos
+);
+
+// Use o fetch envolvido como o fetch normal
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**Benefícios de `wrapFetchWithPayment`:**
+- Funciona com qualquer código baseado em `fetch`
+- Controle mais granular sobre o comportamento de pagamento
+- Pode especificar valor máximo de pagamento
+- Seletor de requisitos de pagamento personalizado
+- Suporta signatários de múltiplas redes
+
+Se o servidor de recursos suportar o middleware AnySpend, você pagará o valor equivalente no seu token preferido em vez de USDC.
+
+### Usando cabeçalhos HTTP para preferências de pagamento
+
+<Note>
+**Novo no X402**: Agora você pode especificar preferências de pagamento usando cabeçalhos HTTP, o que é particularmente útil ao fazer solicitações HTTP diretas ou ao integrar com clientes HTTP existentes.
+</Note>
+
+Ao fazer solicitações para serviços habilitados para X402, você pode especificar seu token de pagamento preferido e rede usando estes cabeçalhos HTTP:
+
+```bash
+curl -X GET https://api.example.com/premium-data \
+  -H "X-PREFERRED-TOKEN: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+**Endereços Comuns de Tokens:**
+- **USDC na Base**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **USDT na Base**: `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2`
+
+**Identificadores de Rede:**
+- `base-mainnet` - Base Mainnet
+- `ethereum-mainnet` - Ethereum Mainnet
+- `arbitrum-mainnet` - Arbitrum One
+- `optimism-mainnet` - Optimism Mainnet
+- `polygon-mainnet` - Polygon PoS
+
+Esses cabeçalhos funcionam com qualquer cliente HTTP e são automaticamente respeitados pelos servidores de recursos habilitados para X402 usando middleware AnySpend. Se nenhum cabeçalho for fornecido, o servidor usará USDC por padrão.
+
+#### Usando cabeçalhos com X402Client
+
+O X402Client adiciona automaticamente esses cabeçalhos com base na sua configuração:
+
+```typescript
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
+  network: 'base-mainnet'
+});
+
+// Cabeçalhos são automaticamente adicionados a todas as solicitações
+const response = await x402Client.request('https://api.example.com/data');
+```
+
+#### Usando cabeçalhos com fetch
+
+Você também pode adicionar esses cabeçalhos manualmente ao usar a API `fetch` nativa ou outros clientes HTTP:
+
+```typescript
+const response = await fetch('https://api.example.com/premium-data', {
+  headers: {
+    'X-PREFERRED-TOKEN': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    'X-PREFERRED-NETWORK': 'base-mainnet'
+  }
+});
+
+// Depois, trate a resposta 402 se necessário
+if (response.status === 402) {
+  // Processar pagamento usando X402Client ou wrapFetchWithPayment
+}
+```
+
+### Solicitações POST com corpo
+
+Faça solicitações POST pagas:
+
+```typescript
+const response = await x402Client.request(
+  'https://api.example.com/compute',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: 'Olá!' }]
+    }
+  }
+);
+```
+
+### Fluxo de pagamento manual
+
+Para mais controle, gerencie o fluxo de pagamento manualmente:
+
+```typescript
+// 1. Faça solicitação inicial
+const initialResponse = await fetch('https://api.example.com/premium-data');
+
+if (initialResponse.status === 402) {
+  // 2. Analise os requisitos de pagamento
+  const paymentRequired = await initialResponse.json();
+  const requirements = paymentRequired.requirements[0];
+
+  console.log('Pagamento necessário:', {
+    amount: requirements.amount,
+    token: requirements.asset,
+    recipient: requirements.recipient
+  });
+
+  // 3. Assine a autorização de pagamento
+  const paymentHeader = await x402Client.signPayment(requirements);
+
+  // 4. Tente novamente com pagamento
+  const paidResponse = await fetch('https://api.example.com/premium-data', {
+    headers: {
+      'X-PAYMENT': paymentHeader
+    }
+  });
+
+  const data = await paidResponse.json();
+  const paymentResponse = paidResponse.headers.get('X-PAYMENT-RESPONSE');
+
+  console.log('Pagamento bem-sucedido!', JSON.parse(atob(paymentResponse)));
+}
+```
+
+## Opções de Configuração
+
+### X402ClientOptions
+
+```typescript
+interface X402ClientOptions {
+  walletClient: WalletClient;        // cliente de carteira viem (obrigatório)
+  network?: string;                   // Rede padrão (ex.: 'base-mainnet')
+  preferredToken?: string;            // Endereço do token de pagamento preferido
+  autoRetry?: boolean;                // Auto-tentar novamente em 402 (padrão: verdadeiro)
+  timeout?: number;                   // Tempo limite de solicitação em ms (padrão: 30000)
+}
+```
+
+### Opções de Solicitação
+
+```typescript
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: any;                         // Corpo da solicitação (serializado automaticamente para JSON)
+  preferredToken?: string;            // Substituir token preferido padrão
+}
+```
+
+### Parâmetros de wrapFetchWithPayment
+
+Para casos de uso avançados, `wrapFetchWithPayment` oferece controle de nível mais baixo:
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // Função fetch para envolver
+  signer: Signer | MultiNetworkSigner, // Cliente de carteira para assinatura
+  maxPaymentValue: string,             // Pagamento máximo na unidade menor (ex.: '1000000' para 1 USDC)
+  selectPaymentRequirements?: Function, // Seletor de requisitos de pagamento personalizado
+  config?: {
+    timeout?: number;                  // Tempo limite de solicitação em ms
+    maxRetries?: number;               // Máximo de tentativas de pagamento
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // Endereço do token para pagamento
+    preferredNetwork?: string;         // Identificador de rede (ex.: 'base', 'ethereum')
+  }
+): typeof fetch
+```
+
+**Exemplo com todos os parâmetros:**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // Máx 5 USDC
+  undefined, // Seletor de requisitos padrão
+  {
+    timeout: 60000,    // Tempo limite de 60 segundos
+    maxRetries: 3      // Tentar até 3 vezes
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
+## Tokens Suportados
+
+**Apenas tokens com suporte a EIP-2612 ou EIP-3009** são compatíveis com AnySpend x402 para pagamentos sem gás.
+
+### O que são EIP-2612 e EIP-3009?
+
+- **EIP-2612 (Permit)**: Permite aprovações de tokens sem gás via assinaturas fora da cadeia
+- **EIP-3009 (TransferWithAuthorization)**: Habilita transferências sem gás via assinaturas fora da cadeia (usado pelo USDC)
+
+
+### Tokens compatíveis comuns
+
+- **USDC** - Suporte a EIP-3009 em todas as cadeias
+- **B3** - Suporte a permit EIP-2612
+- **Muitos outros tokens** - Verifique a compatibilidade usando a ferramenta abaixo
+
+<Card title="Verificador de Compatibilidade de Tokens" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Navegue por todos os tokens compatíveis com suporte a EIP-2612 ou EIP-3009 em mais de 19 redes
+</Card>
+
+Veja [Suporte de Rede](/anyspend/x402-network-support) para endereços de tokens detalhados por cadeia.
+
+## Exemplos
+
+### Componente React (usando X402Client)
+
+```tsx
+import { X402Client } from 'anyspend-x402-client';
+import { useWalletClient } from 'wagmi';
+import { useState } from 'react';
+
+export function PremiumDataFetcher() {
+  const { data: walletClient } = useWalletClient();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    try {
+      const client = new X402Client({
+        walletClient,
+        preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC na Base
+      });
+
+      const response = await client.request(
+        'https://api.example.com/premium-data'
+      );
+
+      setData(response.data);
+      console.log('Pago com TX:', response.paymentResponse?.txHash);
+    } catch (error) {
+      console.error('Pagamento falhou:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Pagando...' : 'Obter Dados Premium (Custa 1 USDC)'}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### Componente React (usando wrapFetchWithPayment)
+
+Para aplicações que precisam de mais controle ou usam código baseado em fetch existente:
+
+```tsx
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+import { useWalletClient, useChainId } from 'wagmi';
+import { useState } from 'react';
+
+// Auxiliar para obter o nome da rede a partir do ID da cadeia
+const getNetworkName = (chainId: number): string => {
+  const networks: Record<number, string> = {
+    8453: 'base',
+    1: 'ethereum',
+    42161: 'arbitrum',
+    10: 'optimism',
+    137: 'polygon',
+  };
+  return networks[chainId] || 'base';
+};
+
+export function PremiumDataFetcherAdvanced() {
+  const { data: walletClient } = useWalletClient();
+  const selectedChain = useChainId();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+
+  // Endereços de tokens por cadeia
+  const tokenAddresses: Record<number, string> = {
+    8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC na Base
+    1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC no Ethereum
+  };
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    setLog([]);
+
+    try {
+      const tokenAddress = tokenAddresses[selectedChain];
+
+      const paymentPreferences = {
+        preferredToken: tokenAddress,
+        preferredNetwork: getNetworkName(selectedChain) as any,
+      };
+
+      setLog(prev => [...prev,
+        `💡 Usando token preferido: ${tokenAddress} em ${getNetworkName(selectedChain)}`
+      ]);
+
+      // En

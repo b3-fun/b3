@@ -1,0 +1,449 @@
+---
+title: 제품들
+description: 결제 링크와 체크아웃 세션을 위한 제품 카탈로그 관리
+lang: ko
+originalPath: anyspend/api/products.mdx
+---
+제품은 카탈로그의 항목이나 서비스를 나타냅니다. 각 제품은 가격, 토큰, 체인 구성을 정의하여 여러 결제 링크와 체크아웃 세션에 걸쳐 재사용할 수 있습니다.
+
+<Info>
+  제품은 세 가지 가격 유형을 지원합니다: 단일 구매를 위한 `one_time`, 반복 결제를 위한 `subscription`, 고객이 선택한 금액을 위한 `variable`.
+</Info>
+
+## 제품 객체
+
+<ResponseField name="id" type="string">
+  제품의 고유 식별자 (예: `prod_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  고객에게 표시되는 제품 이름.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  토큰의 최소 단위로의 가격. `variable` 제품 유형의 경우 Null.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  가격 책정을 위한 토큰의 계약 주소.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  가격 책정 토큰의 체인 ID.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  제품 설명.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  제품 이미지 URL.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  이 제품에 대한 결제를 받는 기본 지갑 주소.
+</ResponseField>
+
+<ResponseField name="product_type" type="string">
+  가격 유형: `one_time`, `subscription`, 또는 `variable`.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  고객에게 표시되지 않는 자체 사용을 위한 임의의 키-값 쌍.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  체크아웃 중에 수집하는 사용자 정의 양식 필드. [Payment Links form_schema](/anyspend/api/payment-links#the-payment-link-object)와 동일한 구조.
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  물리적 상품에 대한 배송 옵션. [Payment Links shipping_options](/anyspend/api/payment-links#the-payment-link-object)와 동일한 구조.
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  제품이 활성화되었는지 여부. 비활성화된 제품은 새 결제 링크에서 사용할 수 없습니다.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 생성 타임스탬프.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 마지막 업데이트 타임스탬프.
+</ResponseField>
+
+---
+
+## 제품 목록
+
+제품의 페이지별 목록을 검색합니다.
+
+<ParamField query="page" type="number" default={1}>
+  페이지 번호를 위한 페이징.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  페이지당 결과 수 (최대 100).
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  활성 상태로 필터링. 모든 제품을 반환하려면 생략.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products?page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.products.list({
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "prod_abc123",
+          "name": "Pro Plan",
+          "amount": "50000000",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "무제한 액세스를 제공하는 전문가 등급",
+          "image_url": "https://example.com/pro.png",
+          "recipient_address": "0x1234...abcd",
+          "product_type": "one_time",
+          "metadata": {
+            "sku": "PRO-001",
+            "internal_id": "tier_3"
+          },
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-10T09:00:00Z",
+          "updated_at": "2026-02-15T12:00:00Z"
+        },
+        {
+          "id": "prod_def456",
+          "name": "Donation",
+          "amount": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "원하는 금액으로 프로젝트를 지원하세요",
+          "image_url": null,
+          "recipient_address": "0x1234...abcd",
+          "product_type": "variable",
+          "metadata": null,
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-20T14:30:00Z",
+          "updated_at": "2026-01-20T14:30:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 2,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 제품 생성
+
+<ParamField body="name" type="string" required>
+  제품 이름.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  가격 책정을 위한 토큰의 계약 주소.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  가격 책정 토큰의 체인 ID.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  결제를 받는 기본 지갑 주소.
+</ParamField>
+
+<ParamField body="product_type" type="string" required>
+  가격 유형. `one_time`, `subscription`, `variable` 중 하나.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  토큰의 최소 단위로의 가격. `one_time` 및 `subscription` 유형에 필요.
+</ParamField>
+
+<ParamField body="description" type="string">
+  제품 설명.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  제품 이미지 URL.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  임의의 키-값 쌍 (예: `{"sku": "PRO-001"}`). 최대 50개의 키, 500자의 값.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  체크아웃 중에 수집하는 사용자 정의 양식 필드.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  물리적 상품에 대한 배송 옵션.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan",
+    "amount": "50000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "product_type": "one_time",
+    "description": "무제한 액세스를 제공하는 전문가 등급",
+    "image_url": "https://example.com/pro.png",
+    "metadata": {
+      "sku": "PRO-001",
+      "internal_id": "tier_3"
+    }
+  }'
+```
+
+```typescript SDK
+const product = await anyspend.products.create({
+  name: "Pro Plan",
+  amount: "50000000",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  productType: "one_time",
+  description: "무제한 액세스를 제공하는 전문가 등급",
+  imageUrl: "https://example.com/pro.png",
+  metadata: {
+    sku: "PRO-001",
+    internal_id: "tier_3",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "name": "Pro Plan",
+      "amount": "50000000",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "description": "무제한 액세스를 제공하는 전문가 등급",
+      "image_url": "https://example.com/pro.png",
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "product_type": "one_time",
+      "metadata": {
+        "sku": "PRO-001",
+        "internal_id": "tier_3"
+      },
+      "form_schema": null,
+      "shipping_options": null,
+      "active": true,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 제품 검색
+
+<ParamField path="id" type="string" required>
+  제품 ID (예: `prod_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const product = await anyspend.products.retrieve("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    전체 [제품 객체](#the-product-object)를 반환합니다.
+  </Tab>
+</Tabs>
+
+---
+
+## 제품 업데이트
+
+기존 제품을 업데이트합니다. 요청 본문에 포함된 필드만 업데이트됩니다.
+
+<ParamField path="id" type="string" required>
+  제품 ID.
+</ParamField>
+
+[제품 생성 엔드포인트](#create-a-product)에서 받는 모든 본문 매개변수가 허용됩니다. 추가적으로:
+
+<ParamField body="active" type="boolean">
+  제품을 비활성화하려면 `false`로 설정.
+</ParamField>
+
+<Warning>
+  제품을 업데이트해도 그것에서 생성된 결제 링크는 소급하여 업데이트되지 않습니다. 각 결제 링크는 자체 구성을 유지합니다.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan (Annual)",
+    "amount": "500000000",
+    "description": "연간 청구를 위한 전문가 등급"
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.products.update("prod_abc123", {
+  name: "Pro Plan (Annual)",
+  amount: "500000000",
+  description: "연간 청구를 위한 전문가 등급",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    업데이트된 [제품 객체](#the-product-object)를 반환합니다.
+  </Tab>
+</Tabs>
+
+---
+
+## 제품 삭제
+
+제품을 소프트 삭제합니다. 제품은 비활성화되어 기본적으로 목록 결과에 더 이상 나타나지 않습니다. 이 제품을 사용하는 기존 결제 링크는 계속 작동합니다.
+
+<ParamField path="id" type="string" required>
+  제품 ID.
+</ParamField>
+
+<Tip>
+  제품 삭제는 소프트 삭제입니다. 제품 데이터는 기존 거래 및 결제 링크에서 역사적 참조를 위해 보존됩니다.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.products.delete("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 제품에서 결제 링크 생성
+
+제품의 설정으로 미리 구성된 결제 링크를 자동으로 생성합니다. 이는 제품의 `name`, `amount`, `token_address`, `chain_id`, `recipient_address`, `description`, `image_url`, `form_schema`, `shipping_options`을 사용하여 새 결제 링크를 생성하는 편리한 방법입니다.
+
+<ParamField path="id" type="string" required>
+  제품 ID.
+</ParamField>
+
+<ParamField body="name" type="string">
+  결제 링크 이름을 재정의합니다. 기본값은 제품 이름입니다.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  결제 후 고객을 리디렉션할 URL.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  생성된 링크의 최대 사용 횟수.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  생성된 링크의 ISO 8601 만료 타임스탬프.
+</ParamField>
+
+추가 [결제 링크 필드](/anyspend/api/payment-links#create-a-payment-link)는 오버라이드로 전달할 수 있습니다.
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products/prod_abc123/generate-link" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "return_url": "https://example.com/thank-you",
+    "max_uses": 100,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }'
+```
+
+```typescript SDK
+const paymentLink = await anyspend.products.generateLink("prod_abc123", {
+  returnUrl: "https://example.com/thank-you",
+  maxUses: 100,
+  expiresAt: "2026-12-31T23:59:59Z",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    원본 제품에 `product_id`가 설정된 새 [결제 링크 객체](/anyspend/api/payment-links#the-payment-link-object)를 반환합니다.
+
+    ```json
+    {
+      "id": "pl_newlink789",
+      "name": "Pro Plan",
+      "url": "https://pay.anyspend.com/pl_newlink789",
+      "short_url": "https://as.pay/newlink789",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678

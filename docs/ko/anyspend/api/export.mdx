@@ -1,0 +1,215 @@
+---
+title: 데이터 내보내기
+description: CSV 또는 JSON 형식으로 거래 및 고객 데이터를 내보내기
+lang: ko
+originalPath: anyspend/api/export.mdx
+---
+AnySpend 플랫폼 API는 거래 및 고객 데이터를 대량으로 다운로드할 수 있는 내보내기 엔드포인트를 제공합니다. 내보내기는 선택적 필터링이 가능한 CSV 및 JSON 형식을 지원합니다.
+
+<Info>
+  두 내보내기 엔드포인트 모두 **읽기** 권한이 있는 API 키가 필요합니다.
+</Info>
+
+## 엔드포인트
+
+| 엔드포인트 | 설명 |
+|----------|-------------|
+| `GET /api/v1/transactions/export` | 거래 내보내기 |
+| `GET /api/v1/customers/export` | 고객 내보내기 |
+
+## 거래 내보내기
+
+상태, 날짜 범위 및 형식에 대한 선택적 필터를 사용하여 거래 기록을 내보냅니다.
+
+### 매개변수
+
+| 매개변수 | 유형 | 필수 | 기본값 | 설명 |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | 아니요 | `csv` | 출력 형식: `csv` 또는 `json` |
+| `status` | `string` | 아니요 | 모두 | 상태별 필터: `completed`, `pending`, `failed` |
+| `from` | `string` | 아니요 | -- | 시작 날짜 (ISO 8601, 예: `2025-01-01T00:00:00Z`) |
+| `to` | `string` | 아니요 | -- | 종료 날짜 (ISO 8601) |
+
+### CSV 출력
+
+CSV 내보내기는 헤더 행 다음에 거래당 한 행씩 포함됩니다:
+
+```csv
+id,payment_link_id,amount,token_address,chain_id,sender_address,recipient_address,tx_hash,status,created_at,completed_at
+txn_abc123,pl_def456,50000000,0x833589...02913,8453,0xSender...,0xRecipient...,0xTxHash...,completed,2025-06-01T10:00:00Z,2025-06-01T10:00:30Z
+txn_ghi789,pl_def456,25000000,0x833589...02913,8453,0xSender2...,0xRecipient...,0xTxHash2...,completed,2025-06-01T11:00:00Z,2025-06-01T11:00:15Z
+```
+
+### JSON 출력
+
+JSON 내보내기는 거래 객체의 배열을 반환합니다:
+
+```json
+[
+  {
+    "id": "txn_abc123",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xSenderAddress",
+    "recipient_address": "0xRecipientAddress",
+    "tx_hash": "0xTransactionHash",
+    "status": "completed",
+    "created_at": "2025-06-01T10:00:00Z",
+    "completed_at": "2025-06-01T10:00:30Z"
+  }
+]
+```
+
+### 예시
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o transactions.csv \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2025-01-01T00:00:00Z&to=2025-06-30T23:59:59Z" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o transactions.json \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-06-30T23:59:59Z",
+});
+
+writeFileSync("transactions.csv", csv);
+console.log("Exported transactions to transactions.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const transactions = await platform.transactions.export({
+  format: "json",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+});
+
+console.log(`Exported ${transactions.length} transactions`);
+
+// 메모리 내 처리
+for (const txn of transactions) {
+  console.log(txn.id, txn.amount, txn.completed_at);
+}
+```
+
+</CodeGroup>
+
+## 고객 내보내기
+
+귀하의 조직과 관련된 모든 고객 기록을 내보냅니다.
+
+### 매개변수
+
+| 매개변수 | 유형 | 필수 | 기본값 | 설명 |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | 아니요 | `csv` | 출력 형식: `csv` 또는 `json` |
+
+### CSV 출력
+
+```csv
+id,wallet_address,email,name,total_spent,transaction_count,first_seen,last_seen
+cust_abc123,0xWalletAddress,alice@example.com,Alice,150000000,3,2025-03-15T08:00:00Z,2025-06-01T10:00:00Z
+cust_def456,0xWalletAddress2,,Bob,50000000,1,2025-05-20T14:00:00Z,2025-05-20T14:00:00Z
+```
+
+### JSON 출력
+
+```json
+[
+  {
+    "id": "cust_abc123",
+    "wallet_address": "0xWalletAddress",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "total_spent": "150000000",
+    "transaction_count": 3,
+    "first_seen": "2025-03-15T08:00:00Z",
+    "last_seen": "2025-06-01T10:00:00Z"
+  }
+]
+```
+
+### 예시
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o customers.csv \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o customers.json \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const csv = await platform.customers.export({ format: "csv" });
+writeFileSync("customers.csv", csv);
+console.log("Exported customers to customers.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+const customers = await platform.customers.export({ format: "json" });
+
+console.log(`Exported ${customers.length} customers`);
+for (const c of customers) {
+  console.log(c.name, c.wallet_address, c.total_spent);
+}
+```
+
+</CodeGroup>
+
+## 팁
+
+<CardGroup cols={2}>
+  <Card title="정기적인 내보내기 예약" icon="calendar">
+    데이터 백업 및 조정을 위해 매일 또는 매주 데이터를 내보내는 cron 작업 또는 예약된 함수를 설정합니다.
+  </Card>
+  <Card title="대규모 데이터셋에 대한 날짜 필터 사용" icon="filter">
+    거래가 수천 건인 경우 타임아웃을 방지하기 위해 `from` 및 `to` 매개변수를 사용하여 더 작은 날짜 범위로 내보냅니다.
+  </Card>
+  <Card title="스프레드시트용 CSV" icon="table">
+    CSV 내보내기는 Excel, Google Sheets 및 기타 스프레드시트 도구에서 바로 열어 빠른 분석을 할 수 있습니다.
+  </Card>
+  <Card title="프로그래밍 사용을 위한 JSON" icon="code">
+    JSON 내보내기는 데이터를 분석 파이프라인, 데이터베이스 또는 맞춤형 대시보드로 전달하는 데 이상적입니다.
+  </Card>
+</CardGroup>
+
+<Warning>
+  내보내기는 속도 제한이 적용됩니다. 대규모 내보내기(10,000개 이상의 기록)는 생성하는 데 몇 초가 걸릴 수 있습니다. 요청은 내보내기가 완료될 때까지 차단되므로 매우 큰 데이터셋의 경우에는 이를 고려하여 계획하세요.
+</Warning>

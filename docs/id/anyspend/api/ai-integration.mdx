@@ -1,0 +1,477 @@
+---
+title: Integrasi AI & Agen
+description: Gunakan API Platform AnySpend dengan agen AI dan LLMs
+lang: id
+originalPath: anyspend/api/ai-integration.mdx
+---
+Platform API AnySpend dirancang dengan **integrasi AI-first** dalam pikiran. Setiap endpoint memiliki `operationId` yang unik, skema JSON terperinci, dan konvensi yang konsisten yang membuatnya mudah digunakan dengan pemanggilan fungsi LLM, agen otonom, dan kerangka kerja orkestrasi AI.
+
+## Spesifikasi OpenAPI
+
+Spesifikasi OpenAPI 3.1 lengkap tersedia di:
+
+```
+GET /api/v1/openapi.json
+```
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/openapi.json -o openapi.json
+```
+
+Spesifikasi tersebut mencakup:
+- `operationId` unik untuk setiap endpoint (mis. `createPaymentLink`, `listTransactions`)
+- Skema JSON permintaan dan respons terperinci dengan deskripsi
+- Persyaratan autentikasi
+- Skema respons kesalahan
+
+<Tip>
+  Gunakan spesifikasi OpenAPI untuk menghasilkan definisi alat secara otomatis untuk LLM Anda. Kebanyakan kerangka kerja AI dapat mengonversi operasi OpenAPI menjadi definisi fungsi/alat secara programatik.
+</Tip>
+
+## Pemanggilan Fungsi LLM
+
+### Claude (Anthropic)
+
+Konversikan operasi OpenAPI menjadi definisi alat Claude. Berikut adalah contoh definisi alat untuk membuat tautan pembayaran:
+
+```json
+{
+  "name": "create_payment_link",
+  "description": "Buat tautan pembayaran baru yang dapat dibagikan dengan pelanggan untuk mengumpulkan pembayaran kripto. Mengembalikan objek tautan pembayaran termasuk URL yang dapat dibagikan.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Nama yang mudah dibaca manusia untuk tautan pembayaran (mis. 'Pro Plan Bulanan')"
+      },
+      "amount": {
+        "type": "string",
+        "description": "Jumlah pembayaran dalam unit terkecil token. Untuk USDC (6 desimal), '1000000' = 1 USDC."
+      },
+      "recipient_address": {
+        "type": "string",
+        "description": "Alamat Ethereum (dengan awalan 0x, 42 karakter) yang akan menerima pembayaran"
+      },
+      "token_address": {
+        "type": "string",
+        "description": "Alamat kontrak token ERC-20. Default ke USDC di Base jika dihilangkan."
+      },
+      "chain_id": {
+        "type": "number",
+        "description": "ID rantai target. Default ke 8453 (Base)."
+      },
+      "description": {
+        "type": "string",
+        "description": "Deskripsi opsional yang ditampilkan kepada pembayar di halaman checkout"
+      }
+    },
+    "required": ["name", "amount", "recipient_address"]
+  }
+}
+```
+
+### OpenAI
+
+Definisi fungsi yang setara untuk pemanggilan fungsi OpenAI:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "create_payment_link",
+    "description": "Buat tautan pembayaran baru yang dapat dibagikan dengan pelanggan untuk mengumpulkan pembayaran kripto. Mengembalikan objek tautan pembayaran termasuk URL yang dapat dibagikan.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nama yang mudah dibaca manusia untuk tautan pembayaran"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Jumlah pembayaran dalam unit terkecil (mis. '1000000' untuk 1 USDC)"
+        },
+        "recipient_address": {
+          "type": "string",
+          "description": "Alamat Ethereum untuk menerima pembayaran"
+        },
+        "token_address": {
+          "type": "string",
+          "description": "Alamat kontrak token ERC-20 (default: USDC di Base)"
+        },
+        "chain_id": {
+          "type": "number",
+          "description": "ID rantai target (default: 8453 / Base)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Deskripsi yang ditampilkan di halaman checkout"
+        }
+      },
+      "required": ["name", "amount", "recipient_address"]
+    }
+  }
+}
+```
+
+## Contoh: Alur Percakapan
+
+Berikut adalah bagaimana asisten AI mungkin menggunakan alat AnySpend dalam percakapan:
+
+<Steps>
+  <Step title="Pengguna meminta untuk membuat tautan pembayaran">
+    **Pengguna:** "Buat tautan pembayaran untuk 50 USDC untuk langganan rencana Pro"
+
+    AI memutuskan untuk memanggil alat `create_payment_link`.
+  </Step>
+  <Step title="AI memanggil alat">
+    ```json
+    {
+      "name": "create_payment_link",
+      "input": {
+        "name": "Langganan Rencana Pro",
+        "amount": "50000000",
+        "recipient_address": "0xAlamatAndaYangDikonfigurasi",
+        "description": "Langganan bulanan rencana Pro"
+      }
+    }
+    ```
+  </Step>
+  <Step title="Alat mengembalikan hasil">
+    ```json
+    {
+      "id": "pl_abc123",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "name": "Langganan Rencana Pro",
+      "amount": "50000000",
+      "status": "aktif"
+    }
+    ```
+  </Step>
+  <Step title="AI merespons pengguna">
+    "Saya telah membuat tautan pembayaran untuk 50 USDC untuk Langganan Rencana Pro. Berikut tautannya: https://pay.anyspend.com/pl_abc123"
+  </Step>
+</Steps>
+
+## Membangun Agen Pembayaran AI
+
+Berikut adalah contoh lengkap agen AI yang dapat mengelola pembayaran menggunakan Claude dan SDK AnySpend:
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const anthropic = new Anthropic();
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Tentukan alat yang dapat digunakan agen
+const tools: Anthropic.Tool[] = [
+  {
+    name: "create_payment_link",
+    description: "Buat tautan pembayaran untuk mengumpulkan pembayaran kripto",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "Nama untuk tautan" },
+        amount: { type: "string", description: "Jumlah dalam unit terkecil" },
+        recipient_address: { type: "string", description: "Alamat penerima ETH" },
+      },
+      required: ["name", "amount", "recipient_address"],
+    },
+  },
+  {
+    name: "list_recent_transactions",
+    description: "Daftar transaksi terbaru dengan filter status opsional",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: { type: "string", enum: ["completed", "pending", "failed"] },
+        limit: { type: "number", description: "Hasil maksimal (default 10)" },
+      },
+    },
+  },
+  {
+    name: "get_transaction_stats",
+    description: "Dapatkan statistik transaksi agregat",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+];
+
+// Validasi bidang string yang diperlukan dari input alat LLM
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`Bidang yang hilang atau tidak valid: ${key}`);
+  }
+  return value;
+}
+
+// Jalankan pemanggilan alat
+async function executeTool(name: string, input: Record<string, unknown>) {
+  switch (name) {
+    case "create_payment_link":
+      return await platform.paymentLinks.create({
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
+      });
+
+    case "list_recent_transactions":
+      return await platform.transactions.list({
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
+      });
+
+    case "get_transaction_stats":
+      return await platform.transactions.stats();
+
+    default:
+      throw new Error(`Alat tidak dikenal: ${name}`);
+  }
+}
+
+const SYSTEM_PROMPT =
+  "Anda adalah asisten manajemen pembayaran. Gunakan alat yang disediakan untuk membantu pengguna membuat tautan pembayaran, melihat transaksi, dan mengelola akun AnySpend mereka. Jumlah dalam unit terkecil token -- untuk USDC dengan 6 desimal, 1 USDC = 1000000.";
+
+// Jalankan loop agen
+async function chat(userMessage: string) {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  let response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    tools,
+    messages,
+    system: SYSTEM_PROMPT,
+  });
+
+  // Tangani penggunaan alat dalam loop
+  while (response.stop_reason === "tool_use") {
+    const toolUseBlocks = response.content.filter(
+      (b): b is Anthropic.ContentBlock & { type: "tool_use" } =>
+        b.type === "tool_use"
+    );
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolUseBlocks) {
+      const result = await executeTool(
+        block.name,
+        block.input as Record<string, unknown>
+      );
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
+    }
+
+    messages.push({ role: "assistant", content: response.content });
+    messages.push({ role: "user", content: toolResults });
+
+    response = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 1024,
+      tools,
+      messages,
+      system: SYSTEM_PROMPT,
+    });
+  }
+
+  // Ekstrak respons teks
+  const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock?.type === "text" ? textBlock.text : "";
+}
+
+// Penggunaan
+const reply = await chat("Buat tautan pembayaran 25 USDC untuk pesanan kaos");
+console.log(reply);
+```
+
+## Server MCP (Segera Hadir)
+
+<Info>
+  Kami sedang membangun server Model Context Protocol (MCP) yang akan mengekspos seluruh API Platform AnySpend sebagai alat MCP. Ini akan memungkinkan klien AI yang kompatibel dengan MCP (Claude Desktop, Cursor, Windsurf, dll.) untuk berinteraksi langsung dengan akun AnySpend Anda.
+
+  Bergabunglah dengan [daftar tunggu](https://anyspend.com/mcp-waitlist) untuk mendapatkan akses awal.
+</Info>
+
+Server MCP akan mendukung:
+- Semua operasi CRUD untuk tautan pembayaran, produk, pelanggan, dan webhook
+- Pencarian dan ekspor transaksi
+- Analitik dan statistik
+- Manajemen sesi checkout
+
+## Definisi Alat Tambahan
+
+Berikut adalah definisi alat tambahan yang dapat Anda tambahkan ke agen Anda untuk cakupan yang komprehensif:
+
+<AccordionGroup>
+  <Accordion title="list_payment_links">
+    ```json
+    {
+      "name": "list_payment_links",
+      "description": "Daftar semua tautan pembayaran, opsional difilter berdasarkan status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["aktif", "kedaluwarsa", "dinonaktifkan"],
+            "description": "Filter berdasarkan status tautan"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Hasil maksimal yang dikembalikan (default 20, maks 100)"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="get_analytics_overview">
+    ```json
+    {
+      "name": "get_analytics_overview",
+      "description": "Dapatkan gambaran analitik tingkat tinggi termasuk total volume, jumlah transaksi, dan tautan pembayaran teratas",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Tanggal mulai dalam format ISO 8601"
+          },
+          "to": {
+            "type": "string",
+            "description": "Tanggal akhir dalam format ISO 8601"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="create_discount_code">
+    ```json
+    {
+      "name": "create_discount_code",
+      "description": "Buat kode diskon yang dapat diterapkan pelanggan saat checkout",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "String kode diskon (mis. 'SUMMER20')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["persentase", "tetap"],
+            "description": "Tipe diskon: persentase diskon atau jumlah tetap"
+          },
+          "value": {
+            "type": "string",
+            "description": "Nilai diskon: persentase (mis. '20' untuk 20%) atau jumlah tetap dalam unit terkecil"
+          },
+          "max_uses": {
+            "type": "number",
+            "description": "Jumlah maksimal penggunaan kode ini"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "Tanggal kedaluwarsa dalam format ISO 8601"
+          }
+        },
+        "required": ["code", "type", "value"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="export_transactions">
+    ```json
+    {
+      "name": "export_transactions",
+      "description": "Ekspor transaksi sebagai CSV atau JSON untuk pelaporan dan analisis",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "description": "Format ekspor (default: csv)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "pending", "failed"],
+            "description": "Filter berdasarkan status transaksi"
+          },
+          "from": {
+            "type": "string",
+            "description": "Tanggal mulai dalam format ISO 8601"
+          },
+          "to": {
+            "type": "string",
+            "description": "Tanggal akhir dalam format ISO 8601"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Praktik Terbaik
+
+<CardGroup cols={2}>
+  <Card title="Gunakan kunci hanya-baca untuk agen query" icon="eye">
+    Agen AI yang hanya membaca data (daftar transaksi, lihat analitik) harus menggunakan kunci API dengan izin **hanya-baca**. Ini mencegah mutasi tidak sengaja dari pemanggilan alat yang dihalusinasikan.
+  </Card>
+  <Card title="Gunakan kunci tulis untuk agen aksi" icon="pen">
+    Agen yang perlu membuat tautan pembayaran atau mengelola sumber daya membutuhkan kunci API **baca-tulis**. Batasi mereka ke izin minimum yang diperlukan.
+  </Card>
+  <Card title="Selalu validasi jumlah" icon="calculator">
+    LLM dapat menghalusinasikan angka. Sebelum menjalankan pemanggilan alat yang melibatkan jumlah, validasi bahwa jumlahnya masuk akal. Pertimbangkan untuk menambahkan langkah konfirmasi untuk jumlah di atas ambang batas.
+  </Card>
+  <Card title="Log semua pemanggilan alat" icon="file-lines">
+    Log setiap pemanggilan alat dan hasilnya untuk auditabilitas. Ini sangat penting untuk agen yang menangani uang sungguhan.
+  </Card>
+</CardGroup>
+
+<Warning>
+  **Jangan pernah mengekspos kunci API Anda dalam kode sisi klien atau prompt AI yang terlihat oleh pengguna akhir.** Gunakan proxy sisi server untuk melakukan panggilan API atas nama agen AI Anda. Jika menggunakan pemanggilan fungsi Claude atau OpenAI, kunci API hanya harus ada di lapisan eksekusi alat backend Anda -- tidak pernah dalam prompt sistem LLM.
+</Warning>
+
+## Menghasilkan Definisi Alat dari OpenAPI
+
+Anda dapat mengonversi spesifikasi OpenAPI menjadi definisi alat secara programatik untuk kerangka kerja LLM apa pun:
+
+```typescript
+// Ambil spesifikasi OpenAPI dan konversi ke definisi alat
+async function generateTools() {
+  const resp = await fetch(
+    "https://platform-api.anyspend.com/api/v1/openapi.json"
+  );
+  const spec = await resp.json();
+
+  const tools = [];
+
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, operation] of Object.entries(methods as Record<string, any>)) {
+      if (!operation.operationId) continue;
+
+      const tool = {
+        name: operation.operationId,
+        description: operation.summary || operation.description || "",
+        input_schema: operation.requestBody?.content?.["application/json"]?.schema || {
+          type: "object",
+          properties: {},
+        },
+      };
+
+      tools.push

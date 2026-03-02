@@ -1,0 +1,386 @@
+---
+title: 交易
+description: 查看交易历史、统计数据和导出数据
+lang: cn
+originalPath: anyspend/api/transactions.mdx
+---
+交易代表通过您的支付链接和结账会话完成或正在进行的支付。交易 API 是只读的——当客户通过您的结账流程支付时，交易会自动创建。
+
+<Info>
+  交易金额存储在代币的最小单位中（例如，USDC 的 6 个小数）。`amount_usd` 字段提供了交易时的 USD 等价值。
+</Info>
+
+## 交易对象
+
+<ResponseField name="id" type="string">
+  交易的唯一标识符（例如，`tx_abc123`）。
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  交易的当前状态。其中之一：`pending`、`confirming`、`completed`、`failed`。
+</ResponseField>
+
+<ResponseField name="amount" type="string">
+  代币最小单位的交易金额。
+</ResponseField>
+
+<ResponseField name="amount_usd" type="string">
+  支付时交易金额的 USD 等价值。
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  收到的代币的合约地址。
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  接收支付的链 ID。
+</ResponseField>
+
+<ResponseField name="tx_hash" type="string | null">
+  链上交易哈希。`pending` 时为 Null。
+</ResponseField>
+
+<ResponseField name="payer_address" type="string">
+  付款人的钱包地址。
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  收到支付的钱包地址。
+</ResponseField>
+
+<ResponseField name="customer_id" type="string | null">
+  如果付款人是已知客户，则为关联的客户 ID。
+</ResponseField>
+
+<ResponseField name="payment_link_id" type="string | null">
+  产生此交易的支付链接。
+</ResponseField>
+
+<ResponseField name="session_id" type="string | null">
+  产生此交易的结账会话。
+</ResponseField>
+
+<ResponseField name="source_chain_id" type="number | null">
+  如果付款人从不同的链支付，这是他们支付的链。
+</ResponseField>
+
+<ResponseField name="source_token_address" type="string | null">
+  如果付款人使用不同的代币支付，这是他们支付的代币。
+</ResponseField>
+
+<ResponseField name="source_amount" type="string | null">
+  付款人发送的金额（交换/桥接前），以源代币的最小单位表示。
+</ResponseField>
+
+<ResponseField name="fee_amount" type="string | null">
+  收到的代币最小单位的平台费用金额。
+</ResponseField>
+
+<ResponseField name="form_data" type="object | null">
+  客户在结账期间提交的自定义表单数据。
+</ResponseField>
+
+<ResponseField name="shipping_address" type="object | null">
+  客户提供的送货地址。
+  <Expandable title="shipping address fields">
+    <ResponseField name="name" type="string">收件人姓名。</ResponseField>
+    <ResponseField name="line1" type="string">地址第一行。</ResponseField>
+    <ResponseField name="line2" type="string | null">地址第二行。</ResponseField>
+    <ResponseField name="city" type="string">城市。</ResponseField>
+    <ResponseField name="state" type="string">州或省份。</ResponseField>
+    <ResponseField name="postal_code" type="string">邮政或 ZIP 编码。</ResponseField>
+    <ResponseField name="country" type="string">两字母国家代码。</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_option" type="object | null">
+  选择的送货选项。
+  <Expandable title="shipping option fields">
+    <ResponseField name="id" type="string">送货选项 ID。</ResponseField>
+    <ResponseField name="name" type="string">送货选项名称。</ResponseField>
+    <ResponseField name="amount" type="string">运费。</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  结账会话的元数据。
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  交易发起时的 ISO 8601 时间戳。
+</ResponseField>
+
+<ResponseField name="confirmed_at" type="string | null">
+  交易达到 `confirming` 状态时的 ISO 8601 时间戳。
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  交易达到 `completed` 状态时的 ISO 8601 时间戳。
+</ResponseField>
+
+### 交易状态
+
+| 状态 | 描述 |
+|--------|-------------|
+| `pending` | 交易已发起，等待链上提交。 |
+| `confirming` | 交易已在链上提交，等待区块确认。 |
+| `completed` | 交易已确认，收款人已收到支付。 |
+| `failed` | 交易因回退、超时或资金不足而失败。 |
+
+---
+
+## 列出交易
+
+检索带有可选过滤器的分页交易列表。
+
+<ParamField query="status" type="string">
+  按状态过滤：`pending`、`confirming`、`completed`、`failed`。
+</ParamField>
+
+<ParamField query="customer_id" type="string">
+  按客户 ID 过滤。
+</ParamField>
+
+<ParamField query="payment_link_id" type="string">
+  按支付链接 ID 过滤。
+</ParamField>
+
+<ParamField query="from" type="string">
+  过滤在此 ISO 8601 日期（例如，`2026-01-01`）或之后创建的交易。
+</ParamField>
+
+<ParamField query="to" type="string">
+  过滤在此 ISO 8601 日期（例如，`2026-02-28`）或之前创建的交易。
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  分页的页码。
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  每页的结果数（最大 100）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions?status=completed&from=2026-02-01&to=2026-02-28&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.transactions.list({
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "source_chain_id": 8453,
+          "source_token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "source_amount": "50000000",
+          "fee_amount": "500000",
+          "form_data": {
+            "company_name": "Acme Inc."
+          },
+          "shipping_address": null,
+          "shipping_option": null,
+          "metadata": null,
+          "created_at": "2026-02-25T08:15:00Z",
+          "confirmed_at": "2026-02-25T08:15:45Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 156,
+        "total_pages": 8,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 检索交易
+
+<ParamField path="id" type="string" required>
+  交易 ID（例如，`tx_abc123`）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/tx_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const transaction = await anyspend.transactions.retrieve("tx_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    返回完整的[交易对象](#the-transaction-object)。
+  </Tab>
+</Tabs>
+
+---
+
+## 获取交易统计数据
+
+检索跨所有交易的聚合统计数据。
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/stats" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const stats = await anyspend.transactions.stats();
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "total_transactions": 1250,
+      "completed_transactions": 1180,
+      "failed_transactions": 45,
+      "pending_transactions": 25,
+      "total_volume_usd": "58750.00",
+      "last_24h": {
+        "transactions": 18,
+        "completed": 17,
+        "volume_usd": "920.00"
+      },
+      "status_breakdown": {
+        "pending": 15,
+        "confirming": 10,
+        "completed": 1180,
+        "failed": 45
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 导出交易
+
+以 CSV 或 JSON 格式导出交易数据。响应以文件下载的形式流式传输。
+
+<ParamField query="format" type="string" required>
+  导出格式。其中之一：`csv`、`json`。
+</ParamField>
+
+<ParamField query="status" type="string">
+  按状态过滤：`pending`、`confirming`、`completed`、`failed`。
+</ParamField>
+
+<ParamField query="from" type="string">
+  过滤在此 ISO 8601 日期或之后创建的交易。
+</ParamField>
+
+<ParamField query="to" type="string">
+  过滤在此 ISO 8601 日期或之前创建的交易。
+</ParamField>
+
+<Info>
+  导出限制为 50,000 条记录。对于更大的数据集，使用日期范围过滤器将导出分成更小的块。
+</Info>
+
+<CodeGroup>
+```bash cURL
+# 以 CSV 格式导出 2026 年 2 月的已完成交易
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2026-02-01&to=2026-02-28" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.csv
+
+# 导出为 JSON
+curl -X GET "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o transactions.json
+```
+
+```typescript SDK
+// 以 CSV 流导出
+const csvStream = await anyspend.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2026-02-01",
+  to: "2026-02-28",
+});
+
+// 以 JSON 数组导出
+const transactions = await anyspend.transactions.export({
+  format: "json",
+  status: "completed",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,status,amount,amount_usd,token_address,chain_id,tx_hash,payer_address,recipient_address,customer_id,payment_link_id,created_at,completed_at
+    tx_abc123,completed,50000000,50.00,0xA0b8...eB48,1,0x9f8e...1f0e,0xaabb...5678,0x1234...5678,cust_abc123,pl_abc123,2026-02-25T08:15:00Z,2026-02-25T08:16:30Z
+    tx_def456,completed,25000000,25.00,0xA0b8...eB48,1,0x1a2b...3c4d,0xccdd...9012,0x1234...5678,cust_def456,pl_abc123,2026-02-24T12:00:00Z,2026-02-24T12:01:15Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "total": 1180
+    }
+    ```
+  </Tab>
+</Tabs>

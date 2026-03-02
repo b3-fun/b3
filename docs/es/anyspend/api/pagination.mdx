@@ -1,0 +1,274 @@
+---
+title: Paginación y filtrado
+description: Paginando a través de endpoints de listas y filtrando resultados
+lang: es
+originalPath: anyspend/api/pagination.mdx
+---
+# Paginación y filtrado
+
+Todos los puntos finales de listas en la API de la plataforma AnySpend devuelven respuestas paginadas. Esta página cubre cómo navegar por grandes conjuntos de resultados, filtrar datos y ordenar resultados.
+
+## Formato de respuesta de lista
+
+Cada punto final de lista devuelve un sobre consistente:
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Membresía Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Plan Básico" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `object` | `string` | Siempre `"list"` para respuestas de listas. |
+| `data` | `array` | El arreglo de objetos de recurso para la página actual. Cada ítem incluye su propio campo de tipo `object`. |
+| `has_more` | `boolean` | `true` si hay más resultados más allá de esta página. Usa esto para determinar si debes obtener la siguiente página. |
+| `total_count` | `number` | El número total de recursos coincidentes a través de todas las páginas. |
+| `url` | `string` | La ruta del punto final de la API para esta lista. |
+
+## Parámetros de paginación
+
+Usa los parámetros de consulta `page` y `limit` para navegar a través de los resultados.
+
+| Parámetro | Tipo | Predeterminado | Máx | Descripción |
+|-----------|------|---------|-----|-------------|
+| `page` | `integer` | `1` | -- | El número de página a recuperar (indexado desde 1). |
+| `limit` | `integer` | `20` | `100` | El número de resultados por página. |
+
+### Ejemplo básico de paginación
+
+```bash
+# Primera página (predeterminado: 20 resultados)
+curl "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Segunda página, 50 resultados por página
+curl "https://platform-api.anyspend.com/api/v1/payment-links?page=2&limit=50" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Navegando páginas
+
+Usa el campo `has_more` para determinar cuándo dejar de paginar:
+
+```typescript
+async function fetchAllPaymentLinks(): Promise<PaymentLink[]> {
+  const allLinks: PaymentLink[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/payment-links?page=${page}&limit=100`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+    allLinks.push(...body.data);
+    hasMore = body.has_more;
+    page++;
+  }
+
+  return allLinks;
+}
+```
+
+## Filtrado
+
+La mayoría de los puntos finales de listas admiten parámetros de consulta para filtrar resultados. Los filtros disponibles dependen del tipo de recurso.
+
+### Enlaces de pago
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `search` | `string` | Buscar por nombre o código corto (coincidencia parcial). |
+| `active` | `"true"` o `"false"` | Filtrar por estado activo/inactivo. |
+
+```bash
+# Buscar enlaces de pago que contengan "premium"
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Solo enlaces de pago activos
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Combinar filtros
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium&active=true&limit=10" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Sesiones de pago
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `status` | `"active"`, `"completed"`, `"expired"` | Filtrar sesiones por estado. |
+
+```bash
+# Sesiones completadas para un enlace de pago
+curl "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/sessions?status=completed" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Transacciones
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `status` | `string` | Filtrar por estado de la transacción. |
+| `chain_id` | `number` | Filtrar por red de blockchain. |
+
+```bash
+# Transacciones en Base (chain ID 8453)
+curl "https://platform-api.anyspend.com/api/v1/transactions?chain_id=8453" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## Ordenación
+
+Los puntos finales de lista que admiten ordenación aceptan los parámetros `sort` y `order`.
+
+| Parámetro | Tipo | Predeterminado | Descripción |
+|-----------|------|---------|-------------|
+| `sort` | `string` | `created_at` | El campo por el cual ordenar. Los valores permitidos varían según el recurso. |
+| `order` | `"asc"` o `"desc"` | `desc` | Dirección de la ordenación. |
+
+### Campos de ordenación de enlaces de pago
+
+| Campo | Descripción |
+|-------|-------------|
+| `created_at` | Cuando se creó el enlace de pago (predeterminado). |
+| `updated_at` | Cuando se modificó el enlace de pago por última vez. |
+| `name` | Alfabético por nombre. |
+| `current_uses` | Número de pagos completados. |
+
+```bash
+# Los enlaces de pago más populares primero
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=current_uses&order=desc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Alfabético por nombre
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=name&order=asc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## Ejemplo de auto-paginación
+
+Para mayor comodidad, puedes construir un iterador asíncrono que maneje la paginación automáticamente:
+
+```typescript
+async function* paginate<T>(
+  endpoint: string,
+  params: Record<string, string> = {},
+  limit = 100,
+): AsyncGenerator<T> {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const queryParams = new URLSearchParams({
+      ...params,
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/${endpoint}?${queryParams}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+
+    for each (const item of body.data) {
+      yield item as T;
+    }
+
+    hasMore = body.has_more;
+    page++;
+  }
+}
+
+// Uso con for-await
+async function main() {
+  for await (const link of paginate<PaymentLink>("payment-links", { active: "true" })) {
+    console.log(`${link.name}: ${link.current_uses} completions`);
+  }
+}
+```
+
+## Contando resultados
+
+Usa `total_count` de cualquier página para obtener el número total de recursos coincidentes sin obtener todas las páginas:
+
+```typescript
+async function countActivePaymentLinks(): Promise<number> {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links?active=true&limit=1",
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      },
+    }
+  );
+
+  const body = await response.json();
+  return body.total_count;
+}
+```
+
+Establecer `limit=1` minimiza la carga de respuesta cuando solo necesitas el conteo.
+
+## Mejores prácticas
+
+<AccordionGroup>
+<Accordion title="Usa limit=100 para operaciones masivas">
+Cuando necesites obtener todos los registros (por ejemplo, para exportación de datos o sincronización), usa el `limit=100` máximo para minimizar el número de llamadas a la API y permanecer dentro de los límites de tasa.
+</Accordion>
+
+<Accordion title="Usa has_more en lugar de total_count para bucles de paginación">
+`has_more` es la señal autoritativa para saber si se debe obtener la siguiente página. Evita calcular conteos de páginas a partir de `total_count` ya que el total puede cambiar entre solicitudes.
+</Accordion>
+
+<Accordion title="Caché total_count para controles de paginación de UI">
+Cuando construyas una UI de paginación (por ejemplo, "Página 3 de 8"), obtén `total_count` una vez y guárdalo en caché para la sesión. Vuelve a obtenerlo solo cuando el usuario refresque o aplique nuevos filtros.
+</Accordion>
+
+<Accordion title="Combina filtros con paginación">
+Aplica filtros antes de paginar para reducir el conjunto de resultados. Esto es más eficiente que obtener todos los registros y filtrar del lado del cliente:
+
+```bash
+# En lugar de obtener todos los enlaces y filtrar localmente...
+# Filtra del lado del servidor y pagina los resultados filtrados
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true&search=premium&limit=20" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+</Accordion>
+
+<Accordion title="Respeta los límites de tasa durante las obtenciones masivas">
+Si estás paginando a través de un gran conjunto de datos, ten en cuenta el límite de 120 solicitudes/min. Para conjuntos de datos muy grandes, añade un breve retraso entre las solicitudes de página:
+
+```typescript
+async function fetchWithDelay() {
+  for await (const link of paginate("payment-links")) {
+    process.stdout.write(".");
+  }
+  // La función paginate hace como máximo ceil(total / 100) solicitudes.
+  // Para 10,000 registros, eso es 100 solicitudes -- dentro del límite de 120/min.
+}
+```
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,290 @@
+---
+title: Autenticación
+description: Autenticación con clave API para la API de la plataforma AnySpend
+lang: es
+originalPath: anyspend/api/authentication.mdx
+---
+# Autenticación
+
+La API de la Plataforma AnySpend utiliza claves API para la autenticación. Cada clave está limitada a una sola organización y lleva un conjunto específico de permisos.
+
+## Creando una clave API
+
+<Steps>
+<Step title="Abre el Panel de AnySpend">
+  Navega a [anyspend.com/dashboard](https://anyspend.com/dashboard) e inicia sesión en tu cuenta.
+</Step>
+
+<Step title="Ve a Configuración > Claves API">
+  En la barra lateral, haz clic en **Configuración**, luego selecciona la pestaña **Claves API**.
+</Step>
+
+<Step title="Crea una nueva clave">
+  Haz clic en **Crear Clave API**, dale un nombre descriptivo (por ejemplo, "Backend de Producción" o "Pipeline de CI/CD"), y selecciona el nivel de permiso.
+</Step>
+
+<Step title="Copia y almacena la clave">
+  La clave completa solo se muestra **una vez** en el momento de la creación. Cópiala inmediatamente y guárdala en un lugar seguro (por ejemplo, variables de entorno, un gestor de secretos).
+</Step>
+</Steps>
+
+<Warning>
+  Tu clave API se muestra solo una vez al crearla. Si la pierdes, necesitarás revocar la clave antigua y crear una nueva.
+</Warning>
+
+## Formato de la clave API
+
+Todas las claves API de AnySpend comienzan con el prefijo `asp_`:
+
+```
+asp_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+```
+
+El prefijo facilita la identificación de las claves de AnySpend en tu base de código y previene el uso accidental de claves de otros servicios.
+
+## Pasando tu clave API
+
+Puedes autenticar solicitudes usando uno de dos encabezados:
+
+<Tabs>
+<Tab title="Encabezado de Autorización (recomendado)">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_a1b2c3d4e5..."
+```
+</Tab>
+
+<Tab title="Encabezado X-API-Key">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "X-API-Key: asp_live_a1b2c3d4e5..."
+```
+</Tab>
+</Tabs>
+
+El método `Authorization: Bearer` es preferido ya que sigue las convenciones estándar de OAuth 2.0 y es compatible con la mayoría de los clientes HTTP y herramientas de prueba de API.
+
+## Niveles de permiso
+
+Cada clave API se asigna uno o más permisos. Los permisos siguen una jerarquía donde los niveles más altos incluyen todas las capacidades de los niveles inferiores.
+
+| Permiso | Otorga acceso a | Caso de uso |
+|-----------|-----------------|----------|
+| **read** | `GET` en todos los recursos -- listar y recuperar enlaces de pago, productos, transacciones, clientes, análisis | Paneles, herramientas de informes, integraciones de solo lectura |
+| **write** | Todo en `read` + `POST`, `PATCH`, `DELETE` en todos los recursos -- crear enlaces de pago, actualizar productos, gestionar webhooks | Servicios de backend, automatización, integraciones estándar |
+| **admin** | Todo en `write` + gestionar claves API, configuraciones de la organización y facturación | Gestión de infraestructura, CI/CD, herramientas administrativas |
+
+<Info>
+  La jerarquía de permisos significa que una clave con permiso **write** automáticamente tiene acceso **read**. Una clave con permiso **admin** tiene tanto **write** como **read**.
+</Info>
+
+### Jerarquía de permisos
+
+```
+admin
+  |-- write
+  |     |-- read
+```
+
+### Ejemplo: comprobando permisos
+
+Si una ruta requiere permiso `write` y tu clave solo tiene `read`, recibirás un error `403`:
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "Esta clave API no tiene permiso 'write'."
+  }
+}
+```
+
+## Creando claves API a través de la API
+
+Si tienes una clave con permiso `admin`, puedes crear nuevas claves programáticamente:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Servicio de Backend - Producción",
+    "permissions": ["read", "write"],
+    "expires_at": 1735689600000
+  }'
+```
+
+Respuesta:
+
+```json
+{
+  "object": "api_key",
+  "id": "ak_abc123def456",
+  "name": "Servicio de Backend - Producción",
+  "key": "asp_live_x9y8z7w6v5u4t3s2r1q0...",
+  "key_prefix": "asp_live_x9y8",
+  "permissions": ["read", "write"],
+  "expires_at": 1735689600000,
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+<Warning>
+  El campo `key` solo se devuelve en la respuesta de creación. Guárdalo de forma segura -- no se puede recuperar de nuevo.
+</Warning>
+
+## Listando y revocando claves
+
+### Lista todas las claves
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+La respuesta de la lista incluye metadatos pero nunca la clave completa -- solo el `key_prefix` para identificación:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "api_key",
+      "id": "ak_abc123def456",
+      "name": "Servicio de Backend - Producción",
+      "key_prefix": "asp_live_x9y8",
+      "permissions": ["read", "write"],
+      "last_used_at": 1709164800000,
+      "expires_at": 1735689600000,
+      "is_active": true,
+      "created_at": 1709078400000
+    }
+  ],
+  "has_more": false,
+  "total_count": 1,
+  "url": "/api/v1/api-keys"
+}
+```
+
+### Revocar una clave
+
+```bash
+curl -X DELETE https://platform-api.anyspend.com/api/v1/api-keys/ak_abc123def456 \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+Respuesta:
+
+```json
+{
+  "object": "api_key_revoked",
+  "id": "ak_abc123def456",
+  "revoked": true
+}
+```
+
+Las claves revocadas dejan de funcionar de inmediato. Cualquier solicitud en curso autenticada con la clave revocada recibirá un error `401`.
+
+## Quick Pay -- nivel abierto (sin autenticación)
+
+El punto final de Quick Pay no requiere autenticación. Está diseñado para pagos únicos donde no necesitas una cuenta de AnySpend:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "1000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xRecipient..."
+  }'
+```
+
+Quick Pay tiene un límite de **5 solicitudes por minuto por dirección IP**. No se necesita clave API.
+
+## Mejores prácticas para la rotación de claves
+
+Rotar tus claves API periódicamente reduce el riesgo de credenciales comprometidas. Aquí tienes un enfoque recomendado:
+
+<Steps>
+<Step title="Crea una nueva clave">
+  Usa el panel o la API para crear una nueva clave con los mismos permisos que la que se está rotando.
+</Step>
+
+<Step title="Actualiza tu aplicación">
+  Despliega la nueva clave en las variables de entorno de tu aplicación o gestor de secretos.
+</Step>
+
+<Step title="Verifica que la nueva clave funciona">
+  Confirma que tu aplicación está haciendo solicitudes exitosamente con la nueva clave comprobando el sello de tiempo `last_used_at`.
+</Step>
+
+<Step title="Revoca la clave antigua">
+  Una vez que estés seguro de que la nueva clave se está utilizando en todas partes, revoca la clave antigua.
+</Step>
+</Steps>
+
+<Tip>
+  Usa el campo opcional `expires_at` al crear claves para hacer cumplir la expiración automática. Esto añade una red de seguridad en caso de que olvides rotar.
+</Tip>
+
+## Mejores prácticas de seguridad
+
+<AccordionGroup>
+<Accordion title="Nunca expongas claves en código del lado del cliente">
+Las claves API solo deben usarse en código del lado del servidor (servicios de backend, funciones sin servidor, pipelines de CI/CD). Nunca las incluyas en:
+
+- Paquetes de JavaScript frontend
+- Código fuente de aplicaciones móviles
+- Repositorios públicos de GitHub
+- Archivos de configuración accesibles desde el navegador
+
+Si necesitas interactuar con AnySpend desde un frontend, usa los [componentes SDK](/anyspend/components) que manejan la autenticación a través de sesiones de pago seguras.
+</Accordion>
+
+<Accordion title="Usa variables de entorno">
+Almacena tu clave API en una variable de entorno en lugar de codificarla directamente:
+
+```bash
+# .env (nunca hagas commit de este archivo)
+ANYSPEND_API_KEY=asp_live_a1b2c3d4e5...
+```
+
+```typescript
+// server.ts
+const apiKey = process.env.ANYSPEND_API_KEY;
+```
+
+Agrega `.env` a tu `.gitignore` para evitar commits accidentales.
+</Accordion>
+
+<Accordion title="Usa permisos de mínimo privilegio">
+Crea claves solo con los permisos que necesiten:
+
+- Un panel de informes solo necesita **read**
+- Un backend que crea enlaces de pago necesita **write**
+- Solo las herramientas de infraestructura deberían usar **admin**
+</Accordion>
+
+<Accordion title="Monitorea el uso de las claves">
+Revisa regularmente `last_used_at` en tus claves para identificar claves inactivas que deberían ser revocadas. Las claves activas no utilizadas son un riesgo de seguridad.
+</Accordion>
+
+<Accordion title="Establece fechas de expiración">
+Para integraciones temporales, tokens de CI/CD o acceso de contratistas, siempre establece un sello de tiempo `expires_at` para que las claves se vuelvan inactivas automáticamente.
+</Accordion>
+</AccordionGroup>
+
+## Códigos de error de autenticación
+
+| Estado HTTP | Código | Significado |
+|------------|------|---------|
+| `401` | `key_missing` | No se proporcionó ninguna clave API en los encabezados de la solicitud |
+| `401` | `key_invalid` | La clave API no coincide con ninguna clave activa |
+| `401` | `key_expired` | La clave API ha pasado su sello de tiempo `expires_at` |
+| `401` | `key_revoked` | La clave API fue revocada explícitamente |
+| `403` | `insufficient_permissions` | La clave API no tiene el nivel de permiso requerido |
+
+Consulta la página de [Errores](/anyspend/api/errors) para la referencia completa de errores.

@@ -1,0 +1,233 @@
+---
+title: 活动
+description: API 审计跟踪和事件日志
+lang: cn
+originalPath: anyspend/api/events.mdx
+---
+事件端点提供了对您账户上所有 API 操作的审计跟踪。每个创建、更新和删除操作都会记录元数据，包括请求方法、路径、IP 地址和状态码。
+
+<Info>
+  事件端点需要 **read** 权限。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 列出事件
+
+<ParamField path="GET /events" type="read">
+  列出 API 事件，并可选地进行过滤。结果按时间倒序返回（最新的在前）。
+</ParamField>
+
+<ParamField path="type" type="string" query>
+  按事件类型过滤（例如，`payment_link.created`、`webhook.updated`、`discount_code.deleted`）。
+</ParamField>
+
+<ParamField path="resource_type" type="string" query>
+  按资源类型过滤（例如，`payment_link`、`webhook`、`discount_code`、`widget`、`notification`）。
+</ParamField>
+
+<ParamField path="from" type="string" query>
+  ISO 8601 时间戳。只返回在此时间之后创建的事件。
+</ParamField>
+
+<ParamField path="to" type="string" query>
+  ISO 8601 时间戳。只返回在此时间之前创建的事件。
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  分页的页码（默认：`1`）。
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  每页结果数（默认：`20`，最大：`100`）。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.created&from=2026-02-01T00:00:00Z&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const events = await client.events.list({
+      type: "payment_link.created",
+      from: "2026-02-01T00:00:00Z",
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "evt_abc123",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz789",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "evt_abc124",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz790",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-25T14:15:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 2,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+## 事件对象
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `id` | `string` | 唯一事件标识符（例如，`evt_abc123`） |
+| `event_type` | `string` | 发生的操作类型（参见 [事件类型](#event-types)） |
+| `resource_type` | `string` | 受影响的资源类型 |
+| `resource_id` | `string` | 受影响资源的 ID |
+| `ip_address` | `string` | API 调用者的 IP 地址 |
+| `request_method` | `string` | 使用的 HTTP 方法（`GET`、`POST`、`PATCH`、`DELETE`） |
+| `request_path` | `string` | 被调用的 API 路径 |
+| `status_code` | `number` | 返回的 HTTP 状态码 |
+| `created_at` | `string` | 记录事件的 ISO 8601 时间戳 |
+
+## 事件类型
+
+事件遵循 `{resource_type}.{action}` 模式：
+
+| 事件类型 | 描述 |
+|------------|-------------|
+| `payment_link.created` | 创建了支付链接 |
+| `payment_link.updated` | 更新了支付链接 |
+| `payment_link.deleted` | 删除了支付链接 |
+| `product.created` | 创建了产品 |
+| `product.updated` | 更新了产品 |
+| `product.deleted` | 删除了产品 |
+| `webhook.created` | 创建了 webhook 端点 |
+| `webhook.updated` | 更新了 webhook 端点 |
+| `webhook.deleted` | 删除了 webhook 端点 |
+| `discount_code.created` | 创建了折扣码 |
+| `discount_code.updated` | 更新了折扣码 |
+| `discount_code.deleted` | 删除了折扣码 |
+| `widget.created` | 创建了小部件 |
+| `widget.updated` | 更新了小部件 |
+| `widget.deleted` | 删除了小部件 |
+| `notification.updated` | 更新了通知设置 |
+| `api_key.created` | 创建了 API 密钥 |
+| `api_key.revoked` | 吊销了 API 密钥 |
+
+## 资源类型
+
+| 资源类型 | 描述 |
+|---------------|-------------|
+| `payment_link` | 支付链接资源 |
+| `product` | 产品目录条目 |
+| `webhook` | Webhook 端点配置 |
+| `discount_code` | 折扣码条目 |
+| `widget` | 小部件配置 |
+| `notification` | 通知设置 |
+| `api_key` | API 密钥管理 |
+
+---
+
+## 过滤示例
+
+### 特定日期范围的事件
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?from=2026-02-01T00:00:00Z&to=2026-02-28T23:59:59Z" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      from: "2026-02-01T00:00:00Z",
+      to: "2026-02-28T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### 所有与 webhook 相关的事件
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?resource_type=webhook&limit=50" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      resource_type: "webhook",
+      limit: 50,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### 删除审计
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.deleted" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deletions = await client.events.list({
+      type: "payment_link.deleted",
+    });
+
+    deletions.data.forEach((event) => {
+      console.log(
+        `${event.resource_id} deleted from ${event.ip_address} at ${event.created_at}`
+      );
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  事件保留 90 天。为了更长时间的保留，可以使用日期范围过滤器定期导出事件。
+</Note>

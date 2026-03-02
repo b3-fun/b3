@@ -1,0 +1,252 @@
+---
+title: 분석
+description: 수익 및 전환 분석 개요
+lang: ko
+originalPath: anyspend/api/analytics.mdx
+---
+분석 엔드포인트는 수익 총액, 고객 수, 전환율 및 일별, 결제 링크별, 토큰별, 체인별로 나눈 분석을 포함하여 결제 성능에 대한 종합적인 개요를 제공합니다.
+
+<Info>
+  분석 엔드포인트는 **읽기** 권한이 필요합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 분석 개요 가져오기
+
+<ParamField path="GET /analytics/overview" type="read">
+  지정된 기간에 대한 집계된 분석 개요를 반환합니다.
+</ParamField>
+
+<ParamField path="period" type="string" query>
+  메트릭의 시간 기간입니다. `7d`, `30d`, `90d`, `all` 중 하나입니다. 기본값은 `30d`입니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/analytics/overview?period=30d" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const analytics = await client.analytics.overview({ period: "30d" });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "period_usd": 45230.50,
+      "period_transactions": 312,
+      "all_time_usd": 182450.75,
+      "all_time_transactions": 1847
+    },
+    "customers": {
+      "total": 892,
+      "new_in_period": 156
+    },
+    "payment_links": {
+      "total": 24,
+      "active": 18
+    },
+    "conversion_rate": 0.68,
+    "daily": [
+      {
+        "date": "2026-02-27",
+        "transactions": 14,
+        "revenue_usd": 1820.00
+      },
+      {
+        "date": "2026-02-26",
+        "transactions": 18,
+        "revenue_usd": 2340.50
+      },
+      {
+        "date": "2026-02-25",
+        "transactions": 11,
+        "revenue_usd": 1450.25
+      }
+    ],
+    "top_payment_links": [
+      {
+        "id": "pl_abc123",
+        "name": "Pro Plan Monthly",
+        "revenue_usd": 12500.00,
+        "transactions": 125
+      },
+      {
+        "id": "pl_def456",
+        "name": "Enterprise Annual",
+        "revenue_usd": 9800.00,
+        "transactions": 14
+      },
+      {
+        "id": "pl_ghi789",
+        "name": "Starter Pack",
+        "revenue_usd": 7200.00,
+        "transactions": 96
+      }
+    ],
+    "top_tokens": [
+      {
+        "symbol": "USDC",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain_id": 8453,
+        "revenue_usd": 32100.00,
+        "transactions": 245
+      },
+      {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "chain_id": 8453,
+        "revenue_usd": 8400.00,
+        "transactions": 42
+      }
+    ],
+    "top_chains": [
+      {
+        "chain_id": 8453,
+        "name": "Base",
+        "revenue_usd": 38200.00,
+        "transactions": 278
+      },
+      {
+        "chain_id": 1,
+        "name": "Ethereum",
+        "revenue_usd": 7030.50,
+        "transactions": 34
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 응답 필드
+
+### 수익
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `period_usd` | `number` | 선택된 기간 동안의 USD로 환산한 총 수익 |
+| `period_transactions` | `number` | 기간 동안 완료된 거래 수 |
+| `all_time_usd` | `number` | USD로 환산한 총 평생 수익 |
+| `all_time_transactions` | `number` | 총 평생 거래 수 |
+
+### 고객
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `total` | `number` | 총 고유 고객 수(지갑 주소 기준) |
+| `new_in_period` | `number` | 선택된 기간 동안 획득한 신규 고객 수 |
+
+### 결제 링크
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `total` | `number` | 생성된 총 결제 링크 수 |
+| `active` | `number` | 현재 활성화된 결제 링크 수 |
+
+### 전환율
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `conversion_rate` | `number` | 시작된 세션 대비 완료된 체크아웃의 비율(0.0에서 1.0 사이) |
+
+### 일별 분석
+
+`daily` 배열의 각 항목은 다음을 포함합니다:
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `date` | `string` | `YYYY-MM-DD` 형식의 날짜 |
+| `transactions` | `number` | 해당 날짜에 완료된 거래 수 |
+| `revenue_usd` | `number` | 해당 날짜의 USD로 환산한 수익 |
+
+### 최고의 결제 링크
+
+선택된 기간 내 수익으로 순위가 매겨집니다:
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `id` | `string` | 결제 링크 ID |
+| `name` | `string` | 결제 링크 이름 |
+| `revenue_usd` | `number` | USD로 환산한 수익 |
+| `transactions` | `number` | 거래 수 |
+
+### 최고의 토큰
+
+선택된 기간 내 수익으로 순위가 매겨집니다:
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `symbol` | `string` | 토큰 심볼(예: `USDC`) |
+| `address` | `string` | 토큰 계약 주소 |
+| `chain_id` | `number` | 토큰이 수신된 체인 ID |
+| `revenue_usd` | `number` | USD로 환산한 수익 |
+| `transactions` | `number` | 거래 수 |
+
+### 최고의 체인
+
+선택된 기간 내 수익으로 순위가 매겨집니다:
+
+| 필드 | 유형 | 설명 |
+|-------|------|-------------|
+| `chain_id` | `number` | 체인 ID |
+| `name` | `string` | 체인 이름 |
+| `revenue_usd` | `number` | USD로 환산한 수익 |
+| `transactions` | `number` | 거래 수 |
+
+---
+
+## 기간 옵션
+
+| 값 | 설명 |
+|-------|-------------|
+| `7d` | 지난 7일 |
+| `30d` | 지난 30일(기본값) |
+| `90d` | 지난 90일 |
+| `all` | 전체 기간 |
+
+<Note>
+  `daily` 배열은 선택된 기간에 대해 하루에 하나의 항목을 반환합니다. `all`의 경우, daily 배열은 가장 최근 90일로 제한됩니다.
+</Note>
+
+## 예시: 대시보드 차트
+
+```typescript
+const analytics = await client.analytics.overview({ period: "30d" });
+
+// 일별 수익 플롯
+analytics.daily.forEach(({ date, revenue_usd, transactions }) => {
+  console.log(`${date}: $${revenue_usd.toFixed(2)} (${transactions} txns)`);
+});
+
+// 전환율을 퍼센테이지로 표시
+console.log(`Conversion: ${(analytics.conversion_rate * 100).toFixed(1)}%`);
+
+// 가장 성과가 좋은 결제 링크 표시
+const top = analytics.top_payment_links[0];
+if (top) {
+  console.log(`Best link: ${top.name} - $${top.revenue_usd.toFixed(2)}`);
+}
+```

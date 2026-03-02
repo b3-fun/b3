@@ -1,0 +1,370 @@
+---
+title: Widgets
+description: Criar e gerenciar configurações de widgets incorporáveis
+lang: pt-BR
+originalPath: anyspend/api/widgets-api.mdx
+---
+Widgets são componentes de UI incorporáveis que você configura uma vez e implanta em qualquer lugar. Cada widget armazena seu tipo, configuração e tema para que você possa renderizar experiências de pagamento consistentes em várias páginas ou aplicativos.
+
+<Info>
+  Os endpoints CRUD de widget requerem permissão de **escrita**. Listar e recuperar widgets (incluindo estatísticas) requer permissão de **leitura**.
+</Info>
+
+## Autenticação
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Base: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Listar Widgets
+
+<ParamField path="GET /widgets" type="read">
+  Lista todas as configurações de widget para sua conta.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const widgets = await client.widgets.list();
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wgt_abc123",
+      "name": "Homepage Checkout",
+      "widget_type": "checkout",
+      "description": "Widget de checkout primário para a homepage",
+      "config": {
+        "recipient_address": "0x...",
+        "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "destination_chain_id": 8453,
+        "amount": "10000000"
+      },
+      "theme": {
+        "primary_color": "#4f46e5",
+        "border_radius": 12,
+        "font_family": "Inter"
+      },
+      "views_count": 1240,
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-20T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Criar Widget
+
+<ParamField path="POST /widgets" type="write">
+  Criar uma nova configuração de widget.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Nome legível por humanos para o widget.
+</ParamField>
+
+<ParamField path="widget_type" type="string" required>
+  O tipo de widget a ser criado. Um de: `swap`, `checkout`, `nft`, `deposit`.
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  Objeto de configuração específico do widget. Os conteúdos variam por `widget_type` (veja [Tipos de Widget](#tipos-de-widget) abaixo).
+</ParamField>
+
+<ParamField path="description" type="string">
+  Descrição opcional para referência interna.
+</ParamField>
+
+<ParamField path="theme" type="object">
+  Sobrescritas do tema visual. Veja [Objeto Tema](#objeto-tema) abaixo.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Product Checkout",
+        "widget_type": "checkout",
+        "description": "Widget de checkout para a página do produto",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "25000000"
+        },
+        "theme": {
+          "primary_color": "#2563eb",
+          "border_radius": 8
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.create({
+      name: "Product Checkout",
+      widget_type: "checkout",
+      description: "Widget de checkout para a página do produto",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "25000000",
+      },
+      theme: {
+        primary_color: "#2563eb",
+        border_radius: 8,
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wgt_def456",
+    "name": "Product Checkout",
+    "widget_type": "checkout",
+    "description": "Widget de checkout para a página do produto",
+    "config": {
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "destination_chain_id": 8453,
+      "amount": "25000000"
+    },
+    "theme": {
+      "primary_color": "#2563eb",
+      "border_radius": 8
+    },
+    "views_count": 0,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Obter Widget
+
+<ParamField path="GET /widgets/:id" type="read">
+  Recuperar uma única configuração de widget por ID.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.get("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Atualizar Widget
+
+<ParamField path="PATCH /widgets/:id" type="write">
+  Atualizar uma configuração de widget existente. Todos os campos são opcionais -- apenas os campos fornecidos são alterados.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Checkout Atualizado",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "50000000"
+        },
+        "theme": {
+          "primary_color": "#059669"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.widgets.update("wgt_def456", {
+      name: "Checkout Atualizado",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "50000000",
+      },
+      theme: {
+        primary_color: "#059669",
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Deletar Widget
+
+<ParamField path="DELETE /widgets/:id" type="write">
+  Deletar permanentemente uma configuração de widget. Incorporações existentes usando este ID de widget deixarão de ser renderizadas.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.widgets.delete("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Obter Estatísticas do Widget
+
+<ParamField path="GET /widgets/:id/stats" type="read">
+  Recuperar estatísticas de visualização para um widget. Inclui visualizações totais e uma divisão diária.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456/stats \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const stats = await client.widgets.stats("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "widget_id": "wgt_def456",
+    "total_views": 1240,
+    "daily": [
+      { "date": "2026-02-27", "views": 85 },
+      { "date": "2026-02-26", "views": 102 },
+      { "date": "2026-02-25", "views": 93 }
+    ]
+  }
+}
+```
+
+---
+
+## Objeto Widget
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | `string` | Identificador único do widget (ex., `wgt_abc123`) |
+| `name` | `string` | Nome legível por humanos do widget |
+| `widget_type` | `string` | Tipo de widget: `swap`, `checkout`, `nft` ou `deposit` |
+| `description` | `string \| null` | Descrição opcional |
+| `config` | `object` | Configuração específica do tipo de widget |
+| `theme` | `object \| null` | Sobrescritas do tema visual |
+| `views_count` | `number` | Número total de renderizações do widget |
+| `created_at` | `string` | Carimbo de data/hora de criação ISO 8601 |
+| `updated_at` | `string` | Carimbo de data/hora da última atualização ISO 8601 |
+
+## Tipos de Widget
+
+<Tabs>
+  <Tab title="checkout">
+    Widget de checkout de pagamento para aceitar pagamentos em cripto ou fiat.
+
+    | Campo de Configuração | Tipo | Descrição |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Endereço da carteira do comerciante |
+    | `destination_token` | `string` | Endereço do contrato do token a receber |
+    | `destination_chain_id` | `number` | ID da cadeia para o token de destino |
+    | `amount` | `string` | Quantidade de pagamento na menor unidade |
+  </Tab>
+  <Tab title="swap">
+    Widget de troca de tokens para converter entre tokens.
+
+    | Campo de Configuração | Tipo | Descrição |
+    |-------------|------|-------------|
+    | `src_token` | `string` | Endereço do token de origem |
+    | `src_chain_id` | `number` | ID da cadeia de origem |
+    | `dst_token` | `string` | Endereço do token de destino |
+    | `dst_chain_id` | `number` | ID da cadeia de destino |
+  </Tab>
+  <Tab title="nft">
+    Widget de cunhagem ou compra de NFT.
+
+    | Campo de Configuração | Tipo | Descrição |
+    |-------------|------|-------------|
+    | `collection_address` | `string` | Contrato da coleção NFT |
+    | `chain_id` | `number` | ID da cadeia |
+    | `token_id` | `string` | ID específico do token (opcional) |
+  </Tab>
+  <Tab title="deposit">
+    Widget de depósito para financiar carteiras ou contas.
+
+    | Campo de Configuração | Tipo | Descrição |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Endereço de destino do depósito |
+    | `accepted_tokens` | `string[]` | Lista de endereços de tokens aceitos |
+    | `accepted_chains` | `number[]` | Lista de IDs de cadeias aceitas |
+  </Tab>
+</Tabs>
+
+## Objeto Tema
+
+| Campo | Tipo | Padrão | Descrição |
+|-------|------|---------|-------------|
+| `primary_color` | `string` | `#4f46e5` | Cor de destaque primária (hex) |
+| `border_radius` | `number` | `12` | Raio da borda em pixels |
+| `font_family` | `string` | `Inter` | Nome da família de fontes |
+| `dark_mode` | `boolean` | `false` | Habilitar renderização no modo escuro |

@@ -1,0 +1,405 @@
+---
+title: 웹훅 가이드
+description: 이벤트가 발생할 때 실시간 알림 받기
+lang: ko
+originalPath: anyspend/api/webhooks-guide.mdx
+---
+Webhooks를 사용하면 AnySpend 조직에서 이벤트가 발생할 때 실시간 HTTP 콜백을 서버에서 받을 수 있습니다 -- 결제 완료, 체크아웃 만료 등. API를 폴링하는 대신 URL을 등록하고 AnySpend가 이벤트를 푸시합니다.
+
+## 작동 방식
+
+```
+지불자가 결제를 완료함
+        |
+        v
+AnySpend가 거래를 처리함
+        |
+        v
+AnySpend가 웹훅 URL로 POST를 보냄
+        |
+        v
+서버가 서명을 검증하고 이벤트를 처리함
+        |
+        v
+서버가 200 OK로 응답함
+```
+
+<Steps>
+  <Step title="웹훅 엔드포인트 등록">
+    대시보드나 API를 통해 웹훅을 생성하고, URL과 구독할 이벤트를 지정합니다.
+  </Step>
+  <Step title="AnySpend가 이벤트를 보냄">
+    구독한 이벤트가 발생하면, AnySpend가 JSON 페이로드와 서명 헤더가 포함된 `POST` 요청을 URL로 보냅니다.
+  </Step>
+  <Step title="검증 및 처리">
+    서버가 HMAC-SHA256 서명을 검증하고, 이벤트를 처리한 후 30초 이내에 `200` 상태로 응답합니다.
+  </Step>
+  <Step title="자동 재시도">
+    서버가 `2xx` 상태로 응답하지 않으면, AnySpend는 지수 백오프로 최대 3번까지 재시도합니다.
+  </Step>
+</Steps>
+
+## 지원되는 이벤트
+
+| 이벤트 | 설명 |
+|-------|-------------|
+| `payment.completed` | 결제가 성공적으로 수신되어 체인상에서 확인됨 |
+| `payment.failed` | 결제 시도가 실패함 (되돌림, 시간 초과 등) |
+| `checkout.completed` | 지불자가 체크아웃 세션을 완료함 |
+| `checkout.expired` | 지불자가 체크아웃을 완료하기 전에 세션이 만료됨 |
+
+<Tip>
+  모든 이벤트를 구독하려면 이벤트 배열에 `["*"]`을 전달하거나, 필요한 것만 선택할 수 있습니다.
+</Tip>
+
+## 웹훅 생성하기
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+    const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+    const webhook = await platform.webhooks.create({
+      url: "https://your-server.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed"],
+      description: "Production payment handler",
+    });
+
+    // 중요: 이 비밀번호를 안전하게 저장하세요 -- 한 번만 표시됩니다
+    console.log("웹훅 ID:", webhook.id);
+    console.log("서명 비밀번호:", webhook.secret);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_your_api_key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://your-server.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed"],
+        "description": "Production payment handler"
+      }'
+    ```
+  </Tab>
+  <Tab title="대시보드">
+    [AnySpend 대시보드](https://app.anyspend.com)에서 **설정 > 웹훅 > 엔드포인트 추가**로 이동합니다. URL을 입력하고, 이벤트를 선택한 후 **생성**을 클릭합니다. 서명 비밀번호는 한 번만 표시되므로 즉시 복사하세요.
+  </Tab>
+</Tabs>
+
+## 웹훅 페이로드
+
+모든 웹훅 전송은 다음 JSON 본문을 포함한 `POST` 요청을 보냅니다:
+
+```json
+{
+  "event": "payment.completed",
+  "webhook_id": "wh_abc123",
+  "timestamp": "2025-06-01T15:30:00Z",
+  "data": {
+    "id": "txn_xyz789",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xPayerAddress",
+    "recipient_address": "0xYourAddress",
+    "tx_hash": "0xabc...def",
+    "status": "completed",
+    "form_data": {
+      "email": "payer@example.com",
+      "shipping_address": { "line1": "123 Main St", "city": "SF", "state": "CA", "zip": "94102" }
+    },
+    "discount_code": "SUMMER20",
+    "created_at": "2025-06-01T15:29:45Z",
+    "completed_at": "2025-06-01T15:30:00Z"
+  }
+}
+```
+
+### 헤더
+
+| 헤더 | 설명 |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AnySpend-Signature` | 원본 요청 본문의 HMAC-SHA256 16진수 다이제스트 |
+| `X-AnySpend-Webhook-Id` | 웹훅 엔드포인트 ID |
+| `X-AnySpend-Delivery-Id` | 고유한 배송 시도 ID |
+| `X-AnySpend-Event` | 이벤트 유형 (예: `payment.completed`) |
+| `X-AnySpend-Timestamp` | ISO 8601 타임스탬프 |
+
+## 시스템과 결제 조정하기
+
+`payment.completed` 웹훅은 항상 `clientReferenceId`, `metadata`, `customerEmail`, `customerName`을 포함한 `checkoutSession` 블록을 포함합니다 -- 내부 기록과 결제를 매칭하는 데 필요한 모든 것입니다.
+
+### client_reference_id 사용하기
+
+체크아웃을 생성할 때 주문이나 사용자 ID를 전달하세요(URL 파라미터 또는 API를 통해):
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { clientReferenceId, metadata } = data.checkoutSession;
+
+  // 내부 주문 조회
+  const order = await db.orders.findOne({ id: clientReferenceId });
+  if (!order) return;
+
+  // 지불됨으로 표시
+  await db.orders.update(order.id, {
+    status: "paid",
+    txHash: data.txHash,
+    paidAt: new Date(),
+  });
+}
+```
+
+### metadata 사용하기
+
+더 풍부한 데이터를 위해 메타데이터 키-값 쌍을 사용하세요:
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { metadata, customerEmail } = data.checkoutSession;
+
+  // metadata는 URL 또는 API를 통해 전달한 것을 포함합니다
+  const userId = metadata?.user_id;    // 예: Clerk 사용자 ID
+  const plan = metadata?.plan;          // 예: "pro"
+
+  await activateSubscription(userId, plan);
+
+  if (customerEmail) {
+    await sendReceipt(customerEmail, data.amount, data.txHash);
+  }
+}
+```
+
+<Tip>
+  `client_reference_id`와 `metadata`는 항상 웹훅 페이로드에 포함됩니다. 간단한 통합을 위해 [URL 파라미터](/anyspend/api/payment-links#url-parameters)를 통해 설정하거나 서버 측 제어를 위해 [Checkout Sessions API](/anyspend/api/checkout-sessions-api)를 사용할 수 있습니다.
+</Tip>
+
+---
+
+## 서명 검증하기
+
+<Warning>
+  웹훅을 처리하기 전에 항상 `X-AnySpend-Signature` 헤더를 검증하세요. 검증 없이는 공격자가 가짜 이벤트를 엔드포인트로 보낼 수 있습니다.
+</Warning>
+
+서명은 다음과 같이 계산됩니다:
+
+```
+HMAC-SHA256(webhook_secret, raw_request_body)
+```
+
+### Express.js (Node.js)
+
+```javascript
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+
+// 서명 검증을 위해 원본 본문 사용
+app.post(
+  "/webhooks/anyspend",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["x-anyspend-signature"];
+    const secret = process.env.ANYSPEND_WEBHOOK_SECRET;
+
+    // 예상 서명 계산
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(req.body) // express.raw()를 사용할 때 req.body는 Buffer입니다
+      .digest("hex");
+
+    // 타이밍 공격을 방지하기 위한 상수 시간 비교
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSignature, "hex")
+      )
+    ) {
+      console.error("유효하지 않은 웹훅 서명");
+      return res.status(401).send("유효하지 않은 서명");
+    }
+
+    // 서명이 유효함 -- 이벤트를 파싱하고 처리함
+    const event = JSON.parse(req.body.toString());
+
+    switch (event.event) {
+      case "payment.completed":
+        handlePaymentCompleted(event.data);
+        break;
+      case "payment.failed":
+        handlePaymentFailed(event.data);
+        break;
+      case "checkout.completed":
+        handleCheckoutCompleted(event.data);
+        break;
+      case "checkout.expired":
+        handleCheckoutExpired(event.data);
+        break;
+      default:
+        console.log("처리되지 않은 이벤트 유형:", event.event);
+    }
+
+    // 항상 영수증을 인정하기 위해 200으로 응답
+    res.status(200).json({ received: true });
+  }
+);
+
+function handlePaymentCompleted(data) {
+  console.log(`결제 ${data.id}가 ${data.amount}에 대해 완료됨`);
+  // 주문 처리, 확인 이메일 보내기, 데이터베이스 업데이트 등
+}
+
+function handlePaymentFailed(data) {
+  console.log(`결제 ${data.id} 실패`);
+  // 고객에게 알리기, 주문 상태 업데이트 등
+}
+
+function handleCheckoutCompleted(data) {
+  console.log(`체크아웃 세션 완료`);
+}
+
+function handleCheckoutExpired(data) {
+  console.log(`체크아웃 세션 만료`);
+}
+
+app.listen(3000);
+```
+
+### Python (Flask)
+
+```python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+WEBHOOK_SECRET = "whsec_your_secret_here"
+
+@app.route("/webhooks/anyspend", methods=["POST"])
+def handle_webhook():
+    # 서명 검증
+    signature = request.headers.get("X-AnySpend-Signature", "")
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        request.data,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(signature, expected):
+        return jsonify({"error": "유효하지 않은 서명"}), 401
+
+    event = request.get_json()
+
+    if event["event"] == "payment.completed":
+        print(f"결제 {event['data']['id']} 완료")
+        # 주문 처리...
+    elif event["event"] == "payment.failed":
+        print(f"결제 {event['data']['id']} 실패")
+        # 실패 처리...
+
+    return jsonify({"received": True}), 200
+```
+
+## 재시도 정책
+
+엔드포인트가 **30초** 내에 `2xx` 상태 코드로 응답하지 않으면, AnySpend는 배송을 실패로 표시하고 재시도합니다.
+
+| 시도 | 이전 시도 후 지연 |
+|---------|------------------------------|
+| 1차 재시도 | 1분 |
+| 2차 재시도 | 10분 |
+| 3차 재시도 | 1시간 |
+
+3번의 실패한 재시도 후, 배송은 영구적으로 `실패`로 표시됩니다. 대시보드나 API에서 수동으로 재시도할 수 있습니다.
+
+<Info>
+  엔드포인트가 지속적으로 실패한다면(10회 이상 연속 실패), 웹훅은 자동으로 **비활성화**되고 이메일 알림을 받게 됩니다. 문제를 해결한 후 대시보드에서 다시 활성화하세요.
+</Info>
+
+## 배송 기록 보기
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    // 웹훅의 최근 배송 목록
+    const deliveries = await platform.webhooks.deliveries("wh_abc123", {
+      limit: 20,
+    });
+
+    for (const d of deliveries.data) {
+      console.log(
+        d.id,
+        d.event,
+        d.status,        // "success" | "failed" | "pending"
+        d.response_code, // 서버의 HTTP 상태 코드
+        d.created_at
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+## 실패한 배송 재시도하기
+
+```typescript
+// 특정 실패한 배송 재시도
+await platform.webhooks.retry("wh_abc123", "del_failed456");
+```
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_failed456/retry \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+## 웹훅 테스트하기
+
+웹훅 URL로 합성 이벤트를 보내는 테스트 엔드포인트를 사용하세요. 이를 통해 엔드포인트가 도달 가능하고 서명 검증 로직이 정확한지 확인할 수 있습니다.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const testResult = await platform.webhooks.test("wh_abc123");
+
+    console.log(testResult.delivery_id);    // 배송 ID
+    console.log(testResult.response_code);  // 서버의 HTTP 상태
+    console.log(testResult.success);        // 2xx 응답이면 true
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+테스트 이벤트는 `payment.completed` 이벤트 유형과 모의 데이터를 사용합니다. 핸들러는 다른 이벤트처럼 처리해야 하지만, 테스트 중 부작용을 건너뛰고 싶다면 `X-AnySpend-Test: true` 헤더를 확인할 수 있습니다.
+
+## 모범 사례
+
+<CardGroup cols={2}>
+  <Card title="빠르게 응답하기" icon="bolt">
+    `200`을 즉시 반환하고 이벤트를 비동기적으로 처리하세요 (예: 백그라운드 작업 큐에서). 웹훅 배송은 30초 후에 타임아웃됩니다.
+  </Card>
+  <Card title="중복 처리하기" icon="clone">
+    `X-AnySpend-Delivery-Id` 헤더나 `data.id` 필드를 사용하여 이벤트를 중복 제거하세요. 재시도는 동일한 이벤트를 여러 번 전달할 수 있습니다.
+  </Card>
+  <Card title="서명 검증하기" icon="shield-halved">
+    항상 `X-AnySpend-Signature` 헤더를 검증하세요. 검증 없이 페이로드를 신뢰하지 마세요.
+  </Card>
+  <Card title="HTTPS 사용하기" icon="

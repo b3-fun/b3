@@ -1,0 +1,290 @@
+---
+title: 认证
+description: AnySpend 平台 API 的 API 密钥认证
+lang: cn
+originalPath: anyspend/api/authentication.mdx
+---
+# 认证
+
+AnySpend 平台 API 使用 API 密钥进行认证。每个密钥限于单个组织，并携带特定的权限集。
+
+## 创建一个 API 密钥
+
+<Steps>
+<Step title="打开 AnySpend 仪表盘">
+  导航至 [anyspend.com/dashboard](https://anyspend.com/dashboard) 并登录您的账户。
+</Step>
+
+<Step title="前往 设置 > API 密钥">
+  在侧边栏中点击 **设置**，然后选择 **API 密钥** 标签页。
+</Step>
+
+<Step title="创建新密钥">
+  点击 **创建 API 密钥**，为其命名（例如，“生产后端”或“CI/CD 流水线”），并选择权限等级。
+</Step>
+
+<Step title="复制并存储密钥">
+  完整的密钥在创建时仅显示**一次**。立即复制它并将其存储在安全的位置（例如，环境变量、秘密管理器）。
+</Step>
+</Steps>
+
+<Warning>
+  您的 API 密钥在创建时仅显示一次。如果您丢失了它，您将需要撤销旧密钥并创建一个新的。
+</Warning>
+
+## API 密钥格式
+
+所有 AnySpend API 密钥都以前缀 `asp_` 开头：
+
+```
+asp_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+```
+
+前缀使得在您的代码库中易于识别 AnySpend 密钥，并防止意外使用来自其他服务的密钥。
+
+## 传递您的 API 密钥
+
+您可以使用以下两个头之一进行请求认证：
+
+<Tabs>
+<Tab title="Authorization 头（推荐）">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_a1b2c3d4e5..."
+```
+</Tab>
+
+<Tab title="X-API-Key 头">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "X-API-Key: asp_live_a1b2c3d4e5..."
+```
+</Tab>
+</Tabs>
+
+`Authorization: Bearer` 方法是首选，因为它遵循标准的 OAuth 2.0 惯例，并且得到大多数 HTTP 客户端和 API 测试工具的支持。
+
+## 权限等级
+
+每个 API 密钥都被分配一个或多个权限。权限遵循层次结构，其中较高级别包括所有较低级别的能力。
+
+| 权限 | 授予访问权限 | 使用案例 |
+|-----------|-----------------|----------|
+| **read** | 所有资源的 `GET` -- 列出和检索支付链接、产品、交易、客户、分析 | 仪表盘、报告工具、只读集成 |
+| **write** | `read` 中的所有内容 + 所有资源的 `POST`、`PATCH`、`DELETE` -- 创建支付链接、更新产品、管理 webhooks | 后端服务、自动化、标准集成 |
+| **admin** | `write` 中的所有内容 + 管理 API 密钥、组织设置和计费 | 基础设施管理、CI/CD、管理工具 |
+
+<Info>
+  权限层次结构意味着具有 **write** 权限的密钥自动具有 **read** 访问权限。具有 **admin** 权限的密钥同时具有 **write** 和 **read** 访问权限。
+</Info>
+
+### 权限层次结构
+
+```
+admin
+  |-- write
+  |     |-- read
+```
+
+### 示例：检查权限
+
+如果路由需要 `write` 权限，而您的密钥仅具有 `read`，您将收到 `403` 错误：
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "This API key does not have 'write' permission."
+  }
+}
+```
+
+## 通过 API 创建 API 密钥
+
+如果您拥有 `admin` 权限的密钥，您可以通过编程方式创建新密钥：
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Backend Service - Production",
+    "permissions": ["read", "write"],
+    "expires_at": 1735689600000
+  }'
+```
+
+响应：
+
+```json
+{
+  "object": "api_key",
+  "id": "ak_abc123def456",
+  "name": "Backend Service - Production",
+  "key": "asp_live_x9y8z7w6v5u4t3s2r1q0...",
+  "key_prefix": "asp_live_x9y8",
+  "permissions": ["read", "write"],
+  "expires_at": 1735689600000,
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+<Warning>
+  `key` 字段仅在创建响应中返回。请安全存储 —— 它无法再次检索。
+</Warning>
+
+## 列出和撤销密钥
+
+### 列出所有密钥
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+列表响应包括元数据，但从不包括完整的密钥 —— 仅包括 `key_prefix` 用于识别：
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "api_key",
+      "id": "ak_abc123def456",
+      "name": "Backend Service - Production",
+      "key_prefix": "asp_live_x9y8",
+      "permissions": ["read", "write"],
+      "last_used_at": 1709164800000,
+      "expires_at": 1735689600000,
+      "is_active": true,
+      "created_at": 1709078400000
+    }
+  ],
+  "has_more": false,
+  "total_count": 1,
+  "url": "/api/v1/api-keys"
+}
+```
+
+### 撤销一个密钥
+
+```bash
+curl -X DELETE https://platform-api.anyspend.com/api/v1/api-keys/ak_abc123def456 \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+响应：
+
+```json
+{
+  "object": "api_key_revoked",
+  "id": "ak_abc123def456",
+  "revoked": true
+}
+```
+
+撤销的密钥立即停止工作。任何使用撤销密钥认证的进行中请求将收到 `401` 错误。
+
+## 快速支付 —— 开放层级（无需认证）
+
+快速支付端点不需要认证。它设计用于一次性支付，您不需要 AnySpend 账户：
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "1000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xRecipient..."
+  }'
+```
+
+快速支付每分钟每个 IP 地址限制 **5 次请求**。无需 API 密钥。
+
+## 密钥轮换最佳实践
+
+定期轮换您的 API 密钥可以减少凭证泄露的风险。这里是推荐的方法：
+
+<Steps>
+<Step title="创建一个新密钥">
+  使用仪表盘或 API 创建一个与被轮换密钥相同权限的新密钥。
+</Step>
+
+<Step title="更新您的应用程序">
+  将新密钥部署到您应用程序的环境变量或秘密管理器。
+</Step>
+
+<Step title="验证新密钥是否有效">
+  通过检查 `last_used_at` 时间戳确认您的应用程序成功地使用新密钥进行了请求。
+</Step>
+
+<Step title="撤销旧密钥">
+  一旦您确信新密钥已在所有地方使用，撤销旧密钥。
+</Step>
+</Steps>
+
+<Tip>
+  创建密钥时使用可选的 `expires_at` 字段来强制自动过期。这为您忘记轮换添加了安全网。
+</Tip>
+
+## 安全最佳实践
+
+<AccordionGroup>
+<Accordion title="永远不要在客户端代码中暴露密钥">
+API 密钥应仅在服务器端代码中使用（后端服务、无服务器函数、CI/CD 流水线）。绝不包括它们在：
+
+- 前端 JavaScript 包
+- 移动应用源代码
+- 公开的 GitHub 仓库
+- 浏览器可访问的配置文件
+
+如果您需要从前端与 AnySpend 交互，请使用 [SDK 组件](/anyspend/components)，它们通过安全的结账会话处理认证。
+</Accordion>
+
+<Accordion title="使用环境变量">
+将您的 API 密钥存储在环境变量中，而不是硬编码它：
+
+```bash
+# .env（永远不要提交此文件）
+ANYSPEND_API_KEY=asp_live_a1b2c3d4e5...
+```
+
+```typescript
+// server.ts
+const apiKey = process.env.ANYSPEND_API_KEY;
+```
+
+添加 `.env` 到您的 `.gitignore` 以防止意外提交。
+</Accordion>
+
+<Accordion title="使用最小权限权限">
+仅为密钥创建它们所需的权限：
+
+- 报告仪表盘仅需要 **read**
+- 创建支付链接的后端需要 **write**
+- 只有基础设施工具应使用 **admin**
+</Accordion>
+
+<Accordion title="监控密钥使用情况">
+定期检查您密钥的 `last_used_at` 以识别应该撤销的未使用密钥。未使用的活跃密钥是安全风险。
+</Accordion>
+
+<Accordion title="设置过期日期">
+对于临时集成、CI/CD 令牌或承包商访问，始终设置 `expires_at` 时间戳，以便密钥自动变为非活跃状态。
+</Accordion>
+</AccordionGroup>
+
+## 认证错误代码
+
+| HTTP 状态 | 代码 | 含义 |
+|------------|------|---------|
+| `401` | `key_missing` | 请求头中未提供 API 密钥 |
+| `401` | `key_invalid` | API 密钥与任何活跃密钥不匹配 |
+| `401` | `key_expired` | API 密钥已过其 `expires_at` 时间戳 |
+| `401` | `key_revoked` | API 密钥被明确撤销 |
+| `403` | `insufficient_permissions` | API 密钥没有所需的权限等级 |
+
+参见 [错误](/anyspend/api/errors) 页面以获取完整的错误参考。

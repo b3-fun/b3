@@ -1,0 +1,353 @@
+---
+title: Cliente SDK TypeScript
+description: Cliente TypeScript sem interface para a API da Plataforma AnySpend
+lang: pt-BR
+originalPath: anyspend/api/sdk-client.mdx
+---
+O cliente SDK da Plataforma AnySpend é um cliente TypeScript **headless** (sem dependência do React) para a API completa da Plataforma AnySpend. Ele funciona em todos os lugares onde o JavaScript moderno roda -- Node.js, navegadores, Cloudflare Workers, Deno e Bun.
+
+## Instalação
+
+<CodeGroup>
+
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+</CodeGroup>
+
+## Início Rápido
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Criar um link de pagamento
+const link = await platform.paymentLinks.create({
+  name: "Plano Pro - Mensal",
+  amount: "29990000",  // 29.99 USDC
+  recipient_address: "0xYourAddress",
+});
+
+console.log(link.url);
+```
+
+## Inicialização
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!, {
+  // Todas as opções abaixo são opcionais
+  baseUrl: "https://platform-api.anyspend.com/api/v1", // padrão
+  timeout: 30_000,           // tempo limite da solicitação em ms (padrão: 30s)
+  maxRetries: 3,             // contagem de auto-repetição para erros 5xx / de rede
+  idempotencyKeyGenerator: () => crypto.randomUUID(), // gerador personalizado
+});
+```
+
+<Info>
+  Você pode obter uma chave de API no [Painel AnySpend](https://app.anyspend.com) em **Configurações > Chaves de API**. As chaves são limitadas à sua organização e podem ter permissões de leitura ou leitura e escrita.
+</Info>
+
+## Recursos Disponíveis
+
+O cliente está organizado em namespaces de recursos, cada um com métodos que mapeiam diretamente para endpoints REST.
+
+<AccordionGroup>
+  <Accordion title="paymentLinks">
+    ```typescript
+    // CRUD
+    platform.paymentLinks.create(data)
+    platform.paymentLinks.list(params?)
+    platform.paymentLinks.get(id)
+    platform.paymentLinks.update(id, data)
+    platform.paymentLinks.delete(id)
+
+    // Ações
+    platform.paymentLinks.duplicate(id)
+    platform.paymentLinks.stats(id)
+    platform.paymentLinks.sessions(id, params?)
+    platform.paymentLinks.visitors(id, params?)
+
+    // Itens de linha
+    platform.paymentLinks.items(id)
+    platform.paymentLinks.addItem(id, itemData)
+    platform.paymentLinks.removeItem(id, itemId)
+    ```
+  </Accordion>
+
+  <Accordion title="products">
+    ```typescript
+    platform.products.create(data)
+    platform.products.list(params?)
+    platform.products.get(id)
+    platform.products.update(id, data)
+    platform.products.delete(id)
+    platform.products.generateLink(id, linkOptions?)
+    ```
+  </Accordion>
+
+  <Accordion title="customers">
+    ```typescript
+    platform.customers.create(data)
+    platform.customers.list(params?)
+    platform.customers.get(id)
+    platform.customers.update(id, data)
+    platform.customers.delete(id)
+    platform.customers.transactions(id, params?)
+    platform.customers.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="transactions">
+    ```typescript
+    platform.transactions.list(params?)
+    platform.transactions.get(id)
+    platform.transactions.stats(params?)
+    platform.transactions.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="checkoutSessions">
+    ```typescript
+    platform.checkoutSessions.create(data)
+    platform.checkoutSessions.list(params?)
+    platform.checkoutSessions.get(id)
+    platform.checkoutSessions.expire(id)
+    ```
+  </Accordion>
+
+  <Accordion title="webhooks">
+    ```typescript
+    platform.webhooks.create(data)
+    platform.webhooks.list(params?)
+    platform.webhooks.get(id)
+    platform.webhooks.update(id, data)
+    platform.webhooks.delete(id)
+    platform.webhooks.test(id)
+    platform.webhooks.deliveries(id, params?)
+    platform.webhooks.retry(id, deliveryId)
+    ```
+  </Accordion>
+
+  <Accordion title="discountCodes">
+    ```typescript
+    platform.discountCodes.create(data)
+    platform.discountCodes.list(params?)
+    platform.discountCodes.update(id, data)
+    platform.discountCodes.delete(id)
+    platform.discountCodes.validate(code, context?)
+    platform.discountCodes.batchCreate(codes)
+    ```
+  </Accordion>
+
+  <Accordion title="notifications">
+    ```typescript
+    platform.notifications.get()
+    platform.notifications.update(data)
+    platform.notifications.linkTelegram(chatId)
+    platform.notifications.unlinkTelegram()
+    platform.notifications.testEmail()
+    platform.notifications.testTelegram()
+    ```
+  </Accordion>
+
+  <Accordion title="widgets">
+    ```typescript
+    platform.widgets.create(data)
+    platform.widgets.list(params?)
+    platform.widgets.get(id)
+    platform.widgets.update(id, data)
+    platform.widgets.delete(id)
+    platform.widgets.stats(id)
+    ```
+  </Accordion>
+
+  <Accordion title="organization">
+    ```typescript
+    platform.organization.get()
+    platform.organization.update(data)
+    ```
+  </Accordion>
+
+  <Accordion title="analytics">
+    ```typescript
+    platform.analytics.overview(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="events">
+    ```typescript
+    platform.events.list(params?)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Paginação
+
+Todos os métodos `list` aceitam parâmetros de paginação opcionais e retornam uma resposta paginada:
+
+```typescript
+const page = await platform.transactions.list({
+  status: "completed",
+  limit: 25,
+  cursor: "cur_abc123",
+});
+
+console.log(page.data);       // Transaction[]
+console.log(page.has_more);   // boolean
+console.log(page.next_cursor); // string | null
+```
+
+### Auto-Paginação
+
+Para conveniência, cada método `list` tem um auxiliar correspondente `listAutoPaginate` que retorna um iterador assíncrono. Ele busca páginas nos bastidores à medida que você consome itens.
+
+```typescript
+for await (const txn of platform.transactions.listAutoPaginate({
+  status: "completed",
+})) {
+  console.log(txn.id, txn.amount);
+}
+```
+
+<Tip>
+  A auto-paginação respeita automaticamente os limites de taxa. Se a API retornar um `429`, o iterador espera a duração do `Retry-After` antes de buscar a próxima página.
+</Tip>
+
+Você também pode coletar todos os resultados em um array:
+
+```typescript
+const allCustomers = [];
+for await (const c of platform.customers.listAutoPaginate()) {
+  allCustomers.push(c);
+}
+```
+
+## Tratamento de Erros
+
+O SDK lança classes de erro tipadas para que você possa lidar com modos de falha específicos:
+
+```typescript
+import {
+  ApiError,
+  AuthenticationError,
+  PermissionError,
+  RateLimitError,
+  NotFoundError,
+  IdempotencyError,
+} from "@b3dotfun/sdk/anyspend/platform";
+
+try {
+  const link = await platform.paymentLinks.get("pl_nonexistent");
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    console.log("Link não existe");
+  } else if (err instanceof AuthenticationError) {
+    console.log("Chave de API inválida ou expirada");
+  } else if (err instanceof PermissionError) {
+    console.log("Chave de API não possui a permissão necessária");
+  } else if (err instanceof RateLimitError) {
+    console.log(`Limitado pela taxa. Tente novamente após ${err.retryAfter} segundos`);
+  } else if (err instanceof IdempotencyError) {
+    console.log("Conflito de idempotência -- a solicitação já foi processada com parâmetros diferentes");
+  } else if (err instanceof ApiError) {
+    // Pega-tudo para qualquer erro de API
+    console.log(err.status, err.code, err.message);
+  }
+}
+```
+
+### Referência da Classe de Erro
+
+| Classe | Status HTTP | Descrição |
+|-------|-------------|-------------|
+| `AuthenticationError` | `401` | Chave de API ausente, inválida ou expirada |
+| `PermissionError` | `403` | Chave de API não tem o escopo necessário |
+| `NotFoundError` | `404` | Recurso não existe |
+| `RateLimitError` | `429` | Muitas solicitações. Inclui `retryAfter` (segundos) |
+| `IdempotencyError` | `409` | Chave de idempotência foi reutilizada com parâmetros diferentes |
+| `ApiError` | qualquer | Classe base para todos os erros de API |
+
+## Auto-Repetição
+
+O cliente automaticamente repete solicitações falhas nos seguintes casos:
+
+- **Erros de servidor 5xx** -- o servidor teve uma falha transitória
+- **Erros de rede** -- conexão reiniciada, falha de DNS, tempo limite
+- **Respostas de limite de taxa 429** -- espera pela duração do `Retry-After`
+
+As repetições usam **backoff exponencial** com jitter. O padrão é 3 repetições, configurável via a opção `maxRetries`.
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  maxRetries: 5, // até 5 repetições
+});
+```
+
+<Warning>
+  Repetições **não** são realizadas para erros `4xx` além de `429`, uma vez que esses indicam um problema do lado do cliente que não será resolvido tentando novamente.
+</Warning>
+
+## Idempotência
+
+Todas as solicitações `POST` e `PATCH` incluem automaticamente um cabeçalho `Idempotency-Key`. Isso garante que, se uma solicitação for repetida (devido a um erro de rede, por exemplo), o servidor não a processará duas vezes.
+
+O gerador padrão usa `crypto.randomUUID()`. Você pode fornecer o seu próprio:
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  idempotencyKeyGenerator: () => `my-app-${Date.now()}-${Math.random()}`,
+});
+```
+
+Você também pode passar uma chave de idempotência específica por solicitação:
+
+```typescript
+const link = await platform.paymentLinks.create(
+  { name: "Pedido #1234", amount: "50000000", recipient_address: "0x..." },
+  { idempotencyKey: "order-1234-link" }
+);
+```
+
+<Tip>
+  Usar uma chave de idempotência determinística (como um ID de pedido) é recomendado para operações críticas. Se você acidentalmente enviar a mesma solicitação duas vezes, a segunda chamada retorna a resposta original em vez de criar uma duplicata.
+</Tip>
+
+## Tipos TypeScript
+
+Todos os tipos de solicitação e resposta são exportados para uso no seu próprio código:
+
+```typescript
+import type {
+  PaymentLink,
+  CreatePaymentLinkRequest,
+  Transaction,
+  Customer,
+  CheckoutSession,
+  Webhook,
+  PaginatedResponse,
+} from "@b3dotfun/sdk/anyspend/platform";
+```
+
+## Compatibilidade de Runtime
+
+| Runtime | Suportado |
+|---------|-----------|
+| Node.js 18+ | Sim |
+| Navegadores (ES2020+) | Sim |
+| Cloudflare Workers | Sim |
+| Deno | Sim |
+| Bun | Sim |
+
+O cliente usa internamente a API `fetch` padrão. No Node.js 18+, o `fetch` embutido é utilizado. Não são necessários polyfills.

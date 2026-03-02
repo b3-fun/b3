@@ -1,0 +1,435 @@
+---
+title: Códigos de Desconto
+description: Criar e gerenciar códigos de desconto para links de pagamento
+lang: pt-BR
+originalPath: anyspend/api/discount-codes.mdx
+---
+Códigos de desconto permitem que você ofereça descontos baseados em porcentagem ou em valor fixo em links de pagamento. Crie códigos individuais, gere lotes em massa e valide códigos no momento do checkout.
+
+<Info>
+  A gestão de códigos de desconto requer permissão de **admin**. O endpoint `/validate` requer permissão de **leitura**, tornando-o seguro para ser chamado a partir de fluxos de checkout do lado do cliente.
+</Info>
+
+## Autenticação
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Base: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Listar Códigos de Desconto
+
+<ParamField path="GET /discount-codes" type="read">
+  Lista todos os códigos de desconto com filtragem opcional e paginação.
+</ParamField>
+
+<ParamField path="search" type="string" query>
+  Pesquisar por string de código (correspondência parcial insensível a maiúsculas e minúsculas).
+</ParamField>
+
+<ParamField path="active" type="boolean" query>
+  Filtrar pelo status ativo. Omitir para retornar todos os códigos.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  Número da página para paginação (padrão: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  Resultados por página (padrão: `20`, máximo: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/discount-codes?search=SUMMER&active=true&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const codes = await client.discountCodes.list({
+      search: "SUMMER",
+      active: true,
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "dc_abc123",
+      "code": "SUMMER25",
+      "type": "percentage",
+      "value": 25,
+      "payment_link_id": "pl_xyz789",
+      "max_uses": 100,
+      "current_uses": 42,
+      "min_order_amount": "5000000",
+      "expires_at": "2026-09-01T00:00:00Z",
+      "is_active": true,
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+### Criar Código de Desconto
+
+<ParamField path="POST /discount-codes" type="admin">
+  Criar um único código de desconto.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  A string do código de desconto (por exemplo, `SUMMER25`). Deve ser única. Convertida automaticamente para maiúsculas.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Tipo de desconto: `percentage` ou `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  Valor do desconto. Para `percentage`, um número entre 1-100. Para `fixed`, o valor na menor unidade do token (por exemplo, `5000000` para 5 USDC).
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  Restringir este código a um link de pagamento específico. Se omitido, o código funciona em todos os links de pagamento.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  Número máximo de vezes que este código pode ser resgatado. Omitir para usos ilimitados.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  Valor mínimo do pedido necessário para usar este código, na menor unidade do token.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  Carimbo de data/hora de expiração ISO 8601. Omitir para um código que nunca expira.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "type": "percentage",
+        "value": 25,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 100,
+        "min_order_amount": "5000000",
+        "expires_at": "2026-09-01T00:00:00Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const code = await client.discountCodes.create({
+      code: "SUMMER25",
+      type: "percentage",
+      value: 25,
+      payment_link_id: "pl_xyz789",
+      max_uses: 100,
+      min_order_amount: "5000000",
+      expires_at: "2026-09-01T00:00:00Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dc_abc123",
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "payment_link_id": "pl_xyz789",
+    "max_uses": 100,
+    "current_uses": 0,
+    "min_order_amount": "5000000",
+    "expires_at": "2026-09-01T00:00:00Z",
+    "is_active": true,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Atualizar Código de Desconto
+
+<ParamField path="PATCH /discount-codes/:id" type="admin">
+  Atualizar um código de desconto existente. Todos os campos são opcionais.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "max_uses": 200,
+        "expires_at": "2026-12-31T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.discountCodes.update("dc_abc123", {
+      max_uses: 200,
+      expires_at: "2026-12-31T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Deletar Código de Desconto
+
+<ParamField path="DELETE /discount-codes/:id" type="admin">
+  Excluir permanentemente um código de desconto. Sessões ativas usando este código não serão afetadas.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.discountCodes.delete("dc_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Validar Código de Desconto
+
+<ParamField path="POST /discount-codes/validate" type="read">
+  Validar um código de desconto contra um link de pagamento e valor do pedido. Retorna os detalhes do desconto se válido, ou uma mensagem de erro explicando por que o código é inválido.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  O código de desconto a ser validado.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string" required>
+  O link de pagamento ao qual o código está sendo aplicado.
+</ParamField>
+
+<ParamField path="amount" type="string" required>
+  O valor do pedido na menor unidade do token, usado para verificar `min_order_amount` e calcular o total com desconto.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/validate \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "payment_link_id": "pl_xyz789",
+        "amount": "20000000"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.discountCodes.validate({
+      code: "SUMMER25",
+      payment_link_id: "pl_xyz789",
+      amount: "20000000",
+    });
+
+    if (result.valid) {
+      console.log("Desconto:", result.discount_amount);
+      console.log("Novo total:", result.final_amount);
+    } else {
+      console.log("Inválido:", result.error);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta Válida**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "discount_amount": "5000000",
+    "final_amount": "15000000"
+  }
+}
+```
+
+**Resposta Inválida**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": false,
+    "error": "Código atingiu o número máximo de usos"
+  }
+}
+```
+
+<Note>
+  O endpoint de validação **não** consome um uso. Os usos só são contados quando um pagamento é concluído com o desconto aplicado.
+</Note>
+
+---
+
+### Criar Lote de Códigos de Desconto
+
+<ParamField path="POST /discount-codes/batch" type="admin">
+  Criar vários códigos de desconto de uma vez com configuração compartilhada. Útil para gerar campanhas promocionais ou códigos únicos de uso único.
+</ParamField>
+
+<ParamField path="codes" type="string[]" required>
+  Array de strings de códigos para criar. Cada um deve ser único.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Tipo de desconto aplicado a todos os códigos: `percentage` ou `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  Valor do desconto aplicado a todos os códigos.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  Restringir todos os códigos a um link de pagamento específico.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  Usos máximos por código. Definir como `1` para códigos de uso único.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  Valor mínimo do pedido para todos os códigos.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  Carimbo de data/hora de expiração ISO 8601 para todos os códigos.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/batch \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "codes": ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+        "type": "fixed",
+        "value": 2000000,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 1,
+        "expires_at": "2026-06-30T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const batch = await client.discountCodes.batchCreate({
+      codes: ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+      type: "fixed",
+      value: 2000000,
+      payment_link_id: "pl_xyz789",
+      max_uses: 1,
+      expires_at: "2026-06-30T23:59:59Z",
+    });
+
+    console.log(`Criados ${batch.created} códigos`);
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "created": 3,
+    "codes": [
+      { "id": "dc_001", "code": "PROMO-A1B2" },
+      { "id": "dc_002", "code": "PROMO-C3D4" },
+      { "id": "dc_003", "code": "PROMO-E5F6" }
+    ]
+  }
+}
+```
+
+---
+
+## Objeto do Código de Desconto
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | `string` | Identificador único (por exemplo, `dc_abc123`) |
+| `code` | `string` | A string do código de desconto (em maiúsculas) |
+| `type` | `string` | `percentage` ou `fixed` |
+| `value` | `number` | Valor do desconto (porcentagem de 1-100, ou valor fixo na menor unidade) |
+| `payment_link_id` | `string \| null` | Link de pagamento restrito, ou `null` para todos os links |
+| `max_uses` | `number \| null` | Máximo de resgates, ou `null` para ilimitado |
+| `current_uses` | `number` | Número de vezes resgatado até agora |
+| `min_order_amount` | `string \| null` | Valor mínimo do pedido necessário |
+| `expires_at` | `string \| null` | Carimbo de data/hora de expiração ISO 8601, ou `null` para sem expiração |
+| `is_active` | `boolean` | Se o código está atualmente utilizável |
+| `created_at` | `string` | Carimbo de data/hora de criação ISO 8601 |
+| `updated_at` | `string` | Carimbo de data/hora da última atualização ISO 8601 |
+
+## Regras de Validação
+
+Um código de desconto é considerado **inválido** se qualquer uma das seguintes condições for verdadeira:
+
+| Condição | Mensagem de Erro |
+|-----------|---------------|
+| Código não existe | `Código de desconto inválido` |
+| Código está inativo (`is_active: false`) | `Código de desconto não está ativo` |
+| Código expirou | `Código de desconto expirou` |
+| `current_uses >= max_uses` | `Código atingiu o número máximo de usos` |
+| Código restrito a um link de pagamento diferente | `Código não é válido para este link de pagamento` |
+| Valor do pedido está abaixo de `min_order_amount` | `Valor do pedido está abaixo do mínimo necessário` |

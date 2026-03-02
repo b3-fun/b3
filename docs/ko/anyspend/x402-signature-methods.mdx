@@ -1,0 +1,415 @@
+---
+title: Permit vs TransferWithAuthorization
+description: '가스 없는 결제 서명: EIP-2612 허가 및 EIP-3009 transferWithAuthorization'
+lang: ko
+originalPath: anyspend/x402-signature-methods.mdx
+---
+## 개요
+
+AnySpend x402는 전통적인 토큰 승인 대신 암호화 서명을 사용하여 사용자에게 **가스 없는 결제**를 가능하게 합니다. 사용자는 단순히 인증 메시지를 서명하고 모든 가스 비용은 중개자가 지불합니다.
+
+지원되는 두 가지 주요 서명 표준이 있으며, 각각은 다른 토큰 유형에 최적화되어 있습니다:
+
+- **EIP-3009 (transferWithAuthorization)** - USDC에 사용, 한 단계 직접 전송
+- **EIP-2612 (permit)** - 대부분의 현대 ERC-20 토큰에 사용, 두 단계 승인 + 전송
+
+## 빠른 비교
+
+| 특징 | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
+|---------|-------------------|--------------------------------------|
+| **사용됨** | 대부분의 현대 ERC-20s | USDC (모든 네트워크) |
+| **실행** | 두 단계: 승인 + 전송 | 한 단계: 직접 전송 |
+| **Nonce 유형** | 순차적 (자동 증가) | 랜덤 bytes32 |
+| **의존성** | 이전 nonce를 기다려야 함 | 순서 필요 없음 |
+| **적합함** | 일반 ERC-20 토큰 | 스테이블코인 결제 |
+| **재생 방지** | 순차적 nonce | 랜덤 nonce 추적 |
+| **가스 효율성** | 2 거래 (permit + transferFrom) | 1 거래 (직접 전송) |
+
+## EIP-3009: transferWithAuthorization (USDC)
+
+### 개요
+
+직접 전송 인증 - 서명은 별도의 승인 단계 없이 발신자로부터 수신자에게 즉각적인 전송을 인증합니다.
+
+**사용됨:** 모든 네트워크의 USDC (Base, Ethereum, Arbitrum, Optimism, Polygon 등)
+
+### 주요 장점
+
+- 한 단계 실행 - 직접 전송, 승인 필요 없음
+- 랜덤 nonce - 순차적 의존성 없음, 병렬 거래 가능
+- 즉각적인 결제 - 단일 거래에서 실행
+- 지불자에게 가스 없음 - 중개자가 가스 지불
+- 프론트러닝 없음 - 랜덤 nonce가 MEV 공격을 방지
+
+### 메시지 구조
+
+```solidity
+transferWithAuthorization(
+    address from,          // 지불자 주소
+    address to,            // 수신자 주소
+    uint256 value,         // 전송할 금액
+    uint256 validAfter,    // 0 (즉시 유효)
+    uint256 validBefore,   // 마감 시간스탬프
+    bytes32 nonce,         // 랜덤 nonce (재생 방지)
+    bytes signature        // EIP-712 서명
+)
+```
+
+### 사용 예시
+
+```typescript
+import { signTransferWithAuthorization } from 'anyspend-x402-client';
+
+const signature = await signTransferWithAuthorization({
+  from: payerAddress,
+  to: recipientAddress,
+  value: '1000000',              // 1 USDC (6 decimals)
+  validBefore: deadline,
+  nonce: randomBytes32()         // 랜덤 nonce 생성
+});
+```
+
+### 작동 방식
+
+<Steps>
+<Step title="사용자 서명 인증">
+사용자가 랜덤 nonce를 사용하여 EIP-712 메시지에 서명하여 전송을 인증합니다
+</Step>
+
+<Step title="중개자 전송 실행">
+중개자가 서명과 함께 `receiveWithAuthorization()`을 호출합니다
+</Step>
+
+<Step title="USDC 전송됨">
+USDC가 한 번의 원자 거래에서 사용자로부터 중개자에게 직접 전송됩니다
+</Step>
+
+<Step title="Nonce 무효화">
+사용된 랜덤 nonce는 사용된 것으로 표시되어 재생 공격을 방지합니다
+</Step>
+</Steps>
+
+### EIP-712 타입 데이터 구조
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'USD Coin',
+    version: '2',
+    chainId: 8453, // Base
+    verifyingContract: usdcAddress
+  },
+  types: {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' }
+    ]
+  },
+  message: {
+    from: payerAddress,
+    to: recipientAddress,
+    value: '1000000',
+    validAfter: 0,
+    validBefore: deadline,
+    nonce: randomNonce
+  }
+};
+```
+
+---
+
+## EIP-2612: Permit (표준 ERC-20)
+
+### 개요
+
+승인을 설정한 후 별도의 `transferFrom()` 호출을 따르는 서명 기반 승인입니다. 이것은 대부분의 현대 ERC-20 토큰에 대한 표준 방법입니다.
+
+**사용됨:** permit 지원을 가진 대부분의 현대 ERC-20 토큰
+
+### 주요 장점
+
+- 널리 채택됨 - 많은 토큰에서 표준
+- 시간 제한 승인 - 마감 기반 만료
+- ERC-20 호환 - 기존 인프라와 작동
+- 지불자에게 가스 없음 - 중개자가 가스 지불
+- 주요 지갑 및 dapps에서 지원됨
+
+### 메시지 구조
+
+```solidity
+permit(
+    address owner,         // 토큰 소유자
+    address spender,       // 승인된 지출자 (중개자)
+    uint256 value,         // 승인 금액
+    uint256 deadline,      // 만료 타임스탬프
+    uint8 v, bytes32 r, bytes32 s  // 서명 구성 요소
+)
+```
+
+### 사용 예시
+
+```typescript
+import { signPermit } from 'anyspend-x402-client';
+
+const nonce = await token.nonces(ownerAddress);  // 현재 nonce 가져오기
+
+const signature = await signPermit({
+  token: tokenAddress,
+  owner: ownerAddress,
+  spender: facilitatorAddress,
+  value: '1000000',  // 1 USDC (6 decimals)
+  deadline: deadline,
+  nonce: nonce                    // 순차적 nonce
+});
+```
+
+### 작동 방식
+
+<Steps>
+<Step title="사용자 서명 허가">
+사용자가 현재 순차적 nonce를 사용하여 EIP-712 허가 메시지에 서명합니다
+</Step>
+
+<Step title="중개자 Permit 호출">
+중개자가 체인상에서 허가를 설정하기 위해 `permit()`을 호출합니다
+</Step>
+
+<Step title="Nonce 자동 증가">
+토큰 계약이 사용자의 nonce를 자동으로 증가시킵니다
+</Step>
+
+<Step title="중개자 토큰 전송">
+중개자가 승인을 사용하여 `transferFrom()`을 호출하여 토큰을 전송합니다
+</Step>
+</Steps>
+
+### EIP-712 타입 데이터 구조
+
+```typescript
+const typedData = {
+  domain: {
+    name: 'Dai Stablecoin',
+    version: '1',
+    chainId: 8453, // Base
+    verifyingContract: daiAddress
+  },
+  types: {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  },
+  message: {
+    owner: ownerAddress,
+    spender: facilitatorAddress,
+    value: '1000000000000000000',
+    nonce: currentNonce,
+    deadline: deadline
+  }
+};
+```
+
+---
+
+## 내 토큰은 어떤 방법을 사용하나요?
+
+### 토큰 지원 확인
+
+```typescript
+// 토큰이 EIP-3009 (USDC 스타일)을 지원하는지 확인
+const hasTransferWithAuth = await token.read.transferWithAuthorization !== undefined;
+
+// 토큰이 EIP-2612 (표준 permit)을 지원하는지 확인
+const hasPermit = await token.read.permit !== undefined;
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+### 방법별 일반 토큰
+
+**EIP-3009 (transferWithAuthorization):**
+- USDC (모든 체인)
+- USDC.e (브리지된 버전)
+
+**EIP-2612 (permit):**
+- 대부분의 현대 ERC-20s
+- USDT (일부 체인 - Base, Arbitrum, Optimism)
+- 많은 DeFi 토큰
+- 호환성 확인: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+**가스 없는 지원 없음:**
+- 이더리움 메인넷의 USDT (permit 없음)
+- 폴리곤의 USDT (permit 없음)
+- 레거시 ERC-20 토큰
+
+<Note>
+AnySpend x402 클라이언트는 토큰 계약을 기반으로 자동으로 어떤 서명 방법을 사용할지 감지합니다. 이를 수동으로 지정할 필요가 없습니다.
+</Note>
+
+## Nonce 관리
+
+### 랜덤 nonce (EIP-3009)
+
+**장점:**
+- 순서 의존성 없음 - 여러 서명을 어떤 순서로든 사용할 수 있음
+- 병렬 거래 가능
+- 하나의 거래가 실패해도 차단된 상태 없음
+
+**구현:**
+```typescript
+import { randomBytes } from 'crypto';
+
+// 암호학적으로 안전한 랜덤 nonce 생성
+const nonce = '0x' + randomBytes(32).toString('hex');
+```
+
+**Nonce 추적:**
+```solidity
+// nonce가 사용되었는지 확인
+mapping(address => mapping(bytes32 => bool)) public authorizationState;
+
+function isAuthorizationUsed(address authorizer, bytes32 nonce)
+    external
+    view
+    returns (bool)
+{
+    return authorizationState[authorizer][nonce];
+}
+```
+
+### 순차적 nonce (EIP-2612)
+
+**장점:**
+- 단순하고 예측 가능
+- 가스 효율적 (단일 저장 슬롯)
+- 모든 permit 구현에서 표준
+
+**구현:**
+```typescript
+// 토큰 계약에서 현재 nonce 가져오기
+const currentNonce = await token.read.nonces([ownerAddress]);
+
+// 현재 nonce로 서명
+const signature = await signPermit({
+  // ...
+  nonce: currentNonce
+});
+```
+
+**Nonce 자동 증가:**
+```solidity
+// 토큰 계약이 자동으로 증가
+mapping(address => uint256) public nonces;
+
+function permit(/* ... */) external {
+    require(nonce == nonces[owner], "Invalid nonce");
+    nonces[owner]++; // 자동 증가
+    // ... 나머지 permit 로직
+}
+```
+
+## 보안 고려 사항
+
+### 재생 방지
+
+**EIP-3009:**
+- 랜덤 nonce는 체인 및 계약 간 재생을 방지
+- 각 nonce는 주소당 한 번만 사용될 수 있음
+- nonce 상태는 체인상의 매핑에 저장됨
+
+**EIP-2612:**
+- 순차적 nonce는 재생을 방지
+- 현재 nonce 사용해야 함 (자동 증가)
+- 실패한 거래는 재서명될 때까지 후속 서명을 차단
+
+### 마감 시간 강제
+
+두 방법 모두 마감 시간을 강제하여 오래된 서명을 방지합니다:
+
+```typescript
+const deadline = Math.floor(Date.now() / 1000) + 300; // 지금부터 5분 후
+```
+
+**최선의 방법:**
+- 보안을 위해 짧은 마감 시간(5-10분) 사용
+- 필요한 경우 UX를 위해 더 긴 마감 시간(30-60분) 사용
+- 무한 승인을 위해 `type(uint256).max` 사용하지 않기
+
+### 서명 검증
+
+두 방법 모두 EIP-712을 사용하여 서명을 검증합니다:
+
+```typescript
+// 서명에서 서명자 복구
+const recoveredAddress = recoverTypedDataAddress({
+  domain,
+  types,
+  primaryType,
+  message,
+  signature
+});
+
+// 서명자가 예상 주소와 일치하는지 확인
+if (recoveredAddress !== expectedSigner) {
+  throw new Error('Invalid signature');
+}
+```
+
+## 클라이언트 SDK 통합
+
+AnySpend x402 클라이언트는 모든 서명 복잡성을 자동으로 처리합니다:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: tokenAddress // USDC 또는 호환 가능한 토큰
+});
+
+// 클라이언트는 자동으로:
+// 1. 토큰이 permit 또는 transferWithAuthorization을 사용하는지 감지
+// 2. 현재 nonce(permit용)를 가져오거나 랜덤 nonce 생성
+// 3. 올바른 EIP-712 타입 데이터 구성
+// 4. 사용자에게 서명 요청
+// 5. X-PAYMENT 헤더에 서명 포함
+
+const response = await client.request('https://api.example.com/data');
+```
+
+## 가스 비용 비교
+
+| 방법 | 사용자 가스 | 중개자 가스 | 총 거래 |
+|--------|----------|-----------------|-------------------|
+| EIP-3009 | 0 | ~45,000 | 1 |
+| EIP-2612 | 0 | ~70,000 (permit) + ~45,000 (transfer) | 2 |
+
+<Note>
+모든 가스 비용은 중개자가 지불하며 0.25% AnySpend 수수료에 포함됩니다. 사용자는 직접 가스를 지불하지 않습니다.
+</Note>
+
+## 추가 읽기
+
+<CardGroup cols={2}>
+<Card title="EIP-2612 명세" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-2612">
+  공식 EIP-2612 permit 명세
+</Card>
+
+<Card title="EIP-3009 명세" icon="file-lines" href="https://eips.ethereum.org/EIPS/eip-3009">
+  공식 EIP-3009 transferWithAuthorization 명세
+</Card>
+
+<Card title="EIP-712 타입 데이터" icon="signature" href="https://eips.ethereum.org/EIPS/eip-712">
+  EIP-712 타입 구조화 데이터 해싱 및 서명
+</Card>
+
+<Card title="네트워크 지원" icon="globe" href="/anyspend/x402-network-support">
+  각 네트워크에서 어떤 토큰이 어떤 방법을 지원하는지 확인
+</Card>
+</CardGroup>

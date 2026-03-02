@@ -1,0 +1,464 @@
+---
+title: Produk-produk
+description: Kelola katalog produk Anda untuk tautan pembayaran dan sesi pembayaran
+lang: id
+originalPath: anyspend/api/products.mdx
+---
+Produk mewakili barang atau layanan dalam katalog Anda. Setiap produk mendefinisikan harga, token, dan konfigurasi rantai yang dapat digunakan kembali di berbagai tautan pembayaran dan sesi checkout.
+
+<Info>
+  Produk mendukung tiga jenis harga: `one_time` untuk pembelian tunggal, `subscription` untuk pembayaran berulang, dan `variable` untuk jumlah yang dipilih pelanggan.
+</Info>
+
+## Objek Produk
+
+<ResponseField name="id" type="string">
+  Pengenal unik untuk produk (mis., `prod_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Nama produk yang ditampilkan kepada pelanggan.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  Harga dalam unit terkecil token. Null untuk jenis produk `variable`.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Alamat kontrak dari token untuk penetapan harga.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  Chain ID untuk token penetapan harga.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Deskripsi produk.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  URL gambar produk.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Alamat dompet default yang menerima pembayaran untuk produk ini.
+</ResponseField>
+
+<ResponseField name="product_type" type="string">
+  Jenis harga: `one_time`, `subscription`, atau `variable`.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Pasangan kunci-nilai sembarang untuk penggunaan Anda sendiri. Tidak ditampilkan kepada pelanggan.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  Bidang formulir kustom untuk dikumpulkan selama checkout. Struktur sama seperti [Payment Links form_schema](/anyspend/api/payment-links#the-payment-link-object).
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  Opsi pengiriman untuk barang fisik. Struktur sama seperti [Payment Links shipping_options](/anyspend/api/payment-links#the-payment-link-object).
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  Apakah produk aktif. Produk yang tidak aktif tidak dapat digunakan dalam tautan pembayaran baru.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Cap waktu pembuatan ISO 8601.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Cap waktu pembaruan terakhir ISO 8601.
+</ResponseField>
+
+---
+
+## Daftar produk
+
+Ambil daftar produk Anda yang dipaginasi.
+
+<ParamField query="page" type="number" default={1}>
+  Nomor halaman untuk paginasi.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Jumlah hasil per halaman (maks 100).
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filter berdasarkan status aktif. Lewati untuk mengembalikan semua produk.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products?page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.products.list({
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "prod_abc123",
+          "name": "Pro Plan",
+          "amount": "50000000",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Tingkat profesional dengan akses tidak terbatas",
+          "image_url": "https://example.com/pro.png",
+          "recipient_address": "0x1234...abcd",
+          "product_type": "one_time",
+          "metadata": {
+            "sku": "PRO-001",
+            "internal_id": "tier_3"
+          },
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-10T09:00:00Z",
+          "updated_at": "2026-02-15T12:00:00Z"
+        },
+        {
+          "id": "prod_def456",
+          "name": "Donation",
+          "amount": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "description": "Dukung proyek kami dengan jumlah berapapun",
+          "image_url": null,
+          "recipient_address": "0x1234...abcd",
+          "product_type": "variable",
+          "metadata": null,
+          "form_schema": null,
+          "shipping_options": null,
+          "active": true,
+          "created_at": "2026-01-20T14:30:00Z",
+          "updated_at": "2026-01-20T14:30:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 2,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Buat produk
+
+<ParamField body="name" type="string" required>
+  Nama produk.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  Alamat kontrak dari token untuk penetapan harga.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  Chain ID untuk token penetapan harga.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  Alamat dompet default yang menerima pembayaran.
+</ParamField>
+
+<ParamField body="product_type" type="string" required>
+  Jenis harga. Salah satu dari: `one_time`, `subscription`, `variable`.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Harga dalam unit terkecil token. Diperlukan untuk jenis `one_time` dan `subscription`.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Deskripsi produk.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL gambar produk.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Pasangan kunci-nilai sembarang (mis., `{"sku": "PRO-001"}`). Hingga 50 kunci, nilai karakter 500.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  Bidang formulir kustom untuk dikumpulkan selama checkout.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  Opsi pengiriman untuk barang fisik.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan",
+    "amount": "50000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "product_type": "one_time",
+    "description": "Tingkat profesional dengan akses tidak terbatas",
+    "image_url": "https://example.com/pro.png",
+    "metadata": {
+      "sku": "PRO-001",
+      "internal_id": "tier_3"
+    }
+  }'
+```
+
+```typescript SDK
+const product = await anyspend.products.create({
+  name: "Pro Plan",
+  amount: "50000000",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  productType: "one_time",
+  description: "Tingkat profesional dengan akses tidak terbatas",
+  imageUrl: "https://example.com/pro.png",
+  metadata: {
+    sku: "PRO-001",
+    internal_id: "tier_3",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "name": "Pro Plan",
+      "amount": "50000000",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "description": "Tingkat profesional dengan akses tidak terbatas",
+      "image_url": "https://example.com/pro.png",
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "product_type": "one_time",
+      "metadata": {
+        "sku": "PRO-001",
+        "internal_id": "tier_3"
+      },
+      "form_schema": null,
+      "shipping_options": null,
+      "active": true,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Ambil produk
+
+<ParamField path="id" type="string" required>
+  ID produk (mis., `prod_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const product = await anyspend.products.retrieve("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Mengembalikan seluruh [Objek Produk](#the-product-object).
+  </Tab>
+</Tabs>
+
+---
+
+## Perbarui produk
+
+Perbarui produk yang ada. Hanya bidang yang Anda sertakan dalam badan permintaan yang akan diperbarui.
+
+<ParamField path="id" type="string" required>
+  ID produk.
+</ParamField>
+
+Semua parameter badan dari [titik akhir buat](#create-a-product) diterima. Selain itu:
+
+<ParamField body="active" type="boolean">
+  Atur ke `false` untuk menonaktifkan produk.
+</ParamField>
+
+<Warning>
+  Memperbarui produk tidak akan memperbarui tautan pembayaran yang dibuat darinya secara retroaktif. Setiap tautan pembayaran mempertahankan konfigurasinya sendiri.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Pro Plan (Tahunan)",
+    "amount": "500000000",
+    "description": "Tingkat profesional - penagihan tahunan"
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.products.update("prod_abc123", {
+  name: "Pro Plan (Tahunan)",
+  amount: "500000000",
+  description: "Tingkat profesional - penagihan tahunan",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Mengembalikan [Objek Produk](#the-product-object) yang diperbarui.
+  </Tab>
+</Tabs>
+
+---
+
+## Hapus produk
+
+Hapus produk secara lunak. Produk akan ditandai sebagai tidak aktif dan tidak akan lagi muncul dalam hasil daftar secara default. Tautan pembayaran yang ada menggunakan produk ini akan terus berfungsi.
+
+<ParamField path="id" type="string" required>
+  ID produk.
+</ParamField>
+
+<Tip>
+  Menghapus produk adalah penghapusan lunak. Data produk dipertahankan untuk referensi historis dalam transaksi dan tautan pembayaran yang ada.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/products/prod_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.products.delete("prod_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "prod_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Hasilkan tautan pembayaran dari produk
+
+Secara otomatis buat tautan pembayaran yang telah dikonfigurasi sebelumnya dengan pengaturan produk. Ini adalah metode kenyamanan yang membuat tautan pembayaran baru menggunakan `name`, `amount`, `token_address`, `chain_id`, `recipient_address`, `description`, `image_url`, `form_schema`, dan `shipping_options` produk.
+
+<ParamField path="id" type="string" required>
+  ID produk.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Timpa nama tautan pembayaran. Default ke nama produk.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  URL untuk mengarahkan kembali pelanggan setelah pembayaran.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  Jumlah maksimum penggunaan untuk tautan yang dihasilkan.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  Cap waktu kedaluwarsa ISO 8601 untuk tautan yang dihasilkan.
+</ParamField>
+
+Bidang tautan pembayaran tambahan apa pun [payment link fields](/anyspend/api/payment-links#create-a-payment-link) dapat dilewati sebagai penimpa.
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/products/prod_abc123/generate-link" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "return_url": "https://example.com/thank-you",
+    "max_uses": 100,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }'
+```
+
+```typescript SDK
+const paymentLink = await anyspend.products.generateLink("prod_abc123", {
+  returnUrl: "https://example.com/thank-you",
+  maxUses: 100,
+  expiresAt: "2026-12-31T23:59:59Z",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Mengembalikan [Objek Tautan Pembayaran](/anyspend/api/payment-links#the-payment-link-object) baru dengan `product_id` diatur ke produk sumber.
+
+    ```json
+    {
+      "id": "pl_newlink789",
+      "name": "Pro Plan",
+      "url": "https://pay.anyspend.com/pl_newlink789",
+      "short_url": "https://as.pay/newlink789",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "description": "Tingkat profesional dengan akses tidak terbatas",
+      "product_id": "prod_abc123",
+      "image_url": "https://example.com/pro.png",
+      "max_uses": 100,
+      "uses": 0,
+      "expires_at": "2026-12-31T23:59:59Z",
+      "active": true,
+      "return_url": "https://example.com/thank-you",
+      "created_at": "2026-02-27T10:15:00Z",
+      "updated_at": "2026-02-27T10:15:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>

@@ -1,0 +1,370 @@
+---
+title: 위젯들
+description: 임베더블 위젯 구성 생성 및 관리
+lang: ko
+originalPath: anyspend/api/widgets-api.mdx
+---
+위젯은 한 번 구성하고 어디에서나 배포할 수 있는 임베더블 UI 컴포넌트입니다. 각 위젯은 타입, 구성, 테마를 저장하여 여러 페이지 또는 앱에서 일관된 결제 경험을 렌더링할 수 있습니다.
+
+<Info>
+  위젯 CRUD 엔드포인트는 **쓰기** 권한이 필요합니다. 위젯 목록 및 검색(통계 포함)은 **읽기** 권한이 필요합니다.
+</Info>
+
+## 인증
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+기본 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 엔드포인트
+
+### 위젯 목록
+
+<ParamField path="GET /widgets" type="read">
+  계정의 모든 위젯 구성을 나열합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const widgets = await client.widgets.list();
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wgt_abc123",
+      "name": "Homepage Checkout",
+      "widget_type": "checkout",
+      "description": "홈페이지의 주요 결제 위젯",
+      "config": {
+        "recipient_address": "0x...",
+        "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "destination_chain_id": 8453,
+        "amount": "10000000"
+      },
+      "theme": {
+        "primary_color": "#4f46e5",
+        "border_radius": 12,
+        "font_family": "Inter"
+      },
+      "views_count": 1240,
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-20T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 위젯 생성
+
+<ParamField path="POST /widgets" type="write">
+  새로운 위젯 구성을 생성합니다.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  위젯의 사람이 읽을 수 있는 이름입니다.
+</ParamField>
+
+<ParamField path="widget_type" type="string" required>
+  생성할 위젯의 타입입니다. `swap`, `checkout`, `nft`, `deposit` 중 하나입니다.
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  위젯 타입별 구성 객체입니다. 내용은 `widget_type`에 따라 다릅니다(아래의 [위젯 타입](#widget-types) 참조).
+</ParamField>
+
+<ParamField path="description" type="string">
+  내부 참조용 선택적 설명입니다.
+</ParamField>
+
+<ParamField path="theme" type="object">
+  시각적 테마 재정의입니다. 아래의 [테마 객체](#theme-object)를 참조하세요.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Product Checkout",
+        "widget_type": "checkout",
+        "description": "제품 페이지의 결제 위젯",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "25000000"
+        },
+        "theme": {
+          "primary_color": "#2563eb",
+          "border_radius": 8
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.create({
+      name: "Product Checkout",
+      widget_type: "checkout",
+      description: "제품 페이지의 결제 위젯",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "25000000",
+      },
+      theme: {
+        primary_color: "#2563eb",
+        border_radius: 8,
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wgt_def456",
+    "name": "Product Checkout",
+    "widget_type": "checkout",
+    "description": "제품 페이지의 결제 위젯",
+    "config": {
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "destination_chain_id": 8453,
+      "amount": "25000000"
+    },
+    "theme": {
+      "primary_color": "#2563eb",
+      "border_radius": 8
+    },
+    "views_count": 0,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### 위젯 가져오기
+
+<ParamField path="GET /widgets/:id" type="read">
+  ID로 단일 위젯 구성을 검색합니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.get("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 위젯 업데이트
+
+<ParamField path="PATCH /widgets/:id" type="write">
+  기존 위젯 구성을 업데이트합니다. 모든 필드는 선택 사항입니다 -- 제공된 필드만 변경됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Updated Checkout",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "50000000"
+        },
+        "theme": {
+          "primary_color": "#059669"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.widgets.update("wgt_def456", {
+      name: "Updated Checkout",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "50000000",
+      },
+      theme: {
+        primary_color: "#059669",
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 위젯 삭제
+
+<ParamField path="DELETE /widgets/:id" type="write">
+  위젯 구성을 영구적으로 삭제합니다. 이 위젯 ID를 사용하는 기존 임베드는 렌더링이 중지됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.widgets.delete("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 위젯 통계 가져오기
+
+<ParamField path="GET /widgets/:id/stats" type="read">
+  위젯의 조회 통계를 검색합니다. 총 조회수와 일별 분석이 포함됩니다.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456/stats \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const stats = await client.widgets.stats("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+**응답**
+
+```json
+{
+  "success": true,
+  "data": {
+    "widget_id": "wgt_def456",
+    "total_views": 1240,
+    "daily": [
+      { "date": "2026-02-27", "views": 85 },
+      { "date": "2026-02-26", "views": 102 },
+      { "date": "2026-02-25", "views": 93 }
+    ]
+  }
+}
+```
+
+---
+
+## 위젯 객체
+
+| 필드 | 타입 | 설명 |
+|-------|------|-------------|
+| `id` | `string` | 고유 위젯 식별자 (예: `wgt_abc123`) |
+| `name` | `string` | 사람이 읽을 수 있는 위젯 이름 |
+| `widget_type` | `string` | 위젯 타입: `swap`, `checkout`, `nft`, 또는 `deposit` |
+| `description` | `string \| null` | 선택적 설명 |
+| `config` | `object` | 위젯 타입별 구성 |
+| `theme` | `object \| null` | 시각적 테마 재정의 |
+| `views_count` | `number` | 위젯 렌더링 총 횟수 |
+| `created_at` | `string` | ISO 8601 생성 타임스탬프 |
+| `updated_at` | `string` | ISO 8601 마지막 업데이트 타임스탬프 |
+
+## 위젯 타입
+
+<Tabs>
+  <Tab title="checkout">
+    암호화폐 또는 법정화폐 결제를 수락하는 결제 체크아웃 위젯입니다.
+
+    | 구성 필드 | 타입 | 설명 |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | 상인 지갑 주소 |
+    | `destination_token` | `string` | 수신할 토큰 계약 주소 |
+    | `destination_chain_id` | `number` | 목적지 토큰의 체인 ID |
+    | `amount` | `string` | 최소 단위의 결제 금액 |
+  </Tab>
+  <Tab title="swap">
+    토큰 간 전환을 위한 토큰 스왑 위젯입니다.
+
+    | 구성 필드 | 타입 | 설명 |
+    |-------------|------|-------------|
+    | `src_token` | `string` | 출발 토큰 주소 |
+    | `src_chain_id` | `number` | 출발 체인 ID |
+    | `dst_token` | `string` | 도착 토큰 주소 |
+    | `dst_chain_id` | `number` | 도착 체인 ID |
+  </Tab>
+  <Tab title="nft">
+    NFT 발행 또는 구매 위젯입니다.
+
+    | 구성 필드 | 타입 | 설명 |
+    |-------------|------|-------------|
+    | `collection_address` | `string` | NFT 컬렉션 계약 |
+    | `chain_id` | `number` | 체인 ID |
+    | `token_id` | `string` | 특정 토큰 ID (선택 사항) |
+  </Tab>
+  <Tab title="deposit">
+    지갑이나 계정에 자금을 입금하기 위한 입금 위젯입니다.
+
+    | 구성 필드 | 타입 | 설명 |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | 입금 목적지 주소 |
+    | `accepted_tokens` | `string[]` | 허용된 토큰 주소 목록 |
+    | `accepted_chains` | `number[]` | 허용된 체인 ID 목록 |
+  </Tab>
+</Tabs>
+
+## 테마 객체
+
+| 필드 | 타입 | 기본값 | 설명 |
+|-------|------|---------|-------------|
+| `primary_color` | `string` | `#4f46e5` | 주요 악센트 색상 (16진수) |
+| `border_radius` | `number` | `12` | 픽셀 단위의 테두리 반경 |
+| `font_family` | `string` | `Inter` | 글꼴 가족 이름 |
+| `dark_mode` | `boolean` | `false` | 다크 모드 렌더링 활성화 |

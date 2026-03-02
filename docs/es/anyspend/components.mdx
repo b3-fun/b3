@@ -1,28 +1,42 @@
 ---
 title: Componentes
 description: >-
-  Componentes de React para pagos criptográficos sin interrupciones, compras de
-  NFT y interacciones personalizadas con contratos inteligentes
+  Componentes de React para intercambios, pago, depósitos, NFTs y llamadas a
+  contratos personalizados
 lang: es
 originalPath: anyspend/components.mdx
 ---
-## Componentes Principales
+Todos los componentes de React que puedes incorporar en tu aplicación. Cada uno maneja un patrón de pago diferente. Pruébalos interactivamente en la [demostración del SDK](https://sdk-demo.anyspend.com/).
+
+<CardGroup cols={3}>
+<Card title="Intercambios y Pagos" icon="arrows-rotate" href="#anyspend">
+  Intercambios entre cadenas, rampa de entrada fiat, transferencias directas
+</Card>
+<Card title="Checkout" icon="cart-shopping" href="#anyspendcheckout">
+  Carrito, resumen de pedido, formularios, envío, descuentos
+</Card>
+<Card title="Depósitos" icon="arrow-down" href="#anyspenddeposit">
+  Selección de cadena, contratos personalizados, códigos QR
+</Card>
+</CardGroup>
+
+---
+
+## Componentes principales
 
 ### `<AnySpend>`
 
-El componente de interfaz principal para intercambios de token a token y rampas de entrada de fiat.
+El componente de interfaz principal para intercambios de token a token, rampas de entrada fiat y intercambios entre cadenas.
 
 ```tsx title="Uso Básico" icon="react"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpend
   mode="modal"
   defaultActiveTab="crypto"
   destinationTokenAddress="0x..."
-  destinationTokenChainId={8333}
+  destinationTokenChainId={8453}
   recipientAddress="0x..."
-  hideTransactionHistoryButton={false}
 />;
 ```
 
@@ -37,44 +51,147 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 </ParamField>
 
 <ParamField path="destinationTokenAddress" type="string">
-  Dirección del token de destino para el modo de compra
+  Dirección del contrato del token objetivo
 </ParamField>
 
 <ParamField path="destinationTokenChainId" type="number">
-  Chain ID del token de destino
+  ID de la cadena del token destino
 </ParamField>
 
 <ParamField path="recipientAddress" type="string">
-  Dirección de la cartera del destinatario
+  Dirección de la billetera del destinatario
 </ParamField>
 
-<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
-  Ocultar acceso al historial de transacciones
+<ParamField path="sourceChainId" type="number">
+  Preseleccionar la cadena de origen
 </ParamField>
 
 <ParamField path="loadOrder" type="string">
-  Cargar orden específica por ID
+  Cargar y mostrar una orden existente por ID
 </ParamField>
 
-#### Ejemplos de Uso
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  Ocultar el botón de historial de transacciones
+</ParamField>
+
+<ParamField path="hideHeader" type="boolean">
+  Ocultar el encabezado del componente
+</ParamField>
+
+<ParamField path="hideBottomNavigation" type="boolean">
+  Ocultar la barra de navegación inferior
+</ParamField>
+
+<ParamField path="onTokenSelect" type="(token: Token, event: { preventDefault: () => void }) => void">
+  Llamado cuando se selecciona un token. Llamar a `event.preventDefault()` para prevenir el comportamiento de selección de token predeterminado.
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Callback disparado en transacción exitosa
+</ParamField>
+
+<ParamField path="customUsdInputValues" type="string[]">
+  Presets de entrada fiat personalizados (p. ej., `["10", "25", "50", "100"]`)
+</ParamField>
+
+<ParamField path="disableUrlParamManagement" type="boolean">
+  Deshabilitar la sincronización de parámetros de URL para la configuración de intercambio
+</ParamField>
+
+<ParamField path="allowDirectTransfer" type="boolean">
+  Habilitar transferencias directas cuando el token/cadena de origen y destino coinciden (omite el backend de intercambio)
+</ParamField>
+
+<ParamField path="destinationTokenAmount" type="string">
+  Cantidad de destino fija en wei. Cuando se establece, los usuarios no pueden cambiar la cantidad.
+</ParamField>
+
+<ParamField path="senderAddress" type="string">
+  Prellenar la dirección del remitente para mostrar saldos de tokens antes de la conexión de la billetera
+</ParamField>
+
+<ParamField path="callbackMetadata" type="Record<string, unknown>">
+  Metadatos opacos pasados a los callbacks de orden (p. ej., datos de formulario de flujo de trabajo)
+</ParamField>
+
+<ParamField path="returnToHomeUrl" type="string">
+  URL para redirigir desde el botón "Volver al inicio" en la pantalla de finalización
+</ParamField>
+
+<ParamField path="customRecipientLabel" type="string">
+  Etiqueta personalizada para la visualización del destinatario (p. ej., "Bot de Telegram OBSN")
+</ParamField>
+
+<ParamField path="returnHomeLabel" type="string">
+  Etiqueta personalizada para el botón de retorno al inicio
+</ParamField>
+
+<ParamField path="classes" type="AnySpendClasses">
+  Sobrescrituras de clases CSS para elementos específicos. Ver [Personalización](/anyspend/customization#css-class-overrides).
+</ParamField>
+
+<ParamField path="slots" type="AnySpendSlots">
+  Sobrescrituras de funciones de renderizado para elementos de UI reemplazables. Ver [Personalización](/anyspend/customization#slots).
+</ParamField>
+
+<ParamField path="content" type="AnySpendContent">
+  Sobrescrituras de texto/mensaje para estados de éxito, error y procesamiento. Ver [Personalización](/anyspend/customization#content).
+</ParamField>
+
+<ParamField path="theme" type="AnySpendTheme">
+  Configuración de color y tema. Ver [Personalización](/anyspend/customization#theme).
+</ParamField>
+
+#### Ejemplos de uso
 
 <Tabs>
-<Tab title="Intercambio de Tokens Básico">
+<Tab title="Intercambio Básico">
   ```tsx
   <AnySpend
     mode="page"
+    recipientAddress={userWalletAddress}
+    onSuccess={(txHash) => console.log("Completado:", txHash)}
+  />
+  ```
+</Tab>
+
+<Tab title="Rampa de Entrada Fiat">
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
     recipientAddress={userWalletAddress}
   />
   ```
 </Tab>
 
-<Tab title="Rampa de Entrada Fiat-a-Crypto">
+<Tab title="Cantidad Fija">
   ```tsx
   <AnySpend
-    defaultActiveTab="fiat"
-    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
-    destinationTokenChainId={8333}
-    recipientAddress={userWalletAddress}
+    mode="modal"
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    destinationTokenAmount="10000000" // 10 USDC
+    recipientAddress={merchantAddress}
+    allowDirectTransfer
+  />
+  ```
+</Tab>
+
+<Tab title="Marca Personalizada">
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userAddress}
+    theme={{ brandColor: "#6366f1" }}
+    content={{
+      successTitle: "¡Pago Recibido!",
+      successDescription: "Tu pedido está siendo procesado.",
+    }}
+    slots={{
+      footer: <PoweredByYourBrand />,
+    }}
   />
   ```
 </Tab>
@@ -82,282 +199,289 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 ---
 
-### `<AnySpendNFTButton>`
+### `<AnySpendDeposit>`
 
-Un componente de botón simplificado para compras de NFT con manejo de pago integrado.
+Una interfaz de depósito simplificada que admite la selección de cadena, pagos en cripto/fiat y depósitos en contratos personalizados.
 
-```tsx title="Botón de Compra de NFT" icon="shopping-cart"
-import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+```tsx title="Uso Básico" icon="arrow-down"
+import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
 
-<AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
-```
-
-#### Props
-
-<ParamField path="nftContract" type="NFTContract" required>
-  Objeto de configuración del contrato NFT
-</ParamField>
-
-<ParamField path="recipientAddress" type="string" required>
-  Dirección de la cartera para recibir el NFT
-</ParamField>
-
-#### Interfaz NFTContract
-
-```typescript title="Definición de Tipo" icon="code"
-interface NFTContract {
-  chainId: number; // ID de la red blockchain
-  contractAddress: string; // Dirección del contrato NFT
-  price: string; // Precio en wei
-  priceFormatted: string; // Precio legible por humanos
-  currency: {
-    chainId: number;
-    address: string; // Contrato de token (0x0 para ETH nativo)
-    name: string;
-    symbol: string;
-    decimals: number;
-    metadata: {
-      logoURI: string;
-    };
-  };
-  name: string; // Nombre de la colección NFT
-  description: string; // Descripción del NFT
-  imageUrl: string; // URL de la imagen de vista previa
-  tokenId: number | null; // ID del token (null para ERC721, ID específico para ERC1155)
-  type: "erc721" | "erc1155"; // Tipo de contrato NFT
-}
-```
-
-#### Ejemplo de Uso
-
-```tsx title="Integración Completa de NFT" icon="image" lines
-const coolNFT = {
-  chainId: 8333,
-  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-  price: "500000000000000000", // 0.5 ETH
-  priceFormatted: "0.5",
-  currency: {
-    chainId: 8333,
-    address: "0x0000000000000000000000000000000000000000",
-    name: "Ether",
-    symbol: "ETH",
-    decimals: 18,
-    metadata: {
-      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
-    },
-  },
-  name: "Cool Art Collection",
-  description: "Arte digital único",
-  imageUrl: "https://example.com/nft-preview.png",
-  tokenId: null,
-  type: "erc721",
-};
-
-<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
-```
-
----
-
-### `<AnySpendCustom>`
-
-El componente más flexible para interacciones de contratos inteligentes personalizadas, incluyendo juegos, staking y operaciones de DeFi.
-
-```tsx title="Interacción de Contrato Personalizado" icon="code"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
-import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
-
-<AnySpendCustom
-  orderType="custom"
-  dstChainId={8333}
-  dstToken={tokenDetails}
-  dstAmount="1000000000000000000"
-  contractAddress="0x..."
-  encodedData="0x..."
-  spenderAddress="0x..."
-  metadata={customMetadata}
-  header={CustomHeaderComponent}
-  onSuccess={txHash => console.log("Acción personalizada completada", txHash)}
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  onSuccess={(amount) => console.log("Depositado:", amount)}
 />;
 ```
 
 #### Props
 
-<ParamField path="orderType" type="'custom'" required>
-  Identificador del tipo de orden
+<ParamField path="recipientAddress" type="string" required>
+  La dirección de la billetera para recibir el depósito
 </ParamField>
 
-<ParamField path="dstChainId" type="number" required>
-  Red blockchain de destino
+<ParamField path="destinationTokenAddress" type="string" required>
+  Dirección del contrato del token de destino
 </ParamField>
 
-<ParamField path="dstToken" type="Token" required>
-  Token utilizado para el pago
+<ParamField path="destinationTokenChainId" type="number" required>
+  ID de la cadena de destino
 </ParamField>
 
-<ParamField path="dstAmount" type="string" required>
-  Cantidad en wei/unidad más pequeña
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  Modo de visualización
 </ParamField>
 
-<ParamField path="contractAddress" type="string" required>
-  Dirección del contrato inteligente de destino
+<ParamField path="paymentType" type="'crypto' | 'fiat'">
+  Forzar un tipo de pago. Si no se establece, muestra primero la selección de cadena.
 </ParamField>
 
-<ParamField path="encodedData" type="string" required>
-  Datos codificados de la llamada a la función
+<ParamField path="sourceTokenAddress" type="string">
+  Preseleccionar el token de origen
 </ParamField>
 
-<ParamField path="spenderAddress" type="string">
-  Dirección del gastador del token opcional
+<ParamField path="sourceTokenChainId" type="number">
+  Preseleccionar la cadena de origen. Si no se proporciona, muestra el paso de selección de cadena.
 </ParamField>
 
-<ParamField path="metadata" type="object">
-  Metadatos personalizados para seguimiento
+<ParamField path="loadOrder" type="string">
+  Cargar una orden existente por ID
 </ParamField>
 
-<ParamField path="header" type="React.ComponentType">
+<ParamField path="onSuccess" type="(amount: string) => void">
+  Callback cuando el depósito se completa con éxito
+</ParamField>
+
+<ParamField path="onClose" type="() => void">
+  Callback cuando se hace clic en el botón de cerrar
+</ParamField>
+
+<ParamField path="onTokenSelect" type="(token: Token, event: { preventDefault: () => void }) => void">
+  Llamado en la selección de token. Llamar a `event.preventDefault()` para sobrescribir el comportamiento predeterminado.
+</ParamField>
+
+<ParamField path="onOpenCustomModal" type="() => void">
+  Callback para abrir un modal personalizado (p. ej., para manejo especial de tokens)
+</ParamField>
+
+<ParamField path="orderType" type="'hype_duel' | 'custom_exact_in' | 'swap'" default="'swap'">
+  Tipo de orden para el depósito
+</ParamField>
+
+<ParamField path="depositContractConfig" type="DepositContractConfig">
+  Configuración para depositar en un contrato inteligente personalizado. Crea una orden `custom_exact_in` que llama al contrato especificado.
+</ParamField>
+
+<ParamField path="allowDirectTransfer" type="boolean">
+  Permitir transferencias directas cuando el origen y destino coinciden
+</ParamField>
+
+<ParamField path="destinationTokenAmount" type="string">
+  Cantidad de destino fija en wei
+</ParamField>
+
+<ParamField path="minDestinationAmount" type="number">
+  Cantidad mínima de destino requerida
+</ParamField>
+
+<ParamField path="preferEoa" type="boolean">
+  Preferir usar la billetera EOA conectada
+</ParamField>
+
+<ParamField path="showChainSelection" type="boolean">
+  Mostrar paso de selección de cadena. Por defecto es `true` si `sourceTokenChainId` no se proporciona.
+</ParamField>
+
+<ParamField path="supportedChains" type="ChainConfig[]">
+  Lista personalizada de cadenas soportadas para la selección de cadena
+</ParamField>
+
+<ParamField path="topChainsCount" type="number" default="3">
+  Número de cadenas principales para mostrar en la selección de cadena
+</ParamField>
+
+<ParamField path="chainSelectionTitle" type="string">
+  Título personalizado para el paso de selección de cadena
+</ParamField>
+
+<ParamField path="chainSelectionDescription" type="string">
+  Descripción personalizada para el paso de selección de cadena
+</ParamField>
+
+<ParamField path="minPoolSize" type="number" default="1000000">
+  Tamaño mínimo del pool para filtrar tokens
+</ParamField>
+
+<ParamField path="customUsdInputValues" type="string[]">
+  Presets de entrada fiat personalizados
+</ParamField>
+
+<ParamField path="actionLabel" type="string">
+  Etiqueta personalizada para el botón de acción
+</ParamField>
+
+<ParamField path="header" type="(props: { anyspendPrice, isLoadingAnyspendPrice }) => JSX.Element">
   Componente de encabezado personalizado
 </ParamField>
 
-<ParamField path="onSuccess" type="(txHash?: string) => void">
-  Callback de éxito con hash de la transacción
+<ParamField path="mainFooter" type="ReactNode">
+  Contenido personalizado del pie de página
 </ParamField>
 
-#### Ejemplo de Uso - Staking
+<ParamField path="returnToHomeUrl" type="string">
+  URL de redirección para el botón "Volver al inicio"
+</ParamField>
 
-```tsx title="Integración de Staking" icon="coins" lines
-// Codificar llamada a función de staking
-const stakeAmount = "1000000000000000000"; // 1 token
-const stakingCalldata = encodeFunctionData({
-  abi: stakingABI,
-  functionName: "stake",
-  args: [stakeAmount, 30], // 30 días
-});
+<ParamField path="customRecipientLabel" type="string">
+  Etiqueta personalizada para la visualización del destinatario
+</ParamField>
 
-<AnySpendCustom
-  orderType="custom"
-  dstChainId={8333}
-  dstToken={stakingToken}
-  dstAmount={stakeAmount}
-  contractAddress="0xStakingContract..."
-  encodedData={stakingCalldata}
-  metadata={{
-    action: "stake",
-    duration: 30,
-    expectedRewards: "5.2%",
-  }}
-  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
-    <div className="staking-header">
-      <h2>Stake Tokens</h2>
-      <p>Duración: 30 días</p>
-      <p>APY Esperado: 5.2%</p>
-      {!isLoadingAnyspendPrice && <p>Costo Total: ${anyspendPrice?.usdPrice}</p>}
-    </div>
-  )}
-/>;
-```
+<ParamField path="returnHomeLabel" type="string">
+  Etiqueta personalizada para el botón de retorno
+</ParamField>
 
-## Componentes Especializados
+<ParamField path="senderAddress" type="string">
+  Prellenar la dirección del remitente para la visualización del saldo de tokens
+</ParamField>
 
-### `<AnySpendNFT>`
+<ParamField path="callbackMetadata" type="Record<string, unknown>">
+  Metadatos pasados a los callbacks de orden
+</ParamField>
 
-Componente NFT mejorado con características adicionales del mercado.
+<ParamField path="isCustomDeposit" type="boolean" default="false">
+  Cuando es verdadero, usa `AnySpendCustomExactIn` para depósitos de función personalizada
+</ParamField>
 
-```tsx title="Componente NFT Mejorado" icon="store"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
-<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
-```
+<ParamField path="classes" type="AnySpendAllClasses">
+  Sobrescrituras de clases CSS. Ver [Personalización](/anyspend/customization#css-class-overrides).
+</ParamField>
 
-### `<AnySpendStakeB3>`
+<ParamField path="slots" type="AnySpendSlots">
+  Sobrescrituras de funciones de renderizado. Ver [Personalización](/anyspend/customization#slots).
+</ParamField>
 
-Componente preconfigurado para staking de tokens B3.
+<ParamField path="content" type="AnySpendContent">
+  Sobrescrituras de texto/mensaje. Ver [Personalización](/anyspend/customization#content).
+</ParamField>
 
-```tsx title="Staking de B3" icon="coins"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
-<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
-```
+<ParamField path="theme" type="AnySpendTheme">
+  Configuración de tema. Ver [Personalización](/anyspend/customization#theme).
+</ParamField>
 
-### `<AnySpendBuySpin>`
+#### DepositContractConfig
 
-Componente específico para juegos para la compra de ruletas o boletos de lotería.
+Usa esto para configurar depósitos en contratos personalizados:
 
-```tsx title="Ruleta de Juegos" icon="gamepad"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
-<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
-```
-
-### `<AnySpendTournament>`
-
-Componente de pago de entrada a torneos.
-
-```tsx title="Entrada al Torneo" icon="trophy"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
-<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
-```
-
-## Estilización de Componentes
-
-Todos los componentes vienen con un estilo predeterminado que se puede personalizar usando variables CSS:
-
-```css title="Estilización Personalizada" icon="palette"
-/* Sobrescribir estilos predeterminados */
-.anyspend-modal {
-  --anyspend-primary: #6366f1;
-  --anyspend-secondary: #f3f4f6;
-  --anyspend-border-radius: 12px;
+```typescript title="Definición de Tipo" icon="code"
+interface DepositContractConfig {
+  /** Cadena JSON de ABI de función personalizada */
+  functionAbi: string;
+  /** El nombre de la función a llamar */
+  functionName: string;
+  /** Argumentos para la función. Usa "{{amount_out}}" como marcador de posición para la cantidad del depósito */
+  functionArgs: string[];
+  /** Dirección del contrato para depositar */
+  to: string;
+  /** Dirección del gastador opcional si es diferente del contrato */
+  spenderAddress?: string;
+  /** Etiqueta de acción personalizada (p. ej., "Apostar", "Depositar") */
+  action?: string;
 }
 ```
 
-## Soporte de Plataforma
+#### ChainConfig
 
-<table>
-  <thead>
-    <tr>
-      <th>Componente</th>
-      <th>React Web</th>
-      <th>React Native</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`AnySpend`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendNFTButton`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendCustom`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendNFT`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Características de rampa de entrada fiat</td>
-      <td>✅</td>
-      <td>❌</td>
-    </tr>
-  </tbody>
-</table>
+```typescript title="Definición de Tipo" icon="code"
+interface ChainConfig {
+  id: number;       // ID de la cadena
+  name: string;     // Nombre para mostrar
+  iconUrl?: string; // URL del icono opcional
+}
+```
 
-## Próximos Pasos
+#### Ejemplos de uso
 
-<CardGroup cols={3}>
-<Card title="Aprende sobre Hooks" icon="link" href="/anyspend/hooks">
-  Descubre hooks de React para flujos de pago personalizados
-</Card>
+<Tabs>
+<Tab title="Depósito Básico">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={walletAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    onSuccess={(amount) => toast.success(`Depositado ${amount}`)}
+  />
+  ```
+</Tab>
 
-<Card title="Ver Ejemplos" icon="code" href="/anyspend/examples">
-  Explora ejemplos de implementación del mundo real
-</Card>
+<Tab title="Depósito en Contrato Personalizado">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={contractAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    depositContractConfig={{
+      functionAbi: JSON.stringify(stakingAbi),
+      functionName: "stake",
+      functionArgs: ["{{amount_out}}", "30"],
+      to: "0xStakingContract...",
+      action: "Apostar",
+    }}
+    isCustomDeposit
+    onSuccess={(amount) => toast.success("¡Apostado!")}
+  />
+  ```
+</Tab>
 
-<Card title="Manejo de Errores" icon="shield-exclamation" href="/anyspend/error-handling">
-  Aprende cómo manejar errores de manera elegante
-</Card>
-</CardGroup>
+<Tab title="Con Selección de Cadena">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={walletAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    showChainSelection
+    supportedChains={[
+      { id: 8453, name: "Base" },
+      { id: 1, name: "Ethereum" },
+      { id: 42161, name: "Arbitrum" },
+    ]}
+    chainSelectionTitle="¿De dónde provienen tus fondos?"
+    chainSelectionDescription="Selecciona la cadena desde la que deseas depositar"
+  />
+  ```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendCheckout>`
+
+Un componente de checkout completo con visualización del carrito, resumen del pedido, formularios personalizados, selección de envío, códigos de descuento y soporte para múltiples métodos de pago.
+
+```tsx title="Uso Básico" icon="cart-shopping"
+import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  items={[
+    { name: "Plan Pro", amount: "10000000", quantity: 1 },
+  ]}
+  organizationName="Acme Inc"
+  onSuccess={(result) => console.log("Pagado:", result)}
+/>;
+```
+
+Para la documentación completa del checkout, ver la [Guía de Checkout](/anyspend/checkout).
+
+#### Props
+
+<ParamField path="recipientAddress" type="string" required>
+  Dirección de la billetera del destinatario del pago
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string" required>
+  Dirección del contrato del token de destino
+</ParamField>
+
+<ParamField path="destinationTokenChainId"

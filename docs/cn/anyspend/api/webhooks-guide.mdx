@@ -1,0 +1,408 @@
+---
+title: Webhooks 指南
+description: 接收事件发生时的实时通知
+lang: cn
+originalPath: anyspend/api/webhooks-guide.mdx
+---
+Webhooks 允许您的服务器在您的 AnySpend 组织中发生事件时接收实时 HTTP 回调 -- 完成付款、结账过期等。与其轮询 API，不如注册一个 URL，AnySpend 会向您推送事件。
+
+## 工作原理
+
+```
+付款人完成付款
+        |
+        v
+AnySpend 处理交易
+        |
+        v
+AnySpend 向您的 webhook URL 发送 POST 请求
+        |
+        v
+您的服务器验证签名 & 处理事件
+        |
+        v
+您的服务器以 200 OK 响应
+```
+
+<Steps>
+  <Step title="注册一个 webhook 端点">
+    通过仪表板或 API 创建一个 webhook，指定 URL 和要订阅的事件。
+  </Step>
+  <Step title="AnySpend 发送事件">
+    当订阅的事件发生时，AnySpend 会向您的 URL 发送一个带有 JSON 负载和签名头的 `POST` 请求。
+  </Step>
+  <Step title="验证和处理">
+    您的服务器验证 HMAC-SHA256 签名，处理事件，并在 30 秒内以 `200` 状态响应。
+  </Step>
+  <Step title="自动重试">
+    如果您的服务器未以 `2xx` 状态响应，AnySpend 将进行最多 3 次的重试，每次重试间隔呈指数级增长。
+  </Step>
+</Steps>
+
+## 支持的事件
+
+| 事件 | 描述 |
+|-------|-------------|
+| `payment.completed` | 成功接收并在链上确认了一笔付款 |
+| `payment.failed` | 一次付款尝试失败（回滚、超时等） |
+| `checkout.completed` | 付款人完成了结账会话 |
+| `checkout.expired` | 结账会话在付款人完成前过期 |
+
+<Tip>
+  您可以通过传递 `["*"]` 作为事件数组来订阅所有事件，或者只选择您需要的事件。
+</Tip>
+
+## 创建一个 Webhook
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+    const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+    const webhook = await platform.webhooks.create({
+      url: "https://your-server.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed"],
+      description: "Production payment handler",
+    });
+
+    // 重要：安全地存储这个密钥 -- 它只显示一次
+    console.log("Webhook ID:", webhook.id);
+    console.log("签名密钥:", webhook.secret);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_your_api_key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://your-server.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed"],
+        "description": "Production payment handler"
+      }'
+    ```
+  </Tab>
+  <Tab title="Dashboard">
+    在 [AnySpend Dashboard](https://app.anyspend.com) 中导航至 **设置 > Webhooks > 添加端点**。输入您的 URL，选择事件，然后点击 **创建**。签名密钥将显示一次 -- 立即复制它。
+  </Tab>
+</Tabs>
+
+## Webhook 负载
+
+每次 webhook 传送都会发送一个带有以下 JSON 主体的 `POST` 请求：
+
+```json
+{
+  "event": "payment.completed",
+  "webhook_id": "wh_abc123",
+  "timestamp": "2025-06-01T15:30:00Z",
+  "data": {
+    "id": "txn_xyz789",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xPayerAddress",
+    "recipient_address": "0xYourAddress",
+    "tx_hash": "0xabc...def",
+    "status": "completed",
+    "form_data": {
+      "email": "payer@example.com",
+      "shipping_address": { "line1": "123 Main St", "city": "SF", "state": "CA", "zip": "94102" }
+    },
+    "discount_code": "SUMMER20",
+    "created_at": "2025-06-01T15:29:45Z",
+    "completed_at": "2025-06-01T15:30:00Z"
+  }
+}
+```
+
+### 头部
+
+| 头部 | 描述 |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AnySpend-Signature` | 原始请求主体的 HMAC-SHA256 十六进制摘要 |
+| `X-AnySpend-Webhook-Id` | Webhook 端点 ID |
+| `X-AnySpend-Delivery-Id` | 唯一的传送尝试 ID |
+| `X-AnySpend-Event` | 事件类型（例如 `payment.completed`） |
+| `X-AnySpend-Timestamp` | ISO 8601 时间戳 |
+
+## 与您的系统对账
+
+`payment.completed` webhook 总是包含一个 `checkoutSession` 块，其中包含 `clientReferenceId`、`metadata`、`customerEmail` 和 `customerName` -- 您需要的一切来将付款匹配到您的内部记录。
+
+### 使用 client_reference_id
+
+在创建结账时传递您的订单或用户 ID（通过 URL 参数或 API）：
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { clientReferenceId, metadata } = data.checkoutSession;
+
+  // 查找您的内部订单
+  const order = await db.orders.findOne({ id: clientReferenceId });
+  if (!order) return;
+
+  // 标记为已付款
+  await db.orders.update(order.id, {
+    status: "paid",
+    txHash: data.txHash,
+    paidAt: new Date(),
+  });
+}
+```
+
+### 使用 metadata
+
+对于更丰富的数据，使用键值对的 metadata：
+
+```javascript
+function handlePaymentCompleted(data) {
+  const { metadata, customerEmail } = data.checkoutSession;
+
+  // metadata 包含您通过 URL 或 API 传递的任何内容
+  const userId = metadata?.user_id;    // 例如，Clerk 用户 ID
+  const plan = metadata?.plan;          // 例如，"pro"
+
+  await activateSubscription(userId, plan);
+
+  if (customerEmail) {
+    await sendReceipt(customerEmail, data.amount, data.txHash);
+  }
+}
+```
+
+<Tip>
+  webhook 负载总是包含 `client_reference_id` 和 `metadata`。您可以通过 [URL 参数](/anyspend/api/payment-links#url-parameters) 设置它们以进行简单集成，或通过 [Checkout Sessions API](/anyspend/api/checkout-sessions-api) 进行服务器端控制。
+</Tip>
+
+---
+
+## 验证签名
+
+<Warning>
+  在处理 webhook 之前，始终验证 `X-AnySpend-Signature` 头部。没有验证，攻击者可能会向您的端点发送伪造的事件。
+</Warning>
+
+签名的计算方式为：
+
+```
+HMAC-SHA256(webhook_secret, raw_request_body)
+```
+
+### Express.js (Node.js)
+
+```javascript
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+
+// 重要：使用原始主体进行签名验证
+app.post(
+  "/webhooks/anyspend",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["x-anyspend-signature"];
+    const secret = process.env.ANYSPEND_WEBHOOK_SECRET;
+
+    // 计算预期的签名
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(req.body) // 使用 express.raw() 时，req.body 是一个 Buffer
+      .digest("hex");
+
+    // 常量时间比较以防止时间攻击
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSignature, "hex")
+      )
+    ) {
+      console.error("无效的 webhook 签名");
+      return res.status(401).send("无效的签名");
+    }
+
+    // 签名有效 -- 解析并处理事件
+    const event = JSON.parse(req.body.toString());
+
+    switch (event.event) {
+      case "payment.completed":
+        handlePaymentCompleted(event.data);
+        break;
+      case "payment.failed":
+        handlePaymentFailed(event.data);
+        break;
+      case "checkout.completed":
+        handleCheckoutCompleted(event.data);
+        break;
+      case "checkout.expired":
+        handleCheckoutExpired(event.data);
+        break;
+      default:
+        console.log("未处理的事件类型:", event.event);
+    }
+
+    // 始终以 200 响应以确认收到
+    res.status(200).json({ received: true });
+  }
+);
+
+function handlePaymentCompleted(data) {
+  console.log(`付款 ${data.id} 完成，金额为 ${data.amount}`);
+  // 完成订单，发送确认邮件，更新数据库等。
+}
+
+function handlePaymentFailed(data) {
+  console.log(`付款 ${data.id} 失败`);
+  // 通知客户，更新订单状态等。
+}
+
+function handleCheckoutCompleted(data) {
+  console.log(`结账会话完成`);
+}
+
+function handleCheckoutExpired(data) {
+  console.log(`结账会话过期`);
+}
+
+app.listen(3000);
+```
+
+### Python (Flask)
+
+```python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+WEBHOOK_SECRET = "whsec_your_secret_here"
+
+@app.route("/webhooks/anyspend", methods=["POST"])
+def handle_webhook():
+    # 验证签名
+    signature = request.headers.get("X-AnySpend-Signature", "")
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        request.data,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(signature, expected):
+        return jsonify({"error": "无效的签名"}), 401
+
+    event = request.get_json()
+
+    if event["event"] == "payment.completed":
+        print(f"付款 {event['data']['id']} 完成")
+        # 完成订单...
+    elif event["event"] == "payment.failed":
+        print(f"付款 {event['data']['id']} 失败")
+        # 处理失败...
+
+    return jsonify({"received": True}), 200
+```
+
+## 重试政策
+
+如果您的端点在 **30 秒** 内未响应 `2xx` 状态码，AnySpend 将标记传送失败并重试。
+
+| 尝试 | 上一次尝试后的延迟 |
+|---------|------------------------------|
+| 第1次重试 | 1 分钟 |
+| 第2次重试 | 10 分钟 |
+| 第3次重试 | 1 小时 |
+
+经过 3 次失败的重试后，传送将被永久标记为 `失败`。您仍然可以从仪表板或 API 手动重试。
+
+<Info>
+  如果您的端点持续失败（10+ 连续失败的传送），webhook 将被自动 **禁用**，并且您将收到电子邮件通知。在解决问题后，从仪表板重新启用它。
+</Info>
+
+## 查看传送历史
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    // 列出 webhook 的最近传送
+    const deliveries = await platform.webhooks.deliveries("wh_abc123", {
+      limit: 20,
+    });
+
+    for (const d of deliveries.data) {
+      console.log(
+        d.id,
+        d.event,
+        d.status,        // "success" | "failed" | "pending"
+        d.response_code, // 您的服务器的 HTTP 状态码
+        d.created_at
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+## 重试失败的传送
+
+```typescript
+// 重试特定的失败传送
+await platform.webhooks.retry("wh_abc123", "del_failed456");
+```
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_failed456/retry \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+## 测试 Webhooks
+
+使用测试端点向您的 webhook URL 发送合成事件。这有助于验证您的端点是否可达以及您的签名验证逻辑是否正确。
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const testResult = await platform.webhooks.test("wh_abc123");
+
+    console.log(testResult.delivery_id);    // 传送 ID
+    console.log(testResult.response_code);  // 您服务器的 HTTP 状态
+    console.log(testResult.success);        // 如果为 2xx 响应，则为 true
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_your_api_key"
+    ```
+  </Tab>
+</Tabs>
+
+测试事件使用 `payment.completed` 事件类型和模拟数据。您的处理程序应该像处理任何其他事件一样处理它，但如果您想在测试期间跳过副作用，可以检查 `X-AnySpend-Test: true` 头部。
+
+## 最佳实践
+
+<CardGroup cols={2}>
+  <Card title="快速响应" icon="bolt">
+    立即返回 `200` 并异步处理事件（例如，在后台作业队列中）。Webhook 传送在 30 秒后超时。
+  </Card>
+  <Card title="处理重复" icon="clone">
+    使用 `X-AnySpend-Delivery-Id` 头部或 `data.id` 字段去重事件。重试可能会多次传送相同的事件。
+  </Card>
+  <Card title="验证签名" icon="shield-halved">
+    始终验证 `X-AnySpend-Signature` 头部。永远不要在未经验证的情况下信任负载。
+  </Card>
+  <Card title="使用 HTTPS" icon="lock">
+    生产中的 Webhook URL 必须使用 HTTPS。在开发期间，只允许使用 HTTP URL 访问 `localhost`。
+  </Card>
+</CardGroup>

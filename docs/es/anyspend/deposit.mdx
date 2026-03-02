@@ -1,0 +1,132 @@
+---
+title: Depósito
+description: >-
+  Permita a los usuarios depositar tokens en una dirección de billetera desde
+  cualquier cadena compatible
+lang: es
+originalPath: anyspend/deposit.mdx
+---
+## Qué hace
+
+Una página de depósito alojada donde los usuarios pueden enviar tokens a una dirección de cartera específica. Conectan su cartera, eligen un token y AnySpend maneja el enrutamiento entre cadenas. Generas una URL, ellos hacen clic.
+
+## Cómo funciona
+
+1. **Tu aplicación genera una URL de depósito** con la dirección del destinatario, cadena y token.
+2. **El usuario conecta su cartera** (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet).
+3. **El usuario elige un token** de sus saldos disponibles.
+4. **AnySpend enruta el pago** entre cadenas si es necesario, convirtiéndolo al token de destino.
+5. **Listo** -- opcionalmente redirige al usuario de vuelta a tu aplicación.
+
+## Parámetros de la URL
+
+La página de depósito acepta estos parámetros de URL:
+
+| Parámetro | Requerido | Descripción |
+|-----------|----------|-------------|
+| `recipientAddress` | Sí | La dirección de cartera para recibir el depósito (dirección EVM válida) |
+| `toChainId` | Sí* | El ID de la cadena de destino (por ejemplo, 8453 para Base) |
+| `toCurrency` | Sí* | La dirección del contrato del token en la cadena de destino |
+| `amount` | No | Monto fijo en wei/unidad más pequeña. Cuando se proporciona, el usuario no puede cambiar el monto |
+| `redirect_url` | No | URL HTTPS para redirigir después de completar |
+| `redirect_label` | No | Etiqueta personalizada para el botón de redirección |
+| `partner` | No | ID de socio para configuración personalizada |
+
+\* No requerido para la cadena Hyperliquid donde USDC es el token predeterminado.
+
+## Ejemplos de URLs
+
+**Depósito básico a Base USDC:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**Depósito de cantidad fija:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**Con redirección:**
+```
+https://anyspend.b3.fun/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Volver+a+la+App
+```
+
+## Carteras compatibles
+
+Compatibles de manera predeterminada:
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+La autoconexión está habilitada para usuarios que regresan y que previamente han conectado su cartera.
+
+## Soporte especial de cadena
+
+### Hyperliquid
+
+Hyperliquid recibe un manejo especial:
+
+- USDC utiliza un formato de dirección especial de 34 caracteres (`0x00000000000000000000000000000000`)
+- Cuando `toChainId` se establece en Hyperliquid, `toCurrency` se predetermina a USDC si no se especifica
+- Las direcciones cero se corrigen automáticamente al formato USDC de Hyperliquid
+
+## Integración de socios
+
+Los socios pueden configurarse con ajustes personalizados:
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // URL de redirección predeterminada
+  customRecipientLabel?: string; // Etiqueta personalizada para el destinatario
+  returnHomeLabel?: string;      // Etiqueta personalizada para el botón de retorno
+}
+```
+
+Para registrarte como socio, contacta al equipo de AnySpend para agregar tu configuración.
+
+## Seguridad
+
+- Solo se permiten URLs de redirección HTTPS (previene ataques de redirección abierta)
+- Los montos deben ser enteros positivos válidos (wei)
+- Las direcciones se validan antes de procesar
+
+## Casos de uso comunes
+
+- **Bots de Telegram** -- financiar carteras de bots a través de un enlace compartible
+- **Juegos** -- depositar tokens en cuentas de juegos
+- **Mercados** -- financiar direcciones de depósito en garantía
+- **Propinas** -- permitir a los usuarios dar propinas a creadores con un enlace de depósito
+
+## Ejemplo de integración
+
+Genera un enlace de depósito en tu aplicación:
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```

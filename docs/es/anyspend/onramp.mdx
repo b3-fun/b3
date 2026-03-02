@@ -1,88 +1,67 @@
 ---
-title: Descripción general de la rampa de acceso
+title: Fiat onramp
 description: >-
-  Permite a los usuarios pagar en fiat y ejecutar acciones en cadena en un flujo
-  sin interrupciones.
+  Permita a los usuarios pagar con tarjeta de crédito o transferencia bancaria y
+  ejecutar acciones onchain en un solo paso
 lang: es
 originalPath: anyspend/onramp.mdx
 ---
 ## Qué hace
 
-El onramp de AnySpend permite a los usuarios pagar con métodos fiat tradicionales (por ejemplo, tarjeta de crédito, transferencia bancaria) y ejecutar automáticamente cualquier transacción onchain. Este flujo sin interrupciones elimina la necesidad de que los usuarios adquieran criptomonedas manualmente o gestionen la financiación de su billetera.
-
-Está diseñado para reducir la fricción para los usuarios no nativos de cripto, haciendo que los productos impulsados por blockchain sean accesibles a un público más amplio.
+Los usuarios pagan con tarjeta o transferencia bancaria. AnySpend convierte el fiat a cripto y ejecuta la transacción en cadena en un solo flujo. El usuario nunca tiene que comprar cripto por separado.
 
 ## Cómo funciona
 
-1. **El usuario inicia una acción**\
-   Un usuario comienza una acción onchain (por ejemplo, acuñación, staking o interacción con contratos).
-2. **Pago Fiat**\
-   Pagan con una tarjeta o transferencia bancaria a través de Stripe o Coinbase Pay.
-3. **Conversión + Ejecución**\
-   AnySpend convierte fiat a la criptomoneda deseada y ejecuta la transacción.
-4. **Entrega en la Billetera**\
-   El resultado se envía a la billetera conectada del usuario o a la billetera global. No se requiere adquisición de cripto.
+1. **El usuario inicia una acción** -- acuñar, apostar, una llamada a contrato, lo que sea.
+2. **Pago en fiat** -- pagan con Stripe o Coinbase Pay.
+3. **Conversión + ejecución** -- AnySpend convierte el fiat al token correcto y ejecuta la transacción.
+4. **Entrega** -- los tokens llegan a la billetera del usuario. Listo.
 
-## Opciones de Pago
+## Proveedores de pago
 
 **Stripe**
 
-- Soporte global para las principales tarjetas de crédito/débito
-- Autenticación 3D Secure
-- Conversión de moneda para transacciones no en USD
-- Métodos de pago localizados y ajuste de tarifas
+- Tarjetas de crédito/débito a nivel mundial
+- Autenticación Secure 3D
+- Conversión automática de moneda para no USD
+- Métodos de pago localizados por región
 
 **Coinbase Pay**
 
-- Los usuarios pueden pagar directamente con los saldos de su cuenta de Coinbase o tarjeta de débito
-- No es necesario transferir fondos entre plataformas
-- UX de confianza para los usuarios existentes de Coinbase
+- Pagar desde el saldo de la cuenta de Coinbase o tarjeta de débito
+- UX familiar para usuarios de Coinbase
 - Sin tarifas adicionales de AnySpend
 
-**Arquitectura de Proveedor Extensible**
+Nuevos proveedores pueden ser añadidos a través de una arquitectura modular. El enrutamiento entre proveedores es automático basado en la región del usuario.
 
-- Sistema modular para admitir proveedores fiat adicionales
-- Enrutamiento dinámico basado en la región y disponibilidad
-- Flexibilidad de cumplimiento incorporada para soporte regional
+## Prevención de fraude
 
-## Seguridad
+Cada transacción pasa por un motor de riesgo en tiempo real:
 
-AnySpend incluye un motor de riesgo en tiempo real incorporado diseñado para minimizar el fraude mientras mantiene la experiencia del usuario sin interrupciones.
+- **Permitir** -- la transacción procede
+- **Verificar** -- se requiere verificación adicional del usuario
+- **Bloquear** -- se detiene la actividad sospechosa
 
-**Características clave:**
+El motor revisa señales de comportamiento, huellas digitales del dispositivo e inteligencia de red.
 
-- Análisis de riesgo conductual y transaccional
-- Verificaciones de seguridad de dispositivos y redes
-- Inteligencia de amenazas en tiempo real
+## Soporte regional
 
-**Evaluación Inteligente de Transacciones**
-
-Cada transacción se evalúa en tiempo real:
-
-- **Permitir** – la transacción procede normalmente
-- **Verificar** – puede requerirse verificación adicional del usuario
-- **Bloquear** – se previene la actividad sospechosa
-
-## Cobertura Global
-
-AnySpend admite una amplia gama de monedas y regiones a través de proveedores integrados:
-
-- Detección automática de ubicación y localización
-- Métodos de pago locales y manejo de monedas
-- Selección dinámica de proveedores basada en geografía
-- Cumplimiento regional listo para usar
+- Detección automática de ubicación
+- Métodos de pago y monedas locales
+- Selección de proveedor basada en geografía
+- Cumplimiento regional manejado por ti
 
 ## Tarifas
 
-- **Pagos Stripe:** 5.4% + \$0.30 por transacción (tarifa plana, global)
-- **Coinbase Pay:** Sin tarifas adicionales de AnySpend
+| Proveedor | Tarifa |
+|----------|-----|
+| Stripe | 5.4% + $0.30 por transacción |
+| Coinbase Pay | Sin tarifa de AnySpend |
 
-A los usuarios se les muestra un desglose de tarifas transparente durante el proceso de pago.
+Los usuarios ven un desglose de las tarifas durante el pago antes de pagar.
 
-## Casos de Uso Comunes
+## Casos de uso comunes
 
-AnySpend permite a los desarrolladores:
-
-- Permitir a los usuarios acuñar NFTs con una tarjeta de crédito
-- Permitir staking, votación o acciones de juego directamente desde fiat
-- Incorporar usuarios a DeFi, juegos u otras dApps sin requisito previo de cripto
+- Acuñar NFTs con tarjeta de crédito
+- Apostar o votar desde fiat
+- Incorporar usuarios no cripto a juegos y dApps

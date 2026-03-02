@@ -1,0 +1,537 @@
+---
+title: 卖家快速入门
+description: 使用 AnySpend x402 中间件接受您的 API 和服务的任何代币支付
+lang: cn
+originalPath: anyspend/x402-quickstart-sellers.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub 仓库" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  查看源代码和示例
+</Card>
+
+<Card title="npm 包" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## 概述
+
+本指南展示了如何向您的 Express API 添加 **AnySpend x402** 支付支持，使您能够接受任何代币的支付，同时接收您选择的代币。只需几行代码，您的 API 就可以对端点进行货币化，并处理自动支付验证和结算。
+
+**关键优势：**
+- **买家** 可以使用他们持有的任何代币支付（ETH、DAI、USDC 等）
+- **卖家** 可以接收他们偏好的任何代币（USDC、B3、DAI、自定义代币等）
+- AnySpend 自动处理所有代币转换
+- 无需区块链基础设施或钱包管理
+
+## 先决条件
+
+在开始之前，请确保您已经：
+
+- 安装了 **Node.js 18+**
+- 拥有 **Express.js API**（或愿意创建一个）
+- 拥有 **一个钱包地址** 来接收 USDC 支付
+- 对 Express 中间件有 **基本了解**
+
+## 安装
+
+安装 AnySpend x402 包：
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+## 快速开始
+
+### 1. 基本集成
+
+向您的 Express API 添加支付的最简单方式：
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+
+// 定义您的支付路由和价格
+const endpointConfig = {
+  '/api/premium-data': {
+    amount: '1.00',        // $1.00 的 USDC
+    asset: 'USD'           // 将转换为 USDC
+  },
+  '/api/ai-inference': {
+    amount: '0.50',        // $0.50 的 USDC
+    asset: 'USD'
+  }
+};
+
+// 您的 USDC 接收地址
+const recipientAddress = '0xYourWalletAddress...';
+
+// 应用支付中间件
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator                    // 预配置的 Anyspend facilitator
+));
+
+// 定义您的受保护路由
+app.get('/api/premium-data', (req, res) => {
+  // 仅在支付成功后运行
+  res.json({
+    data: '您的高级数据在此',
+    message: '支付成功！'
+  });
+});
+
+app.get('/api/ai-inference', (req, res) => {
+  res.json({
+    result: 'AI 推理结果',
+    model: 'gpt-4'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API with x402 payments running on port 3000');
+});
+```
+
+**这样做的效果：**
+
+1. 客户端请求您的 API 端点
+2. 中间件返回 `402 Payment Required` 和支付详情
+3. 客户端使用他们偏好的代币支付（ETH、DAI 等）
+4. AnySpend facilitator 转换为 USDC 并结算到您的钱包
+5. 您的路由处理程序执行并返回数据
+
+---
+
+### 2. 接收自定义代币（例如，B3）
+
+您可以配置您的 API 来接收任何代币，而不仅仅是 USDC：
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// 配置以接收 B3 代币
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 代币（18 位小数）
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: '高级数据访问',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // 支付验证通过 - 您收到了 100 B3 代币！
+  res.json({
+    data: '高级 ETH 价格历史',
+    paymentReceived: '100 B3 代币'
+  });
+});
+
+app.listen(3000);
+```
+
+**有什么不同：**
+
+- 买家仍然可以用 **任何代币** 支付（ETH、USDC、DAI 等）
+- AnySpend 将他们的支付转换为 **B3 代币**
+- 您在钱包中准确收到 **100 B3 代币**
+- 买卖双方都保持了他们的代币偏好
+
+## 配置
+
+### Facilitator URL
+
+AnySpend facilitator 托管在：
+
+```
+https://mainnet.anyspend.com/x402
+```
+
+`@b3dotfun/anyspend-x402` 包包含一个预配置的 facilitator 实例：
+
+```typescript
+import { facilitator } from '@b3dotfun/anyspend-x402';
+
+// 预配置为使用 mainnet.anyspend.com/x402
+app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
+```
+
+### 端点配置
+
+您有三种方法配置支付要求：
+
+#### 方法 1：简单的美元金额（推荐）
+
+让 AnySpend 自动处理代币转换：
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',      // 任何代币价值的 $1.00
+    asset: 'USD'
+  },
+  '/api/compute': {
+    amount: '2.50',
+    asset: 'USD'
+  }
+};
+```
+
+**好处：**
+- 客户端可以使用任何支持的代币支付
+- AnySpend 自动转换为 USDC
+- 您始终收到 USDC
+
+#### 方法 2：特定代币要求
+
+在特定网络上要求特定代币。您可以接收 **任何代币**，不仅仅是 USDC！
+
+**示例 1：接收 USDC（稳定币）**
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1000000',   // 1 USDC（6 位小数）
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base 上的 USDC
+    network: 'base-mainnet'
+  }
+};
+```
+
+**示例 2：接收 B3 代币（自定义代币）**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 代币（100 * 10^18）
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: '从 CoinGecko 访问高级 ETH 价格历史数据',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**示例 3：接收 DAI（稳定币）**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI（18 位小数）
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // Base 上的 DAI
+    network: 'base-mainnet'
+  }
+};
+```
+
+**示例 4：接收原生 ETH**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH（18 位小数）
+    asset: '0x0000000000000000000000000000000000000000', // 原生 ETH
+    network: 'base-mainnet'
+  }
+};
+```
+
+**示例 5：接收自定义 ERC-20 代币**
+
+对于任何支持 permit 的 ERC-20 代币：
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 代币（调整小数位）
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // 您的代币小数位
+        eip712: {
+          name: 'YourTokenName', // 来自代币合约
+          version: '1',          // EIP-712 版本
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: '您的 API 端点描述',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**关键点：**
+- 买家仍然可以使用他们持有的 **任何代币** 支付
+- AnySpend 自动将他们的代币转换为您想要接收的代币
+- 您准确地收到了您在配置中指定的代币
+- 买卖双方的灵活性得以保持
+</Note>
+
+### 查找代币详情
+
+要配置自定义代币，您需要知道其 EIP-712 参数。以下是查找它们的方法：
+
+**方法 1：检查代币合约**
+
+使用区块链浏览器，如 [Basescan](https://basescan.org)：
+
+```typescript
+// 从代币合约读取
+const name = await token.read.name();      // 例如，"B3"
+const version = await token.read.version(); // 例如，"1"
+const decimals = await token.read.decimals(); // 例如，18
+```
+
+**方法 2：常见代币**
+
+| 代币 | 名称 | 版本 | 小数位 | Base 地址 |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**方法 3：使用 viem**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+```
+
+#### 方法 3：灵活（让客户端选择）
+
+允许客户端指定他们偏好的支付代币：
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true       // 接受 X-PREFERRED-TOKEN 头部
+  }
+};
+```
+
+客户端可以指定他们的代币偏好：
+
+```bash
+curl https://api.example.com/data \
+  -H "X-PREFERRED-TOKEN: 0x4200000000000000000000000000000000000006" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+## 高级配置
+
+### 动态定价
+
+根据请求参数计算价格：
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use('/api/compute', (req, res, next) => {
+  // 根据请求的计算单位计算价格
+  const units = parseInt(req.query.units as string) || 1;
+  const pricePerUnit = 0.10; // 每单位 $0.10
+  const totalPrice = (units * pricePerUnit).toFixed(2);
+
+  // 将动态配置附加到请求
+  req.x402Config = {
+    amount: totalPrice,
+    asset: 'USD'
+  };
+
+  next();
+}, paymentMiddleware(recipientAddress, {
+  '/api/compute': (req) => req.x402Config // 动态配置
+}, facilitator));
+
+app.get('/api/compute', (req, res) => {
+  const units = parseInt(req.query.units as string) || 1;
+  res.json({
+    result: `计算了 ${units} 单位`,
+    cost: req.x402Config.amount
+  });
+});
+```
+
+### 自定义 facilitator 配置
+
+如果您需要自定义 facilitator 设置：
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const customFacilitator = new Facilitator({
+  baseUrl: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.CDP_API_KEY_ID,        // 可选：Coinbase CDP
+  apiSecret: process.env.CDP_API_KEY_SECRET,
+  timeout: 30000,                             // 30 秒超时
+  retries: 3                                  // 重试失败的请求
+});
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  customFacilitator
+));
+```
+
+### 多个接收者
+
+根据端点将支付路由到不同的钱包：
+
+```typescript
+const endpointConfig = {
+  '/api/service-a': {
+    amount: '1.00',
+    asset: 'USD',
+    recipient: '0xWalletA...'
+  },
+  '/api/service-b': {
+    amount: '2.00',
+    asset: 'USD',
+    recipient: '0xWalletB...'
+  }
+};
+
+// 将 recipient 传递为 null，使用每个端点的接收者
+app.use(paymentMiddleware(null, endpointConfig, facilitator));
+```
+
+## 受保护的路由
+
+### 保护特定路由
+
+仅保护需要支付的端点：
+
+```typescript
+// 公共路由 - 无需支付
+app.get('/api/public', (req, res) => {
+  res.json({ message: '这是免费的！' });
+});
+
+// 受保护路由 - 需要支付
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium': { amount: '1.00', asset: 'USD' }
+  },
+  facilitator
+));
+
+app.get('/api/premium', (req, res) => {
+  res.json({ message: '这花了钱！' });
+});
+```
+
+### 路由特定中间件
+
+将不同的支付配置应用于不同的路由组：
+
+```typescript
+// 基础层 - $0.50
+app.use('/api/basic', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/basic/*': { amount: '0.50', asset: 'USD' }
+  },
+  facilitator
+));
+

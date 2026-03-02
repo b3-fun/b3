@@ -1,0 +1,370 @@
+---
+title: 小部件
+description: 创建和管理可嵌入的小部件配置
+lang: cn
+originalPath: anyspend/api/widgets-api.mdx
+---
+小部件是可嵌入的 UI 组件，您可以配置一次并在任何地方部署。每个小部件存储其类型、配置和主题，因此您可以在多个页面或应用程序中呈现一致的支付体验。
+
+<Info>
+  小部件 CRUD 端点需要 **write** 权限。列出和检索小部件（包括统计信息）需要 **read** 权限。
+</Info>
+
+## 认证
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+基础 URL: `https://platform-api.anyspend.com/api/v1`
+
+## 端点
+
+### 列出小部件
+
+<ParamField path="GET /widgets" type="read">
+  列出您账户的所有小部件配置。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const widgets = await client.widgets.list();
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wgt_abc123",
+      "name": "Homepage Checkout",
+      "widget_type": "checkout",
+      "description": "主页的主要结账小部件",
+      "config": {
+        "recipient_address": "0x...",
+        "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "destination_chain_id": 8453,
+        "amount": "10000000"
+      },
+      "theme": {
+        "primary_color": "#4f46e5",
+        "border_radius": 12,
+        "font_family": "Inter"
+      },
+      "views_count": 1240,
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-20T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 创建小部件
+
+<ParamField path="POST /widgets" type="write">
+  创建一个新的小部件配置。
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  小部件的可读名称。
+</ParamField>
+
+<ParamField path="widget_type" type="string" required>
+  要创建的小部件类型。可选项为：`swap`、`checkout`、`nft`、`deposit`。
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  特定于小部件类型的配置对象。内容根据 `widget_type` 而异（见下文的 [小部件类型](#widget-types)）。
+</ParamField>
+
+<ParamField path="description" type="string">
+  可选的内部参考描述。
+</ParamField>
+
+<ParamField path="theme" type="object">
+  视觉主题覆盖。见下文的 [主题对象](#theme-object)。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Product Checkout",
+        "widget_type": "checkout",
+        "description": "产品页面的结账小部件",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "25000000"
+        },
+        "theme": {
+          "primary_color": "#2563eb",
+          "border_radius": 8
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.create({
+      name: "Product Checkout",
+      widget_type: "checkout",
+      description: "产品页面的结账小部件",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "25000000",
+      },
+      theme: {
+        primary_color: "#2563eb",
+        border_radius: 8,
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wgt_def456",
+    "name": "Product Checkout",
+    "widget_type": "checkout",
+    "description": "产品页面的结账小部件",
+    "config": {
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "destination_chain_id": 8453,
+      "amount": "25000000"
+    },
+    "theme": {
+      "primary_color": "#2563eb",
+      "border_radius": 8
+    },
+    "views_count": 0,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### 获取小部件
+
+<ParamField path="GET /widgets/:id" type="read">
+  通过 ID 检索单个小部件配置。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.get("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 更新小部件
+
+<ParamField path="PATCH /widgets/:id" type="write">
+  更新现有的小部件配置。所有字段都是可选的——只更改提供的字段。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Updated Checkout",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "50000000"
+        },
+        "theme": {
+          "primary_color": "#059669"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.widgets.update("wgt_def456", {
+      name: "Updated Checkout",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "50000000",
+      },
+      theme: {
+        primary_color: "#059669",
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 删除小部件
+
+<ParamField path="DELETE /widgets/:id" type="write">
+  永久删除一个小部件配置。使用此小部件 ID 的现有嵌入将停止渲染。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.widgets.delete("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### 获取小部件统计信息
+
+<ParamField path="GET /widgets/:id/stats" type="read">
+  检索小部件的查看统计信息。包括总浏览量和每日细分。
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456/stats \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const stats = await client.widgets.stats("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+**响应**
+
+```json
+{
+  "success": true,
+  "data": {
+    "widget_id": "wgt_def456",
+    "total_views": 1240,
+    "daily": [
+      { "date": "2026-02-27", "views": 85 },
+      { "date": "2026-02-26", "views": 102 },
+      { "date": "2026-02-25", "views": 93 }
+    ]
+  }
+}
+```
+
+---
+
+## 小部件对象
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `id` | `string` | 唯一的小部件标识符（例如，`wgt_abc123`） |
+| `name` | `string` | 可读的小部件名称 |
+| `widget_type` | `string` | 小部件类型：`swap`、`checkout`、`nft` 或 `deposit` |
+| `description` | `string \| null` | 可选描述 |
+| `config` | `object` | 特定于小部件类型的配置 |
+| `theme` | `object \| null` | 视觉主题覆盖 |
+| `views_count` | `number` | 小部件渲染的总次数 |
+| `created_at` | `string` | ISO 8601 创建时间戳 |
+| `updated_at` | `string` | ISO 8601 最后更新时间戳 |
+
+## 小部件类型
+
+<Tabs>
+  <Tab title="checkout">
+    用于接受加密或法币支付的支付结账小部件。
+
+    | 配置字段 | 类型 | 描述 |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | 商家钱包地址 |
+    | `destination_token` | `string` | 接收的代币合约地址 |
+    | `destination_chain_id` | `number` | 目标代币的链 ID |
+    | `amount` | `string` | 支付金额的最小单位 |
+  </Tab>
+  <Tab title="swap">
+    用于转换代币的代币交换小部件。
+
+    | 配置字段 | 类型 | 描述 |
+    |-------------|------|-------------|
+    | `src_token` | `string` | 源代币地址 |
+    | `src_chain_id` | `number` | 源链 ID |
+    | `dst_token` | `string` | 目标代币地址 |
+    | `dst_chain_id` | `number` | 目标链 ID |
+  </Tab>
+  <Tab title="nft">
+    NFT 铸造或购买小部件。
+
+    | 配置字段 | 类型 | 描述 |
+    |-------------|------|-------------|
+    | `collection_address` | `string` | NFT 集合合约 |
+    | `chain_id` | `number` | 链 ID |
+    | `token_id` | `string` | 特定代币 ID（可选） |
+  </Tab>
+  <Tab title="deposit">
+    用于资金钱包或账户的存款小部件。
+
+    | 配置字段 | 类型 | 描述 |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | 存款目的地地址 |
+    | `accepted_tokens` | `string[]` | 接受的代币地址列表 |
+    | `accepted_chains` | `number[]` | 接受的链 ID 列表 |
+  </Tab>
+</Tabs>
+
+## 主题对象
+
+| 字段 | 类型 | 默认值 | 描述 |
+|-------|------|---------|-------------|
+| `primary_color` | `string` | `#4f46e5` | 主要强调颜色（十六进制） |
+| `border_radius` | `number` | `12` | 边框圆角的像素 |
+| `font_family` | `string` | `Inter` | 字体家族名称 |
+| `dark_mode` | `boolean` | `false` | 启用暗模式渲染 |

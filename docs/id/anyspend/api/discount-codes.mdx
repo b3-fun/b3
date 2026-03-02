@@ -1,0 +1,435 @@
+---
+title: Kode Diskon
+description: Buat dan kelola kode diskon untuk tautan pembayaran
+lang: id
+originalPath: anyspend/api/discount-codes.mdx
+---
+Kode diskon memungkinkan Anda menawarkan diskon berbasis persentase atau jumlah tetap pada tautan pembayaran. Buat kode individu, buat secara massal dalam batch, dan validasi kode saat checkout.
+
+<Info>
+  Manajemen kode diskon memerlukan izin **admin**. Endpoint `/validate` memerlukan izin **read**, membuatnya aman untuk dipanggil dari alur checkout sisi klien.
+</Info>
+
+## Otentikasi
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Dasar: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoint
+
+### Daftar Kode Diskon
+
+<ParamField path="GET /discount-codes" type="read">
+  Daftar semua kode diskon dengan penyaringan dan paginasi opsional.
+</ParamField>
+
+<ParamField path="search" type="string" query>
+  Cari berdasarkan string kode (cocokan sebagian tanpa memperhatikan huruf besar-kecil).
+</ParamField>
+
+<ParamField path="active" type="boolean" query>
+  Saring berdasarkan status aktif. Kosongkan untuk mengembalikan semua kode.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  Nomor halaman untuk paginasi (default: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  Hasil per halaman (default: `20`, maks: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/discount-codes?search=SUMMER&active=true&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const codes = await client.discountCodes.list({
+      search: "SUMMER",
+      active: true,
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "dc_abc123",
+      "code": "SUMMER25",
+      "type": "percentage",
+      "value": 25,
+      "payment_link_id": "pl_xyz789",
+      "max_uses": 100,
+      "current_uses": 42,
+      "min_order_amount": "5000000",
+      "expires_at": "2026-09-01T00:00:00Z",
+      "is_active": true,
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+### Buat Kode Diskon
+
+<ParamField path="POST /discount-codes" type="admin">
+  Buat satu kode diskon.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  String kode diskon (mis., `SUMMER25`). Harus unik. Otomatis menjadi huruf besar.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Tipe diskon: `percentage` atau `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  Nilai diskon. Untuk `percentage`, angka antara 1-100. Untuk `fixed`, jumlah dalam unit terkecil token (mis., `5000000` untuk 5 USDC).
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  Batasi kode ini pada tautan pembayaran tertentu. Jika diabaikan, kode berfungsi pada semua tautan pembayaran.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  Maksimum jumlah kali kode ini dapat ditukarkan. Abaikan untuk penggunaan tak terbatas.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  Jumlah pesanan minimum yang diperlukan untuk menggunakan kode ini, dalam unit terkecil token.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  Cap waktu kedaluwarsa ISO 8601. Abaikan untuk kode yang tidak pernah kedaluwarsa.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "type": "percentage",
+        "value": 25,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 100,
+        "min_order_amount": "5000000",
+        "expires_at": "2026-09-01T00:00:00Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const code = await client.discountCodes.create({
+      code: "SUMMER25",
+      type: "percentage",
+      value: 25,
+      payment_link_id: "pl_xyz789",
+      max_uses: 100,
+      min_order_amount: "5000000",
+      expires_at: "2026-09-01T00:00:00Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dc_abc123",
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "payment_link_id": "pl_xyz789",
+    "max_uses": 100,
+    "current_uses": 0,
+    "min_order_amount": "5000000",
+    "expires_at": "2026-09-01T00:00:00Z",
+    "is_active": true,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Perbarui Kode Diskon
+
+<ParamField path="PATCH /discount-codes/:id" type="admin">
+  Perbarui kode diskon yang ada. Semua bidang bersifat opsional.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "max_uses": 200,
+        "expires_at": "2026-12-31T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.discountCodes.update("dc_abc123", {
+      max_uses: 200,
+      expires_at: "2026-12-31T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Hapus Kode Diskon
+
+<ParamField path="DELETE /discount-codes/:id" type="admin">
+  Hapus secara permanen kode diskon. Sesi aktif yang menggunakan kode ini tidak akan terpengaruh.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/discount-codes/dc_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.discountCodes.delete("dc_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Validasi Kode Diskon
+
+<ParamField path="POST /discount-codes/validate" type="read">
+  Validasi kode diskon terhadap tautan pembayaran dan jumlah pesanan. Mengembalikan detail diskon jika valid, atau pesan kesalahan yang menjelaskan mengapa kode tidak valid.
+</ParamField>
+
+<ParamField path="code" type="string" required>
+  Kode diskon yang akan divalidasi.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string" required>
+  Tautan pembayaran yang diterapkan kode.
+</ParamField>
+
+<ParamField path="amount" type="string" required>
+  Jumlah pesanan dalam unit terkecil token, digunakan untuk memeriksa `min_order_amount` dan menghitung total setelah diskon.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/validate \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "SUMMER25",
+        "payment_link_id": "pl_xyz789",
+        "amount": "20000000"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.discountCodes.validate({
+      code: "SUMMER25",
+      payment_link_id: "pl_xyz789",
+      amount: "20000000",
+    });
+
+    if (result.valid) {
+      console.log("Diskon:", result.discount_amount);
+      console.log("Total baru:", result.final_amount);
+    } else {
+      console.log("Tidak valid:", result.error);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Respon Valid**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "code": "SUMMER25",
+    "type": "percentage",
+    "value": 25,
+    "discount_amount": "5000000",
+    "final_amount": "15000000"
+  }
+}
+```
+
+**Respon Tidak Valid**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": false,
+    "error": "Kode telah mencapai jumlah penggunaan maksimum"
+  }
+}
+```
+
+<Note>
+  Endpoint validasi **tidak** mengonsumsi penggunaan. Penggunaan hanya dihitung ketika pembayaran diselesaikan dengan diskon yang diterapkan.
+</Note>
+
+---
+
+### Buat Batch Kode Diskon
+
+<ParamField path="POST /discount-codes/batch" type="admin">
+  Buat beberapa kode diskon sekaligus dengan konfigurasi bersama. Berguna untuk menghasilkan kampanye promosi atau kode unik sekali pakai.
+</ParamField>
+
+<ParamField path="codes" type="string[]" required>
+  Array dari string kode untuk dibuat. Setiap kode harus unik.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Tipe diskon yang diterapkan pada semua kode: `percentage` atau `fixed`.
+</ParamField>
+
+<ParamField path="value" type="number" required>
+  Nilai diskon yang diterapkan pada semua kode.
+</ParamField>
+
+<ParamField path="payment_link_id" type="string">
+  Batasi semua kode pada tautan pembayaran tertentu.
+</ParamField>
+
+<ParamField path="max_uses" type="number">
+  Maksimum penggunaan per kode. Atur ke `1` untuk kode sekali pakai.
+</ParamField>
+
+<ParamField path="min_order_amount" type="string">
+  Jumlah pesanan minimum untuk semua kode.
+</ParamField>
+
+<ParamField path="expires_at" type="string">
+  Cap waktu kedaluwarsa ISO 8601 untuk semua kode.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/discount-codes/batch \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "codes": ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+        "type": "fixed",
+        "value": 2000000,
+        "payment_link_id": "pl_xyz789",
+        "max_uses": 1,
+        "expires_at": "2026-06-30T23:59:59Z"
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const batch = await client.discountCodes.batchCreate({
+      codes: ["PROMO-A1B2", "PROMO-C3D4", "PROMO-E5F6"],
+      type: "fixed",
+      value: 2000000,
+      payment_link_id: "pl_xyz789",
+      max_uses: 1,
+      expires_at: "2026-06-30T23:59:59Z",
+    });
+
+    console.log(`Dibuat ${batch.created} kode`);
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "created": 3,
+    "codes": [
+      { "id": "dc_001", "code": "PROMO-A1B2" },
+      { "id": "dc_002", "code": "PROMO-C3D4" },
+      { "id": "dc_003", "code": "PROMO-E5F6" }
+    ]
+  }
+}
+```
+
+---
+
+## Objek Kode Diskon
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `id` | `string` | Pengenal unik (mis., `dc_abc123`) |
+| `code` | `string` | String kode diskon (huruf besar) |
+| `type` | `string` | `percentage` atau `fixed` |
+| `value` | `number` | Nilai diskon (persentase 1-100, atau jumlah tetap dalam unit terkecil) |
+| `payment_link_id` | `string \| null` | Tautan pembayaran yang dibatasi, atau `null` untuk semua tautan |
+| `max_uses` | `number \| null` | Maksimum penukaran, atau `null` untuk tak terbatas |
+| `current_uses` | `number` | Jumlah kali ditukarkan sejauh ini |
+| `min_order_amount` | `string \| null` | Jumlah pesanan minimum yang diperlukan |
+| `expires_at` | `string \| null` | ISO 8601 kedaluwarsa, atau `null` untuk tanpa kedaluwarsa |
+| `is_active` | `boolean` | Apakah kode saat ini dapat digunakan |
+| `created_at` | `string` | ISO 8601 waktu pembuatan |
+| `updated_at` | `string` | ISO 8601 pembaruan terakhir |
+
+## Aturan Validasi
+
+Kode diskon dianggap **tidak valid** jika salah satu dari kondisi berikut benar:
+
+| Kondisi | Pesan Kesalahan |
+|-----------|---------------|
+| Kode tidak ada | `Kode diskon tidak valid` |
+| Kode tidak aktif (`is_active: false`) | `Kode diskon tidak aktif` |
+| Kode telah kedaluwarsa | `Kode diskon telah kedaluwarsa` |
+| `current_uses >= max_uses` | `Kode telah mencapai jumlah penggunaan maksimum` |
+| Kode dibatasi untuk tautan pembayaran lain | `Kode tidak valid untuk tautan pembayaran ini` |
+| Jumlah pesanan di bawah `min_order_amount` | `Jumlah pesanan di bawah minimum yang diperlukan` |

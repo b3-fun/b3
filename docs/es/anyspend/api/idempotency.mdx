@@ -1,0 +1,332 @@
+---
+title: Idempotencia
+description: Reintentos seguros con claves de idempotencia
+lang: es
+originalPath: anyspend/api/idempotency.mdx
+---
+# Idempotencia
+
+Las fallas de red, los tiempos de espera y los reintentos son una realidad al trabajar con cualquier API. Las claves de idempotencia aseguran que volver a intentar una solicitud nunca cree recursos duplicados ni realice una acción dos veces.
+
+## Cómo funciona
+
+Cuando incluyes un encabezado `Idempotency-Key` en una solicitud `POST` o `PATCH`, la API recuerda la respuesta para esa clave. Si envías la misma solicitud nuevamente con la misma clave y cuerpo, la API devuelve la respuesta almacenada en caché en lugar de procesar la solicitud nuevamente.
+
+```
+POST /api/v1/payment-links
+Idempotency-Key: my-unique-key-12345
+Content-Type: application/json
+
+{ "name": "Premium Plan", ... }
+```
+
+<Steps>
+<Step title="Primera solicitud">
+La API procesa la solicitud normalmente, crea el recurso y almacena la respuesta en caché. La respuesta se asocia con la clave de idempotencia y el hash SHA-256 del cuerpo de la solicitud.
+</Step>
+
+<Step title="Reintentar con la misma clave + mismo cuerpo">
+La API detecta la clave duplicada, verifica que el hash del cuerpo coincida y devuelve la respuesta almacenada en caché inmediatamente con un encabezado `Idempotent-Replayed: true`. No se crea un nuevo recurso.
+</Step>
+
+<Step title="Reintentar con la misma clave + cuerpo diferente">
+La API detecta la clave duplicada pero el hash del cuerpo no coincide. Devuelve un error `409 Conflict` con el código `idempotency_conflict`. Esto previene el uso accidental indebido de las claves.
+</Step>
+</Steps>
+
+## Tiempo de vida (TTL) de la caché
+
+Las claves de idempotencia se almacenan en caché durante **24 horas** desde la primera solicitud. Después de 24 horas, la clave expira y puede reutilizarse.
+
+<Info>
+  Solo las respuestas exitosas (HTTP 2xx) se almacenan en caché. Si la solicitud original falló con un error 4xx o 5xx, la clave no se consume y puedes reintentar con la misma clave.
+</Info>
+
+## Uso de claves de idempotencia
+
+### Con curl
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-premium-link-20240228-001" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+En la primera solicitud, obtienes la respuesta estándar `201 Created`:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+Si reintentas exactamente la misma solicitud, obtienes la respuesta almacenada en caché con el encabezado de reproducción:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+Idempotent-Replayed: true
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+El `id` es idéntico -- no se creó un duplicado.
+
+### Con JavaScript / TypeScript
+
+```typescript
+import { randomUUID } from "crypto";
+
+async function createPaymentLinkSafe(data: PaymentLinkInput) {
+  const idempotencyKey = randomUUID();
+
+  const makeRequest = () =>
+    fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify(data),
+    });
+
+  // Primer intento
+  let response = await makeRequest();
+
+  // Si se agotó el tiempo de espera o hubo un error de red, reintenta de forma segura
+  if (!response.ok && response.status >= 500) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    response = await makeRequest(); // La misma clave de idempotencia = reintento seguro
+  }
+
+  const body = await response.json();
+
+  // Verifica si esta fue una respuesta repetida
+  if (response.headers.get("Idempotent-Replayed") === "true") {
+    console.log("La respuesta se reprodujo desde la caché (solicitud duplicada).");
+  }
+
+  return body;
+}
+```
+
+### Con Python
+
+```python
+import uuid
+import requests
+import os
+
+def create_payment_link_safe(data: dict) -> dict:
+    idempotency_key = str(uuid.uuid4())
+
+    headers = {
+        "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotency_key,
+    }
+
+    # Reintentar hasta 3 veces con la misma clave de idempotencia
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                "https://platform-api.anyspend.com/api/v1/payment-links",
+                headers=headers,
+                json=data,
+                timeout=10,
+            )
+
+            if response.ok:
+                replayed = response.headers.get("Idempotent-Replayed") == "true"
+                if replayed:
+                    print("Respuesta reproducida desde la caché.")
+                return response.json()
+
+            if response.status_code < 500:
+                # Error del cliente -- no reintentar
+                raise Exception(f"Error de API: {response.json()}")
+
+        except requests.exceptions.Timeout:
+            print(f"El intento {attempt + 1} se agotó, reintentando...")
+
+        time.sleep(2 ** attempt)  # Retroceso exponencial
+
+    raise Exception("Todos los intentos de reintento fallaron")
+```
+
+## Respuestas de conflicto
+
+Si reutilizas una clave de idempotencia con un cuerpo de solicitud **diferente**, la API devuelve un error `409`:
+
+```bash
+# Solicitud original
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan A", "amount": "10000000", ... }'
+
+# Misma clave, cuerpo diferente -- CONFLICTO
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan B", "amount": "20000000", ... }'
+```
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "Una clave de idempotencia se utilizó con un cuerpo de solicitud diferente."
+  }
+}
+```
+
+Este es un mecanismo de seguridad. Evita errores en los que la misma clave se asocia accidentalmente con dos operaciones diferentes.
+
+## Métodos que soportan idempotencia
+
+| Método | Idempotency-Key soportado | Notas |
+|--------|--------------------------|-------|
+| `POST` | Sí | Usar para la creación de recursos para prevenir duplicados. |
+| `PATCH` | Sí | Usar para actualizaciones para prevenir aplicar la misma actualización dos veces. |
+| `GET` | No necesario | Las solicitudes GET son inherentemente idempotentes (solo lectura). |
+| `DELETE` | No necesario | Las solicitudes DELETE son inherentemente idempotentes (eliminar un recurso no existente devuelve un 404). |
+
+## Generación de claves de idempotencia
+
+La clave de idempotencia puede ser cualquier cadena de hasta 256 caracteres. Aquí hay algunos enfoques recomendados:
+
+<Tabs>
+<Tab title="UUID (recomendado)">
+```typescript
+import { randomUUID } from "crypto";
+
+const key = randomUUID();
+// "550e8400-e29b-41d4-a716-446655440000"
+```
+
+Los UUID son globalmente únicos y la opción más simple para la mayoría de los casos de uso.
+</Tab>
+
+<Tab title="Clave determinística">
+```typescript
+// Derivar la clave del contexto de la operación
+const key = `create-link-${userId}-${productId}-${Date.now()}`;
+// "create-link-usr_123-prod_456-1709078400000"
+```
+
+Las claves determinísticas son útiles cuando quieres que la misma operación lógica siempre use la misma clave -- por ejemplo, asegurando que un usuario solo pueda crear un enlace de pago para un producto específico.
+</Tab>
+
+<Tab title="Hash de solicitud">
+```typescript
+import { createHash } from "crypto";
+
+const key = createHash("sha256")
+  .update(JSON.stringify({ endpoint: "/payment-links", body: data }))
+  .digest("hex")
+  .slice(0, 64);
+```
+
+Hashear la solicitud asegura que solicitudes idénticas siempre produzcan la misma clave. Útil para sistemas basados en colas donde el mismo mensaje podría procesarse múltiples veces.
+</Tab>
+</Tabs>
+
+## Alcance de las claves de idempotencia
+
+Las claves de idempotencia están limitadas a tu **organización**. Dos organizaciones diferentes pueden usar la misma cadena de clave sin conflicto. Dentro de tu organización, cada clave solo puede usarse una vez por ventana de 24 horas.
+
+## Mejores prácticas
+
+<AccordionGroup>
+<Accordion title="Siempre usa claves de idempotencia para operaciones relacionadas con pagos">
+Cualquier solicitud que cree un enlace de pago, sesión de pago o active una acción financiera debe incluir una clave de idempotencia. Este es el lugar más importante para prevenir duplicados.
+</Accordion>
+
+<Accordion title="Genera la clave antes del primer intento">
+Crea la clave de idempotencia una vez y reúsala en todos los intentos de reintento para la misma operación lógica:
+
+```typescript
+// Correcto: clave generada una vez, reutilizada en reintentos
+const key = randomUUID();
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": key },
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+
+// Incorrecto: nueva clave en cada reintento (derrota el propósito)
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": randomUUID() }, // ¡Diferente clave cada vez!
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+```
+</Accordion>
+
+<Accordion title="No reutilices claves en diferentes operaciones">
+Cada operación lógica debe tener su propia clave de idempotencia. Reutilizar una clave de una operación anterior (diferente) resultará en una respuesta almacenada en caché de la operación antigua o un conflicto `409`.
+</Accordion>
+
+<Accordion title="Maneja los conflictos 409 de manera elegante">
+Si recibes un error `idempotency_conflict`, significa que la clave ya se usó con un cuerpo de solicitud diferente. Genera una nueva clave y reintenta:
+
+```typescript
+if (error.code === "idempotency_conflict") {
+  // Generar una clave nueva y reintenta
+  return createPaymentLink(data, { idempotencyKey: randomUUID() });
+}
+```
+</Accordion>
+
+<Accordion title="Verifica el encabezado Idempotent-Replayed">
+Cuando el encabezado `Idempotent-Replayed: true` está presente, la respuesta es una repetición almacenada en caché. Esto puede ser útil para registrar y depurar para distinguir entre respuestas frescas y repetidas.
+</Accordion>
+
+<Accordion title="Usa claves determinísticas para semántica de exactamente-una-vez">
+Si tu sistema procesa eventos de una cola (por ejemplo, Kafka, SQS, BullMQ), deriva la clave de idempotencia del ID del evento o ID del mensaje. Esto asegura que procesar el mismo evento dos veces nunca cree recursos duplicados:
+
+```typescript
+async function handleOrderEvent(event: QueueEvent) {
+  const idempotencyKey = `order-event-${event.messageId}`;
+
+  await fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(eventToPaymentLink(event)),
+  });
+}
+```
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,585 @@
+---
+title: Guía rápida para vendedores
+description: >-
+  Acepta pagos en cualquier token para tus APIs y servicios usando el middleware
+  AnySpend x402
+lang: es
+originalPath: anyspend/x402-quickstart-sellers.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositorio de GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Ver código fuente y ejemplos
+</Card>
+
+<Card title="Paquete npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Resumen
+
+Esta guía te muestra cómo agregar soporte de pago **AnySpend x402** a tu API de Express, permitiéndote aceptar pagos en cualquier token mientras recibes el token de tu elección. Con solo unas pocas líneas de código, tu API puede monetizar endpoints y manejar la verificación y liquidación de pagos automáticamente.
+
+**Beneficios clave:**
+- **Compradores** pueden pagar con cualquier token que posean (ETH, DAI, USDC, etc.)
+- **Vendedores** pueden recibir cualquier token que prefieran (USDC, B3, DAI, tokens personalizados, etc.)
+- AnySpend maneja automáticamente todas las conversiones de tokens
+- No se requiere infraestructura de blockchain o gestión de wallets
+
+## Prerrequisitos
+
+Antes de comenzar, asegúrate de tener:
+
+- **Node.js 18+** instalado
+- **Una API de Express.js** (o la voluntad de crear una)
+- **Una dirección de wallet** para recibir pagos en USDC
+- **Conocimiento básico** de middleware de Express
+
+## Instalación
+
+Instala el paquete AnySpend x402:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+## Inicio rápido
+
+### 1. Integración básica
+
+La forma más simple de agregar pagos a tu API de Express:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+
+// Define tus rutas de pago y precios
+const endpointConfig = {
+  '/api/premium-data': {
+    amount: '1.00',        // $1.00 en USDC
+    asset: 'USD'           // Será convertido a USDC
+  },
+  '/api/ai-inference': {
+    amount: '0.50',        // $0.50 en USDC
+    asset: 'USD'
+  }
+};
+
+// Tu dirección de recepción de USDC
+const recipientAddress = '0xYourWalletAddress...';
+
+// Aplica el middleware de pago
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator                    // Facilitador de AnySpend pre-configurado
+));
+
+// Define tus rutas protegidas
+app.get('/api/premium-data', (req, res) => {
+  // Esto solo se ejecuta después de un pago exitoso
+  res.json({
+    data: 'Tus datos premium aquí',
+    message: '¡Pago exitoso!'
+  });
+});
+
+app.get('/api/ai-inference', (req, res) => {
+  res.json({
+    result: 'Resultado de inferencia de IA',
+    model: 'gpt-4'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API con pagos x402 funcionando en el puerto 3000');
+});
+```
+
+**Qué hace esto:**
+
+1. Los clientes solicitan tu endpoint de API
+2. El middleware devuelve `402 Payment Required` con detalles de pago
+3. El cliente paga con su token preferido (ETH, DAI, etc.)
+4. El facilitador de AnySpend convierte a USDC y liquida a tu wallet
+5. Tu manejador de ruta se ejecuta y devuelve datos
+
+---
+
+### 2. Recibir tokens personalizados (por ejemplo, B3)
+
+Puedes configurar tu API para recibir cualquier token, no solo USDC:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// Configurar para recibir tokens B3
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 tokens B3 (18 decimales)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Acceso a datos premium de precios de ETH',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // Pago verificado - ¡has recibido 100 tokens B3!
+  res.json({
+    data: 'Historial de precios de ETH premium',
+    paymentReceived: '100 tokens B3'
+  });
+});
+
+app.listen(3000);
+```
+
+**Qué hay de diferente:**
+
+- Los compradores aún pueden pagar con **cualquier token** (ETH, USDC, DAI, etc.)
+- AnySpend convierte su pago a **tokens B3**
+- Recibes exactamente **100 tokens B3** en tu wallet
+- Tanto compradores como vendedores mantienen sus preferencias de token
+
+## Configuración
+
+### URL del facilitador
+
+El facilitador de AnySpend se aloja en:
+
+```
+https://mainnet.anyspend.com/x402
+```
+
+El paquete `@b3dotfun/anyspend-x402` incluye una instancia de facilitador pre-configurada:
+
+```typescript
+import { facilitator } from '@b3dotfun/anyspend-x402';
+
+// Pre-configurado para usar mainnet.anyspend.com/x402
+app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
+```
+
+### Configuración de endpoint
+
+Tienes tres métodos para configurar los requisitos de pago:
+
+#### Método 1: montos en dólares simples (recomendado)
+
+Deja que AnySpend maneje la conversión de tokens automáticamente:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',      // $1.00 equivalente en cualquier token
+    asset: 'USD'
+  },
+  '/api/compute': {
+    amount: '2.50',
+    asset: 'USD'
+  }
+};
+```
+
+**Beneficios:**
+- Los clientes pueden pagar con cualquier token compatible
+- AnySpend convierte a USDC automáticamente
+- Siempre recibes USDC
+
+#### Método 2: requisitos de tokens específicos
+
+Requiere tokens específicos en redes específicas. ¡Puedes recibir **cualquier token**, no solo USDC!
+
+**Ejemplo 1: recibir USDC (stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1000000',   // 1 USDC (6 decimales)
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC en Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Ejemplo 2: recibir tokens B3 (token personalizado)**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 tokens B3 (100 * 10^18)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Acceso a datos premium de precios de ETH de CoinGecko',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**Ejemplo 3: recibir DAI (stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI (18 decimales)
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI en Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Ejemplo 4: recibir ETH nativo**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH (18 decimales)
+    asset: '0x0000000000000000000000000000000000000000', // ETH nativo
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Ejemplo 5: recibir token ERC-20 personalizado**
+
+Para cualquier token ERC-20 con soporte de permit:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 token (ajustar decimales)
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // Decimales de tu token
+        eip712: {
+          name: 'YourTokenName', // Del contrato del token
+          version: '1',          // Versión EIP-712
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: 'Descripción de tu endpoint de API',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**Puntos clave:**
+- Los compradores aún pueden pagar con **cualquier token** que posean
+- AnySpend convierte automáticamente su token al que deseas recibir
+- Recibes exactamente el token que especificaste en tu configuración
+- Se mantiene la flexibilidad tanto del comprador como del vendedor
+</Note>
+
+### Encontrar detalles del token
+
+Para configurar un token personalizado, necesitas conocer sus parámetros EIP-712. Así es cómo encontrarlos:
+
+**Método 1: verificar contrato del token**
+
+Usa un explorador de blockchain como [Basescan](https://basescan.org):
+
+```typescript
+// Leer del contrato del token
+const name = await token.read.name();      // por ejemplo, "B3"
+const version = await token.read.version(); // por ejemplo, "1"
+const decimals = await token.read.decimals(); // por ejemplo, 18
+```
+
+**Método 2: tokens comunes**
+
+| Token | Nombre | Versión | Decimales | Dirección en Base |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**Método 3: usar viem**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+```
+
+#### Método 3: flexible (dejar que el cliente elija)
+
+Permite a los clientes especificar su token de pago preferido:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true       // Aceptar encabezado X-PREFERRED-TOKEN
+  }
+};
+```
+
+Los clientes pueden entonces especificar su preferencia de token:
+
+```bash
+curl https://api.example.com/data \
+  -H "X-PREFERRED-TOKEN: 0x4200000000000000000000000000000000000006" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+## Configuración avanzada
+
+### Precios dinámicos
+
+Calcula precios basados en parámetros de solicitud:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use('/api/compute', (req, res, next) => {
+  // Calcular precio basado en unidades de cómputo solicitadas
+  const units = parseInt(req.query.units as string) || 1;
+  const pricePerUnit = 0.10; // $0.10 por unidad
+  const totalPrice = (units * pricePerUnit).toFixed(2);
+
+  // Adjuntar configuración dinámica a la solicitud
+  req.x402Config = {
+    amount: totalPrice,
+    asset: 'USD'
+  };
+
+  next();
+}, paymentMiddleware(recipientAddress, {
+  '/api/compute': (req) => req.x402Config // Configuración dinámica
+}, facilitator));
+
+app.get('/api/compute', (req, res) => {
+  const units = parseInt(req.query.units as string) || 1;
+  res.json({
+    result: `Computadas ${units} unidades`,
+    cost: req.x402Config.amount
+  });
+});
+```
+
+### Configuración de facilitador personalizado
+
+Si necesitas configuraciones de facilitador personalizadas:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const customFacilitator = new Facilitator({
+  baseUrl: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.CDP_API_KEY_ID,        // Opcional: Coinbase CDP
+  apiSecret: process.env.CDP_API_KEY_SECRET,
+  timeout: 30000,                             // Timeout de 30s
+  retries: 3                                  // Reintentar solicitudes fallidas
+});
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  customFacilitator
+));
+```
+
+### Múltiples destinatarios
+
+Dirige pagos a diferentes wallets basados en el endpoint:
+
+```typescript
+const endpointConfig = {
+  '/api/service-a': {
+    amount: '1.00',
+    asset: 'USD',
+    recipient: '0xWalletA...'
+  },
+  '/api/service-b': {
+    amount: '2.00',
+    asset: 'USD',
+    recipient: '0xWalletB...'
+  }
+};
+
+// Pasar null como destinatario, usar destinatarios por endpoint
+app.use(paymentMiddleware(null, endpointConfig, facilitator));
+```
+
+## Rutas protegidas
+
+### Proteger rutas específicas
+
+Protege solo los endpoints que requieren pago:
+
+```typescript
+// Ruta pública - no requiere pago
+app.get('/api/public', (req, res) => {
+  res.json({ message: '¡Esto es gratis!' });
+});
+
+// Ruta protegida - requiere pago
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium': { amount: '1.00', asset: 'USD' }
+  },
+  facilitator
+));
+
+app.get('/api/premium', (req, res) => {
+  res.json({ message: '¡Esto cuesta dinero!' });
+});
+```
+
+### Middleware específico de ruta
+
+Aplica diferentes configuraciones de pago a diferentes grupos de rutas:
+
+```typescript
+// Nivel básico - $0.50
+app.use('/api/basic', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/basic/*': { amount: '0.50', asset: 'USD' }
+  },
+  facilitator
+));
+
+// Nivel premium - $2.00
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium/*': { amount: '2.00', asset: 'USD' }
+  },
+  facilitator
+));
+```
+
+## Pruebas
+
+### Desarrollo local
+
+Prueba tu API localmente con USDC de testnet:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const testFacilitator = new Facilitator({
+  baseUrl: 'https://testnet.anyspend.com/x402', // Facilitador de testnet
+});
+
+const endpointConfig = {
+  '/api/test': {
+    amount: '0.01',
+    asset: 'USD',
+    network: 'base-sepolia' // Usar testnet
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourTestWallet...',
+  endpointConfig,
+  testFacilitator
+));
+```
+
+Obtén USDC de testnet del [Faucet de Coinbase](https://portal.cdp.coinbase.com/products/faucet).
+
+### Prueba de solicitud del cliente
+
+Prueba con curl:
+
+```bash
+#

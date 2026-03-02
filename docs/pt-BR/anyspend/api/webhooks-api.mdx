@@ -1,0 +1,417 @@
+---
+title: Webhooks
+description: Configure endpoints de webhook para notificações de eventos em tempo real
+lang: pt-BR
+originalPath: anyspend/api/webhooks-api.mdx
+---
+Webhooks permitem que você receba notificações HTTP POST em tempo real quando eventos ocorrem em sua conta AnySpend. Configure endpoints, escolha quais eventos assinar e monitore o histórico de entrega.
+
+<Info>
+  Todos os endpoints de gerenciamento de webhook requerem permissão de **admin**, a menos que indicado. Endpoints somente leitura (listar, obter, entregas) requerem permissão de **leitura**.
+</Info>
+
+## Autenticação
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Base: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Listar Webhooks
+
+<ParamField path="GET /webhooks" type="read">
+  Retorna todos os endpoints de webhook configurados para sua conta.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const webhooks = await client.webhooks.list();
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wh_abc123",
+      "url": "https://myapp.com/webhooks/anyspend",
+      "events": ["payment.completed", "payment.failed"],
+      "is_active": true,
+      "success_count": 142,
+      "failure_count": 3,
+      "last_triggered_at": "2026-02-27T10:30:00Z",
+      "created_at": "2026-01-15T08:00:00Z",
+      "updated_at": "2026-02-27T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Criar Webhook
+
+<ParamField path="POST /webhooks" type="admin">
+  Crie um novo endpoint de webhook. A resposta inclui um campo `secret` usado para verificar assinaturas de webhook. Armazene isso com segurança -- ele é retornado apenas uma vez no momento da criação.
+</ParamField>
+
+<ParamField path="url" type="string" required>
+  A URL HTTPS que receberá as solicitações POST do webhook.
+</ParamField>
+
+<ParamField path="events" type="string[]" required>
+  Array de tipos de eventos para assinar. Veja [Eventos Suportados](#eventos-suportados) abaixo.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://myapp.com/webhooks/anyspend",
+        "events": ["payment.completed", "payment.failed", "checkout.completed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.create({
+      url: "https://myapp.com/webhooks/anyspend",
+      events: ["payment.completed", "payment.failed", "checkout.completed"],
+    });
+
+    // Armazene webhook.secret com segurança -- só é retornado na criação
+    console.log("Segredo de assinatura:", webhook.secret);
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wh_abc123",
+    "url": "https://myapp.com/webhooks/anyspend",
+    "events": ["payment.completed", "payment.failed", "checkout.completed"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "is_active": true,
+    "success_count": 0,
+    "failure_count": 0,
+    "last_triggered_at": null,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+<Warning>
+  O campo `secret` só está incluído na resposta de criação. Copie imediatamente e armazene em suas variáveis de ambiente ou gerenciador de segredos.
+</Warning>
+
+---
+
+### Obter Webhook
+
+<ParamField path="GET /webhooks/:id" type="read">
+  Recupere um único endpoint de webhook pelo ID.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await client.webhooks.get("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Atualizar Webhook
+
+<ParamField path="PATCH /webhooks/:id" type="admin">
+  Atualize um endpoint de webhook existente. Todos os campos são opcionais.
+</ParamField>
+
+<ParamField path="url" type="string">
+  URL do endpoint HTTPS atualizado.
+</ParamField>
+
+<ParamField path="events" type="string[]">
+  Lista atualizada de tipos de eventos assinados. Substitui a lista existente inteiramente.
+</ParamField>
+
+<ParamField path="is_active" type="boolean">
+  Defina como `false` para pausar a entrega sem excluir o endpoint.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "events": ["payment.completed", "checkout.completed"],
+        "is_active": false
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.webhooks.update("wh_abc123", {
+      events: ["payment.completed", "checkout.completed"],
+      is_active: false,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Excluir Webhook
+
+<ParamField path="DELETE /webhooks/:id" type="admin">
+  Remova permanentemente um endpoint de webhook. Entregas pendentes serão canceladas.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.webhooks.delete("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Enviar Teste de Webhook
+
+<ParamField path="POST /webhooks/:id/test" type="admin">
+  Envia um evento de teste para a URL do webhook para que você possa verificar se seu endpoint está recebendo e processando eventos corretamente. O payload de teste usa um tipo de evento `test.ping`.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/test \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.test("wh_abc123");
+    // result.delivery_id pode ser usado para verificar o status da entrega
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz789",
+    "status": "sent",
+    "response_code": 200
+  }
+}
+```
+
+---
+
+### Listar Histórico de Entrega
+
+<ParamField path="GET /webhooks/:id/deliveries" type="read">
+  Veja o log de entrega para um endpoint de webhook. Retorna tentativas de entrega recentes com códigos de status e tempos de resposta.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deliveries = await client.webhooks.listDeliveries("wh_abc123");
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "del_xyz789",
+      "event_type": "payment.completed",
+      "status": "success",
+      "response_code": 200,
+      "response_time_ms": 245,
+      "attempts": 1,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "del_xyz790",
+      "event_type": "payment.failed",
+      "status": "failed",
+      "response_code": 500,
+      "response_time_ms": 3012,
+      "attempts": 3,
+      "created_at": "2026-02-27T09:15:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Tentar Novamente uma Entrega Falha
+
+<ParamField path="POST /webhooks/:id/deliveries/:did/retry" type="admin">
+  Tente novamente manualmente uma entrega de webhook falha. A entrega deve ter um status de `falha`.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/webhooks/wh_abc123/deliveries/del_xyz790/retry \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const result = await client.webhooks.retryDelivery("wh_abc123", "del_xyz790");
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "delivery_id": "del_xyz790",
+    "status": "sent",
+    "response_code": 200,
+    "attempts": 4
+  }
+}
+```
+
+---
+
+## Objeto Webhook
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | `string` | Identificador único do webhook (ex., `wh_abc123`) |
+| `url` | `string` | URL do endpoint HTTPS |
+| `events` | `string[]` | Tipos de eventos assinados |
+| `secret` | `string` | Segredo de assinatura (só retorna na criação) |
+| `is_active` | `boolean` | Se o webhook está atualmente ativo |
+| `success_count` | `number` | Total de entregas bem-sucedidas |
+| `failure_count` | `number` | Total de entregas falhas |
+| `last_triggered_at` | `string \| null` | Timestamp ISO 8601 da última tentativa de entrega |
+| `created_at` | `string` | Timestamp ISO 8601 de criação |
+| `updated_at` | `string` | Timestamp ISO 8601 da última atualização |
+
+## Eventos Suportados
+
+| Tipo de Evento | Descrição |
+|----------------|-------------|
+| `payment.completed` | Um pagamento foi processado com sucesso |
+| `payment.failed` | Uma tentativa de pagamento falhou |
+| `checkout.completed` | Uma sessão de checkout foi completada (inclui dados de formulário, envio, informações de desconto) |
+
+## Verificando Assinaturas de Webhook
+
+Cada solicitação de webhook inclui uma assinatura no cabeçalho `X-AnySpend-Signature`. Verifique-a usando seu segredo de webhook para garantir que a solicitação seja autêntica.
+
+```typescript
+import crypto from "crypto";
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// No seu manipulador de webhook
+app.post("/webhooks/anyspend", (req, res) => {
+  const signature = req.headers["x-anyspend-signature"];
+  const isValid = verifyWebhookSignature(
+    JSON.stringify(req.body),
+    signature,
+    process.env.ANYSPEND_WEBHOOK_SECRET
+  );
+
+  if (!isValid) {
+    return res.status(401).json({ error: "Assinatura inválida" });
+  }
+
+  // Processa o evento
+  const { type, data } = req.body;
+  switch (type) {
+    case "payment.completed":
+      // Trata o pagamento bem-sucedido
+      break;
+    case "payment.failed":
+      // Trata o pagamento falho
+      break;
+  }
+
+  res.status(200).json({ received: true });
+});
+```
+
+<Note>
+  Sempre retorne um código de status `2xx` dentro de 30 segundos. Entregas falhas são reenviadas até 3 vezes com backoff exponencial.
+</Note>

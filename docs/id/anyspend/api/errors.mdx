@@ -1,0 +1,379 @@
+---
+title: Kesalahan
+description: Pengelolaan Kesalahan untuk API Platform AnySpend
+lang: id
+originalPath: anyspend/api/errors.mdx
+---
+# Kesalahan
+
+Platform API AnySpend menggunakan format kesalahan yang konsisten dan terstruktur di semua titik akhir. Kesalahan mengikuti konvensi Stripe -- sebuah objek JSON dengan kunci `error` yang berisi tipe, kode, pesan yang dapat dibaca manusia, dan (jika berlaku) parameter yang menyebabkan kesalahan.
+
+## Format respons kesalahan
+
+Setiap respons kesalahan memiliki bentuk ini:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "The 'name' field is required.",
+    "param": "name"
+  }
+}
+```
+
+| Field | Tipe | Deskripsi |
+|-------|------|-------------|
+| `type` | `string` | Kategori kesalahan. Gunakan ini untuk logika penanganan kesalahan secara luas. |
+| `code` | `string` | Kode kesalahan yang dapat dibaca mesin. Gunakan ini untuk penanganan kesalahan spesifik. |
+| `message` | `string` | Deskripsi yang dapat dibaca manusia tentang apa yang salah. Aman untuk ditampilkan ke pengembang (tapi tidak untuk pengguna akhir). |
+| `param` | `string` atau tidak ada | Parameter permintaan yang menyebabkan kesalahan, jika berlaku. |
+
+## Tipe kesalahan
+
+Tipe kesalahan mengelompokkan kesalahan ke dalam kategori luas. Gunakan ini untuk penanganan kesalahan tingkat atas.
+
+| Tipe | Status HTTP | Deskripsi |
+|------|-------------|-------------|
+| `invalid_request_error` | `400` | Permintaan diformat salah atau berisi parameter yang tidak valid. Periksa field `param` untuk mengetahui field mana yang menyebabkan masalah. |
+| `authentication_error` | `401` | Kunci API hilang, tidak valid, kedaluwarsa, atau dicabut. |
+| `permission_error` | `403` | Kunci API valid tetapi tidak memiliki tingkat izin yang diperlukan untuk operasi yang diminta. |
+| `not_found_error` | `404` | Sumber daya yang diminta tidak ada, atau tidak termasuk dalam organisasi Anda. |
+| `rate_limit_error` | `429` | Anda telah melebihi batas tarif untuk tingkat autentikasi Anda. |
+| `idempotency_error` | `409` | Kunci idempotensi digunakan kembali dengan badan permintaan yang berbeda. |
+| `api_error` | `500` | Terjadi kesalahan internal yang tidak terduga di sisi kami. Ini jarang terjadi dan secara otomatis dilaporkan. |
+
+## Kode kesalahan
+
+Kode kesalahan menyediakan pengenal spesifik, yang dapat dibaca mesin, untuk setiap kondisi kesalahan.
+
+### Kesalahan validasi permintaan
+
+| Kode | Tipe | HTTP | Deskripsi |
+|------|------|------|-------------|
+| `missing_required_field` | `invalid_request_error` | `400` | Sebuah field yang diperlukan tidak termasuk dalam badan permintaan. Field `param` menunjukkan field mana yang hilang. |
+| `invalid_field_value` | `invalid_request_error` | `400` | Sebuah field termasuk tetapi nilainya tidak valid (tipe, format, atau di luar jangkauan yang salah). |
+| `invalid_address` | `invalid_request_error` | `400` | Field alamat Ethereum tidak merupakan alamat `0x` + 40 karakter heksadesimal yang valid. |
+| `no_updates_provided` | `invalid_request_error` | `400` | Permintaan `PATCH` dikirim tanpa field yang valid untuk diperbarui. |
+| `invalid_status_transition` | `invalid_request_error` | `400` | Perubahan status yang diminta tidak diizinkan (mis., menyelesaikan sesi yang sudah kedaluwarsa). |
+| `duplicate_resource` | `invalid_request_error` | `409` | Sumber daya dengan field unik yang bertentangan sudah ada. |
+
+### Kesalahan autentikasi dan otorisasi
+
+| Kode | Tipe | HTTP | Deskripsi |
+|------|------|------|-------------|
+| `key_missing` | `authentication_error` | `401` | Tidak ada kunci API yang ditemukan dalam header `Authorization` atau `X-API-Key`. |
+| `key_invalid` | `authentication_error` | `401` | Kunci API yang disediakan tidak cocok dengan kunci apa pun dalam sistem. |
+| `key_expired` | `authentication_error` | `401` | Kunci API telah melewati timestamp `expires_at`-nya. Buat kunci baru atau perpanjang kedaluwarsanya. |
+| `key_revoked` | `authentication_error` | `401` | Kunci API secara eksplisit dicabut. Buat kunci baru. |
+| `insufficient_permissions` | `permission_error` | `403` | Kunci API tidak memiliki tingkat izin yang diperlukan untuk operasi ini (mis., kunci `read` mencoba `POST`). |
+
+### Kesalahan sumber daya
+
+| Kode | Tipe | HTTP | Deskripsi |
+|------|------|------|-------------|
+| `resource_not_found` | `not_found_error` | `404` | Sumber daya yang diminta tidak ada, atau termasuk dalam organisasi yang berbeda. |
+
+### Kesalahan batas tarif dan idempotensi
+
+| Kode | Tipe | HTTP | Deskripsi |
+|------|------|------|-------------|
+| `rate_limit_exceeded` | `rate_limit_error` | `429` | Terlalu banyak permintaan dalam jendela waktu saat ini. Pesan kesalahan mencakup penundaan pengulangan. |
+| `idempotency_conflict` | `idempotency_error` | `409` | Header `Idempotency-Key` digunakan kembali dengan badan permintaan yang berbeda dari permintaan asli. |
+
+### Kesalahan server
+
+| Kode | Tipe | HTTP | Deskripsi |
+|------|------|------|-------------|
+| `internal_error` | `api_error` | `500` | Terjadi kesalahan server yang tidak terduga. Ini secara otomatis dilacak. Jika ini terus berlanjut, hubungi dukungan. |
+
+## Kode status HTTP
+
+| Status | Arti |
+|--------|---------|
+| `200` | Sukses -- sumber daya berhasil diambil atau diperbarui |
+| `201` | Dibuat -- sumber daya baru berhasil dibuat |
+| `400` | Permintaan Buruk -- permintaan tidak valid |
+| `401` | Tidak Sah -- autentikasi gagal |
+| `403` | Dilarang -- kunci API tidak memiliki izin yang diperlukan |
+| `404` | Tidak Ditemukan -- sumber daya tidak ada |
+| `409` | Konflik -- konflik idempotensi atau sumber daya duplikat |
+| `429` | Terlalu Banyak Permintaan -- batas tarif terlampaui |
+| `500` | Kesalahan Server Internal -- terjadi kesalahan di pihak kami |
+
+## Contoh respons kesalahan
+
+### Field yang diperlukan hilang
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": "10000000" }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "The 'name' field is required.",
+    "param": "name"
+  }
+}
+```
+
+### Alamat Ethereum tidak valid
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Link",
+    "token_address": "not-an-address",
+    "chain_id": 8453,
+    "recipient_address": "0xabc123..."
+  }'
+```
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "invalid_address",
+    "message": "The 'token_address' field must be a valid Ethereum address (0x + 40 hex characters).",
+    "param": "token_address"
+  }
+}
+```
+
+### Kegagalan autentikasi
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_expired_key..."
+```
+
+```json
+{
+  "error": {
+    "type": "authentication_error",
+    "code": "key_expired",
+    "message": "This API key has expired."
+  }
+}
+```
+
+### Izin tidak cukup
+
+```bash
+# Kunci hanya-baca mencoba membuat sumber daya
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_readonly_key..." \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Test" }'
+```
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "This API key does not have 'write' permission."
+  }
+}
+```
+
+### Sumber daya tidak ditemukan
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links/pl_nonexistent \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+```json
+{
+  "error": {
+    "type": "not_found_error",
+    "code": "resource_not_found",
+    "message": "No payment_link found with id 'pl_nonexistent'."
+  }
+}
+```
+
+### Batas tarif terlampaui
+
+```json
+{
+  "error": {
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Retry after 42 seconds."
+  }
+}
+```
+
+### Konflik idempotensi
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "An idempotency key was used with a different request body."
+  }
+}
+```
+
+## Menangani kesalahan dalam kode
+
+### TypeScript / JavaScript
+
+```typescript
+async function createPaymentLink(data: PaymentLinkInput) {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    const error = body.error;
+
+    switch (error.type) {
+      case "invalid_request_error":
+        // Perbaiki permintaan -- periksa error.param untuk field yang salah
+        console.error(`Permintaan tidak valid: ${error.message} (field: ${error.param})`);
+        break;
+
+      case "authentication_error":
+        // Periksa kunci API Anda -- mungkin sudah kedaluwarsa atau dicabut
+        console.error(`Autentikasi gagal: ${error.message}`);
+        break;
+
+      case "permission_error":
+        // Tingkatkan izin kunci API
+        console.error(`Izin tidak cukup: ${error.message}`);
+        break;
+
+      case "rate_limit_error":
+        // Mundur dan coba lagi
+        console.warn(`Batas tarif terlampaui: ${error.message}`);
+        await sleep(5000);
+        return createPaymentLink(data); // coba lagi
+        break;
+
+      case "not_found_error":
+        console.error(`Tidak ditemukan: ${error.message}`);
+        break;
+
+      case "idempotency_error":
+        // Kunci idempotensi digunakan kembali dengan data yang berbeda
+        console.error(`Konflik idempotensi: ${error.message}`);
+        break;
+
+      case "api_error":
+        // Kesalahan server -- coba lagi dengan mundur eksponensial
+        console.error(`Kesalahan server: ${error.message}`);
+        break;
+    }
+
+    throw new Error(`Kesalahan API AnySpend: ${error.code} - ${error.message}`);
+  }
+
+  return body;
+}
+```
+
+### Python
+
+```python
+import requests
+import time
+
+def create_payment_link(data: dict) -> dict:
+    response = requests.post(
+        "https://platform-api.anyspend.com/api/v1/payment-links",
+        headers={
+            "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+            "Content-Type": "application/json",
+        },
+        json=data,
+    )
+
+    body = response.json()
+
+    if not response.ok:
+        error = body["error"]
+        error_type = error["type"]
+
+        if error_type == "rate_limit_error":
+            time.sleep(5)
+            return create_payment_link(data)  # coba lagi
+
+        if error_type == "authentication_error":
+            raise PermissionError(f"Autentikasi gagal: {error['message']}")
+
+        if error_type == "invalid_request_error":
+            raise ValueError(
+                f"Permintaan buruk pada field '{error.get('param', 'unknown')}': "
+                f"{error['message']}"
+            )
+
+        raise Exception(f"Kesalahan API AnySpend: {error['code']} - {error['message']}")
+
+    return body
+```
+
+## Praktik terbaik
+
+<AccordionGroup>
+<Accordion title="Selalu periksa tipe kesalahan terlebih dahulu">
+Gunakan `error.type` untuk alur kontrol yang luas (mis., coba lagi pada `rate_limit_error`, gagal cepat pada `authentication_error`). Gunakan `error.code` untuk penanganan spesifik dalam sebuah tipe.
+</Accordion>
+
+<Accordion title="Gunakan field param untuk membangun validasi formulir">
+Ketika `error.param` ada, Anda dapat memetakan langsung ke field formulir untuk menampilkan kesalahan validasi secara inline di UI Anda.
+</Accordion>
+
+<Accordion title="Implementasikan logika pengulangan untuk kesalahan sementara">
+`rate_limit_error` dan `api_error` (500) adalah sementara. Gunakan mundur eksponensial saat mencoba lagi:
+
+```typescript
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const isRetryable =
+        err.status === 429 || err.status === 500;
+
+      if (!isRetryable || attempt === maxRetries) throw err;
+
+      const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Tidak terjangkau");
+}
+```
+</Accordion>
+
+<Accordion title="Jangan pernah mencoba lagi kesalahan 4xx (kecuali 429)">
+Kesalahan klien seperti `400`, `401`, `403`, dan `404` tidak akan terselesaikan dengan mencoba lagi. Perbaiki permintaan atau kredensial sebelum mencoba lagi.
+</Accordion>
+
+<Accordion title="Log objek kesalahan lengkap untuk debugging">
+Selalu log `error.type`, `error.code`, `error.message`, dan `error.param` bersama-sama. Ini memberi Anda gambaran lengkap saat melakukan debugging masalah produksi.
+</Accordion>
+</AccordionGroup>

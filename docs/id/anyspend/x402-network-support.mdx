@@ -1,0 +1,198 @@
+---
+title: Dukungan jaringan & token
+description: >-
+  Blockchain, token, dan alamat kontrak yang didukung untuk pembayaran AnySpend
+  x402
+lang: id
+originalPath: anyspend/x402-network-support.mdx
+---
+## Ikhtisar
+
+AnySpend x402 mendukung pembayaran lintas berbagai jaringan blockchain termasuk rantai yang kompatibel dengan EVM dan Solana (SVM). Halaman ini menyediakan referensi lengkap dari jaringan yang didukung, token, dan alamat kontrak mereka.
+
+## Jaringan utama EVM
+
+AnySpend x402 mendukung rantai utama EVM berikut:
+
+| Jaringan | Identifier | Chain ID | Tipe |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**Rantai yang direkomendasikan untuk produksi:** Base (biaya rendah, cepat), Ethereum (likuiditas maksimum), Arbitrum (seimbang)
+</Note>
+
+## Jaringan testnet EVM
+
+Untuk pengembangan dan pengujian, AnySpend mendukung testnet berikut:
+
+| Jaringan | Identifier | Chain ID | Faucet |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Abstract Faucet](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji Faucet](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
+
+## Jaringan SVM (Solana)
+
+AnySpend juga mendukung jaringan Mesin Virtual Solana (SVM):
+
+| Jaringan | Identifier | Chain ID | Tipe |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
+
+<Info>
+Dukungan Solana memungkinkan pembayaran lintas-VM - pengguna dapat membayar dengan SOL atau token SPL sementara server sumber menerima stablecoin di rantai EVM.
+</Info>
+
+## Kompatibilitas Token
+
+<Note>
+Untuk menggunakan token dengan X402, token tersebut harus mengimplementasikan **EIP-3009** (`transferWithAuthorization`) atau **EIP-2612** (`permit`) untuk tanda tangan tanpa gas.
+</Note>
+
+Daripada memelihara daftar statis token yang didukung, kami telah membangun alat untuk membantu Anda memverifikasi kompatibilitas token apa pun secara real-time.
+
+## Pemeriksa kompatibilitas token X402
+
+<Note>
+**Alat Baru Tersedia**: Verifikasi apakah token ERC-20 apa pun kompatibel dengan pembayaran X402 sebelum integrasi.
+</Note>
+
+Agar token kompatibel dengan X402, token tersebut harus mengimplementasikan salah satu dari:
+- **EIP-3009** (`transferWithAuthorization`) - Digunakan oleh USDC
+- **EIP-2612** (`permit`) - Digunakan oleh USDT (di beberapa rantai) dan banyak token ERC-20 modern lainnya
+
+### Menggunakan pemeriksa publik
+
+Periksa token ERC-20 apa pun di rantai yang didukung AnySpend:
+
+**Antarmuka web**: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+Cukup masukkan alamat token dan pilih jaringan untuk langsung memverifikasi kompatibilitas X402.
+
+**API langsung**: Anda juga dapat menanyakan API secara langsung:
+
+```bash
+curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+```
+
+Ini mengembalikan metadata token dan informasi kompatibilitas dalam format JSON.
+
+### Menggunakan paket npm
+
+Untuk pengembang yang mengintegrasikan pemeriksaan kompatibilitas token ke dalam aplikasi mereka:
+
+**paket npm**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+
+```bash
+npm install @b3dotfun/anyspend-x402-token-compat
+```
+
+**Penggunaan:**
+```typescript
+import { TokenCompatClient } from '@b3dotfun/anyspend-x402-token-compat';
+
+const client = new TokenCompatClient();
+
+// Dapatkan metadata token dan kompatibilitas
+const metadata = await client.getTokenMetadata('base', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913');
+console.log(metadata.supportsEip2612); // true - mendukung permit
+console.log(metadata.supportsEip3009); // true - mendukung transferWithAuth
+
+// Pemeriksaan kompatibilitas cepat
+const hasPermit = await client.supportsEip2612('base', tokenAddress);
+```
+
+
+### Cara kerjanya
+
+**Rute Lintas-Rantai yang Didukung:**
+AnySpend mendukung perutean lintas-rantai antara jaringan EVM yang didukung, termasuk:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 bridging di semua rantai yang didukung
+- Lintas-VM: Solana ↔ rantai EVM (eksperimental)
+
+<Info>
+Pembayaran lintas-rantai membutuhkan waktu lebih lama (2-5 menit) karena waktu bridging dan menimbulkan biaya tambahan (~0,5% total). Pembayaran dalam rantai yang sama direkomendasikan untuk pengalaman pengguna terbaik.
+</Info>
+
+
+<Note>
+Dibangun di atas infrastruktur global Cloudflare dengan caching cerdas untuk hasil instan.
+</Note>
+
+Pemeriksa menggabungkan verifikasi on-chain real-time dengan database token yang diverifikasi yang berkembang:
+
+- Waktu respons tingkat milidetik melalui caching cerdas
+- Database tumbuh secara otomatis seiring lebih banyak token yang diperiksa
+- Verifikasi on-chain untuk token yang tidak di-cache
+- Berjalan di Cloudflare Workers untuk akses berlatensi rendah di seluruh dunia
+
+### Integrasi di x402
+
+Pemeriksa kompatibilitas token sudah terintegrasi ke dalam SDK AnySpend X402:
+
+- Memvalidasi kompatibilitas token sebelum pembayaran
+- Mengembalikan kesalahan yang jelas dan dapat ditindaklanjuti untuk token yang tidak didukung
+- Mencegah transaksi gagal karena token yang tidak kompatibel
+
+**Cobalah langsung**: [https://x402-demo.anyspend.com/](https://x402-demo.anyspend.com/)
+
+<Warning>
+**Penting**: Selalu verifikasi kompatibilitas token sebelum mengintegrasikan token baru ke dalam alur pembayaran Anda. Token yang tidak kompatibel akan mengakibatkan gagalnya tanda tangan pembayaran.
+</Warning>
+
+## Sumber daya tambahan
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  Endpoint RPC dan metadata rantai
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  Alamat token yang diverifikasi lintas rantai
+</Card>
+
+<Card title="Coinbase Faucet" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  Dapatkan token testnet untuk pengembangan
+</Card>
+
+<Card title="AnySpend Facilitator" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  Endpoint API fasilitator produksi
+</Card>
+</CardGroup>
+
+## Apa selanjutnya
+
+<CardGroup cols={2}>
+<Card title="Panduan Cepat untuk Pembeli" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Mulai menggunakan token ini untuk membayar layanan
+</Card>
+
+<Card title="Panduan Cepat untuk Penjual" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Konfigurasikan API Anda untuk menerima token ini
+</Card>
+</CardGroup>
+
+## Mendapatkan bantuan
+
+Jika Anda memerlukan dukungan token atau jaringan tertentu:
+
+- **Discord**: Permintaan di [#anyspend-support](https://discord.gg/b3dotfun)
+- **GitHub**: Buka masalah di [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Email**: support@b3.fun

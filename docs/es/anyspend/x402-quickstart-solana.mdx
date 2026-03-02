@@ -1,0 +1,432 @@
+---
+title: Inicio rápido para Solana
+description: Acepta y realiza pagos en Solana usando AnySpend X402 con USDC y tokens SPL
+lang: es
+originalPath: anyspend/x402-quickstart-solana.mdx
+---
+<Note>
+**¡Pruébalo en vivo!** Experimenta X402 en Solana en [x402-demo.anyspend.com](https://x402-demo.anyspend.com/) o explora el [código fuente en GitHub](https://github.com/b3-fun/anyspend-x402-demo).
+</Note>
+
+<CardGroup cols={3}>
+<Card title="Repositorio de GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Ver código fuente y ejemplos
+</Card>
+
+<Card title="Paquete npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+
+<Card title="Demostración en Vivo" icon="rocket" href="https://github.com/b3-fun/anyspend-x402-demo">
+  Aplicación de demostración completa en Solana
+</Card>
+</CardGroup>
+
+## Visión General
+
+Esta guía te muestra cómo usar **AnySpend X402** en **Solana** tanto para aplicaciones de servidor (aceptando pagos) como de cliente (realizando pagos). AnySpend X402 en Solana permite pagos de tokens SPL sin gas usando firmas de transacciones, lo que lo hace perfecto para APIs con muro de pago, agentes de IA y servicios premium.
+
+**Características clave:**
+- **Transacciones sin gas** - El facilitador patrocina todas las tarifas de transacción
+- **Soporte de tokens SPL** - Paga con USDC y otros tokens SPL en Solana
+- **Integración con billeteras de navegador** - Funciona con Phantom, Solflare, Ledger y más
+- **Amigable con agentes de IA** - Envoltura simple de fetch para pagos autónomos
+
+## Prerrequisitos
+
+- **Node.js 18+** instalado
+- **Billetera de Solana** con algo de USDC (para pruebas)
+- **Conocimiento básico** de Solana o Express.js (dependiendo de tu caso de uso)
+
+## Configuración del Servidor
+
+Acepta pagos de USDC en Solana con solo unas pocas líneas de código.
+
+### Instalación
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+### Ejemplo básico de servidor
+
+```typescript
+import express from 'express';
+import { paymentMiddleware } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+const FACILITATOR_URL = 'https://mainnet.anyspend.com/x402';
+
+// Tu dirección de billetera de Solana
+const SOLANA_PAYTO_ADDRESS = 'YourSolanaWalletAddress...';
+
+// Configura los puntos finales de pago
+app.use(
+  paymentMiddleware(
+    SOLANA_PAYTO_ADDRESS,
+    {
+      "POST /api/solana/premium": {
+        price: {
+          amount: '10000', // 0.01 USDC (6 decimales)
+          asset: {
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC en Solana
+            decimals: 6,
+          },
+        },
+        network: 'solana',
+        config: {
+          description: 'Acceso a datos premium mediante pago con USDC',
+          mimeType: 'application/json',
+        },
+      },
+    },
+    {
+      url: FACILITATOR_URL,
+    },
+  ),
+);
+
+// Tu ruta protegida
+app.post('/api/solana/premium', (req, res) => {
+  res.json({
+    message: '¡Pago exitoso!',
+    data: 'Tus datos premium de Solana aquí',
+  });
+});
+
+app.listen(3001, () => {
+  console.log('Servidor Solana X402 funcionando en el puerto 3001');
+});
+```
+
+**Qué hace esto:**
+1. El cliente solicita el punto final
+2. El middleware devuelve `402 Payment Required` con los detalles del pago en Solana
+3. El cliente firma una transacción de Solana con transferencia de USDC
+4. El facilitador verifica y envía la transacción (sin gas)
+5. Tu manejador de ruta se ejecuta después de la confirmación del pago
+
+---
+
+## Configuración del Cliente
+
+Hay dos maneras de realizar pagos en Solana dependiendo de tu caso de uso.
+
+### Opción 1: usando fetch (agentes de IA y backend)
+
+Perfecto para scripts de Node.js, agentes de IA y aplicaciones del lado del servidor.
+
+#### Instalación
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### Ejemplo de script
+
+```typescript
+import {
+  createSigner,
+  wrapFetchWithPayment,
+} from "@b3dotfun/anyspend-x402-fetch";
+
+const privateKey = process.env.SOLANA_PRIVATE_KEY; // Clave privada en Base58
+const url = "https://api.example.com/api/solana/premium";
+
+async function main() {
+  // Crea un firmante de Solana a partir de la clave privada
+  const signer = await createSigner("solana", privateKey);
+
+  // Envuelve fetch con soporte de pago
+  const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+  // Realiza la solicitud de pago
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+
+  // Verifica la respuesta del pago
+  const paymentHeader = response.headers.get("x-payment-response");
+  if (paymentHeader) {
+    const payment = JSON.parse(atob(paymentHeader));
+    // Transacción disponible en: https://solscan.io/tx/${payment.transaction}
+  }
+}
+
+main();
+```
+
+**Puntos clave:**
+- Usa la clave privada codificada en base58 (de un par de claves de Solana)
+- Maneja automáticamente las respuestas 402 y el flujo de pago
+- Devuelve el hash de la transacción en el encabezado `x-payment-response`
+
+---
+
+### Opción 2: usando billeteras de navegador (React/Next.js)
+
+Para aplicaciones web que usan Phantom, Solflare, Ledger u otras billeteras de Solana.
+
+#### Instalación
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### Ejemplo de componente React
+
+```tsx
+import {
+  createWalletAdapterSigner,
+  useWallet,
+  WalletMultiButton,
+} from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { wrapFetchWithPayment } from "@b3dotfun/anyspend-x402-fetch";
+
+function PremiumDataFetcher() {
+  const { publicKey, signAllTransactions, connected } = useWallet();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    try {
+      // Crea un firmante a partir del adaptador de billetera
+      const signer = createWalletAdapterSigner(
+        publicKey.toBase58(),
+        signAllTransactions
+      );
+
+      // Envuelve fetch con soporte de pago
+      const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+      // Realiza la solicitud de pago
+      const response = await fetchWithPayment(
+        "https://api.example.com/api/solana/premium",
+        { method: "POST" }
+      );
+
+      const result = await response.json();
+      setData(result);
+
+      // Obtiene el hash de la transacción
+      const paymentHeader = response.headers.get("x-payment-response");
+      if (paymentHeader) {
+        const payment = JSON.parse(atob(paymentHeader));
+        // Transacción disponible en: https://solscan.io/tx/${payment.transaction}
+      }
+    } catch (error) {
+      // Maneja el error de pago
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <WalletMultiButton />
+      <button onClick={fetchPremiumData} disabled={!connected || loading}>
+        {loading ? "Procesando..." : "Obtener Datos Premium (0.01 USDC)"}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+#### Configuración del contenedor de la aplicación
+
+Envuelve tu aplicación con los proveedores de billetera:
+
+```tsx
+import { WalletProvider } from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { clusterApiUrl } from "@solana/web3.js";
+
+function App() {
+  const endpoint = clusterApiUrl("mainnet-beta");
+
+  return (
+    <WalletProvider endpoint={endpoint} autoConnect>
+      <PremiumDataFetcher />
+    </WalletProvider>
+  );
+}
+```
+
+**Puntos clave:**
+- Funciona con Phantom, Solflare, Ledger, Trust Wallet y más
+- Solicita al usuario que apruebe la firma de la transacción
+- Completamente sin gas - los usuarios solo firman, el facilitador paga las tarifas
+- Conecta Solana Wallet Adapter v1 con firmas X402 v2
+
+---
+
+## Configuración
+
+### Redes soportadas
+
+- **`solana`** - Solana mainnet-beta
+- **`solana-devnet`** - Solana devnet (para pruebas)
+
+### Configuración de token
+
+El token SPL más común en Solana es USDC:
+
+```typescript
+{
+  address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // Mint de USDC
+  decimals: 6,
+}
+```
+
+Para otros tokens SPL, especifica la dirección del mint y los decimales.
+
+### URL del facilitador
+
+Producción: `https://mainnet.anyspend.com/x402`
+
+El facilitador maneja:
+- Verificación de transacciones
+- Envío en cadena
+- Patrocinio de tarifas de gas
+- Liquidación de pagos
+
+---
+
+## Pruebas
+
+### Obtener USDC de prueba
+
+Para pruebas en Solana devnet:
+
+1. Obtén SOL de devnet de [Solana Faucet](https://faucet.solana.com/)
+2. Usa el mint de USDC de devnet: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
+3. Establece la red a `solana-devnet` en tu configuración
+
+### Prueba tu integración
+
+```typescript
+// Servidor - usa devnet
+network: 'solana-devnet'
+
+// Cliente - usa RPC de devnet
+const endpoint = 'https://api.devnet.solana.com';
+```
+
+---
+
+## Direcciones comunes de tokens
+
+| Token | Dirección del Mint | Decimales | Red |
+|-------|--------------|----------|---------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | mainnet-beta |
+| USDC | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | devnet |
+
+---
+
+## Manejo de errores
+
+```typescript
+try {
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+} catch (error) {
+  if (error.message.includes("Fondos insuficientes")) {
+    // No hay suficiente USDC en la billetera
+  } else if (error.message.includes("Usuario rechazado")) {
+    // Usuario canceló la transacción
+  } else {
+    // Maneja el error de pago
+  }
+}
+```
+
+---
+
+## ¿Qué sigue?
+
+<CardGroup cols={2}>
+<Card title="Visión General de X402" icon="book" href="/anyspend/x402-overview">
+  Aprende cómo funciona AnySpend X402
+</Card>
+
+<Card title="Soporte de Red" icon="globe" href="/anyspend/x402-network-support">
+  Ver todas las cadenas y tokens soportados
+</Card>
+
+<Card title="Métodos de Firma" icon="signature" href="/anyspend/x402-signature-methods">
+  Profundiza en las firmas de transacciones de Solana
+</Card>
+
+<Card title="Guía para Compradores" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Guía de configuración para clientes EVM
+</Card>
+</CardGroup>
+
+---
+
+## Solución de problemas
+
+<AccordionGroup>
+<Accordion title="La verificación de la firma de la transacción falló">
+Comprueba que:
+- Tu billetera tiene suficiente USDC para el pago
+- Estás en la red correcta (mainnet vs devnet)
+- La URL del facilitador es correcta
+</Accordion>
+
+<Accordion title="El adaptador de billetera no funciona">
+Asegúrate de:
+- Haber envuelto tu aplicación con `WalletProvider`
+- La extensión de la billetera está instalada (Phantom, Solflare, etc.)
+- Estás usando el endpoint RPC correcto
+</Accordion>
+
+<Accordion title="El pago se realizó pero no se devolvieron datos">
+Verifica:
+- El punto final del servidor está configurado correctamente
+- La cantidad del pago coincide con las expectativas del servidor
+- Revisa los registros del servidor por errores
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Obtener ayuda
+
+- **Demostración en Vivo**: Pruébalo tú mismo en [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)
+- **Código Fuente de la Demo**: [github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)
+- **Discord**: Únete a nuestra [comunidad de Discord](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Ejemplos**: Ver ejemplos completos en el [repositorio](https://github.com/b3-fun/anyspend-x402/tree/main/examples/typescript)

@@ -1,0 +1,290 @@
+---
+title: Autentikasi
+description: Autentikasi kunci API untuk API Platform AnySpend
+lang: id
+originalPath: anyspend/api/authentication.mdx
+---
+# Autentikasi
+
+Platform API AnySpend menggunakan kunci API untuk autentikasi. Setiap kunci dibatasi untuk satu organisasi dan membawa satu set izin tertentu.
+
+## Membuat kunci API
+
+<Steps>
+<Step title="Buka Dashboard AnySpend">
+  Navigasi ke [anyspend.com/dashboard](https://anyspend.com/dashboard) dan masuk ke akun Anda.
+</Step>
+
+<Step title="Pergi ke Pengaturan > Kunci API">
+  Di sidebar, klik **Pengaturan**, kemudian pilih tab **Kunci API**.
+</Step>
+
+<Step title="Buat kunci baru">
+  Klik **Buat Kunci API**, berikan nama deskriptif (mis., "Backend Produksi" atau "Pipa CI/CD"), dan pilih level izin.
+</Step>
+
+<Step title="Salin dan simpan kunci">
+  Kunci lengkap hanya ditampilkan **sekali** saat pembuatan. Salin segera dan simpan di lokasi yang aman (mis., variabel lingkungan, manajer rahasia).
+</Step>
+</Steps>
+
+<Warning>
+  Kunci API Anda hanya ditampilkan sekali saat dibuat. Jika Anda kehilangannya, Anda perlu mencabut kunci lama dan membuat yang baru.
+</Warning>
+
+## Format kunci API
+
+Semua kunci API AnySpend dimulai dengan awalan `asp_`:
+
+```
+asp_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+```
+
+Awalan ini memudahkan untuk mengidentifikasi kunci AnySpend di basis kode Anda dan mencegah penggunaan kunci dari layanan lain secara tidak sengaja.
+
+## Mengirimkan kunci API Anda
+
+Anda dapat mengautentikasi permintaan menggunakan salah satu dari dua header:
+
+<Tabs>
+<Tab title="Header Otorisasi (disarankan)">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_a1b2c3d4e5..."
+```
+</Tab>
+
+<Tab title="Header X-API-Key">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "X-API-Key: asp_live_a1b2c3d4e5..."
+```
+</Tab>
+</Tabs>
+
+Metode `Authorization: Bearer` lebih disukai karena mengikuti konvensi OAuth 2.0 standar dan didukung oleh sebagian besar klien HTTP dan alat pengujian API.
+
+## Level izin
+
+Setiap kunci API diberikan satu atau lebih izin. Izin mengikuti hierarki di mana level yang lebih tinggi mencakup semua kemampuan level yang lebih rendah.
+
+| Izin | Memberikan akses ke | Kasus penggunaan |
+|-----------|-----------------|----------|
+| **read** | `GET` pada semua sumber daya -- daftar dan mengambil tautan pembayaran, produk, transaksi, pelanggan, analitik | Dashboard, alat pelaporan, integrasi hanya-baca |
+| **write** | Semua di `read` + `POST`, `PATCH`, `DELETE` pada semua sumber daya -- membuat tautan pembayaran, memperbarui produk, mengelola webhook | Layanan backend, otomatisasi, integrasi standar |
+| **admin** | Semua di `write` + mengelola kunci API, pengaturan organisasi, dan penagihan | Manajemen infrastruktur, CI/CD, alat admin |
+
+<Info>
+  Hierarki izin berarti kunci dengan izin **write** secara otomatis memiliki akses **read**. Kunci dengan izin **admin** memiliki akses **write** dan **read**.
+</Info>
+
+### Hierarki izin
+
+```
+admin
+  |-- write
+  |     |-- read
+```
+
+### Contoh: memeriksa izin
+
+Jika sebuah rute memerlukan izin `write` dan kunci Anda hanya memiliki `read`, Anda akan menerima error `403`:
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "Kunci API ini tidak memiliki izin 'write'."
+  }
+}
+```
+
+## Membuat kunci API melalui API
+
+Jika Anda memiliki kunci dengan izin `admin`, Anda dapat membuat kunci baru secara programatik:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Layanan Backend - Produksi",
+    "permissions": ["read", "write"],
+    "expires_at": 1735689600000
+  }'
+```
+
+Respon:
+
+```json
+{
+  "object": "api_key",
+  "id": "ak_abc123def456",
+  "name": "Layanan Backend - Produksi",
+  "key": "asp_live_x9y8z7w6v5u4t3s2r1q0...",
+  "key_prefix": "asp_live_x9y8",
+  "permissions": ["read", "write"],
+  "expires_at": 1735689600000,
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+<Warning>
+  Bidang `key` hanya dikembalikan dalam respons pembuatan. Simpan dengan aman -- tidak dapat diambil lagi.
+</Warning>
+
+## Menyebutkan dan mencabut kunci
+
+### Daftar semua kunci
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+Respon daftar termasuk metadata tetapi tidak pernah kunci lengkap -- hanya `key_prefix` untuk identifikasi:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "api_key",
+      "id": "ak_abc123def456",
+      "name": "Layanan Backend - Produksi",
+      "key_prefix": "asp_live_x9y8",
+      "permissions": ["read", "write"],
+      "last_used_at": 1709164800000,
+      "expires_at": 1735689600000,
+      "is_active": true,
+      "created_at": 1709078400000
+    }
+  ],
+  "has_more": false,
+  "total_count": 1,
+  "url": "/api/v1/api-keys"
+}
+```
+
+### Mencabut kunci
+
+```bash
+curl -X DELETE https://platform-api.anyspend.com/api/v1/api-keys/ak_abc123def456 \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+Respon:
+
+```json
+{
+  "object": "api_key_revoked",
+  "id": "ak_abc123def456",
+  "revoked": true
+}
+```
+
+Kunci yang dicabut langsung berhenti bekerja. Permintaan yang sedang berlangsung yang diautentikasi dengan kunci yang dicabut akan menerima error `401`.
+
+## Quick Pay -- tingkat terbuka (tanpa auth)
+
+Endpoint Quick Pay tidak memerlukan autentikasi. Ini dirancang untuk pembayaran satu kali di mana Anda tidak memerlukan akun AnySpend:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "1000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xRecipient..."
+  }'
+```
+
+Quick Pay dibatasi hingga **5 permintaan per menit per alamat IP**. Tidak diperlukan kunci API.
+
+## Praktik terbaik rotasi kunci
+
+Merotasi kunci API Anda secara berkala mengurangi risiko kredensial yang dikompromikan. Berikut adalah pendekatan yang disarankan:
+
+<Steps>
+<Step title="Buat kunci baru">
+  Gunakan dashboard atau API untuk membuat kunci baru dengan izin yang sama dengan yang sedang dirotasi.
+</Step>
+
+<Step title="Perbarui aplikasi Anda">
+  Terapkan kunci baru ke variabel lingkungan atau manajer rahasia aplikasi Anda.
+</Step>
+
+<Step title="Verifikasi kunci baru bekerja">
+  Konfirmasi aplikasi Anda berhasil membuat permintaan dengan kunci baru dengan memeriksa cap waktu `last_used_at`.
+</Step>
+
+<Step title="Cabut kunci lama">
+  Setelah Anda yakin kunci baru digunakan di mana-mana, cabut kunci lama.
+</Step>
+</Steps>
+
+<Tip>
+  Gunakan bidang `expires_at` opsional saat membuat kunci untuk menegakkan kedaluwarsa otomatis. Ini menambahkan jaring pengaman jika Anda lupa merotasi.
+</Tip>
+
+## Praktik terbaik keamanan
+
+<AccordionGroup>
+<Accordion title="Jangan pernah mengekspos kunci di kode sisi klien">
+Kunci API hanya harus digunakan dalam kode sisi server (layanan backend, fungsi serverless, pipa CI/CD). Jangan pernah sertakan mereka di:
+
+- Bundel JavaScript frontend
+- Kode sumber aplikasi seluler
+- Repositori GitHub publik
+- Berkas konfigurasi yang dapat diakses browser
+
+Jika Anda perlu berinteraksi dengan AnySpend dari frontend, gunakan [komponen SDK](/anyspend/components) yang menangani autentikasi melalui sesi checkout yang aman.
+</Accordion>
+
+<Accordion title="Gunakan variabel lingkungan">
+Simpan kunci API Anda dalam variabel lingkungan daripada mengodekan secara keras:
+
+```bash
+# .env (jangan pernah commit file ini)
+ANYSPEND_API_KEY=asp_live_a1b2c3d4e5...
+```
+
+```typescript
+// server.ts
+const apiKey = process.env.ANYSPEND_API_KEY;
+```
+
+Tambahkan `.env` ke `.gitignore` Anda untuk mencegah commit tidak sengaja.
+</Accordion>
+
+<Accordion title="Gunakan izin least-privilege">
+Buat kunci hanya dengan izin yang mereka butuhkan:
+
+- Dashboard pelaporan hanya memerlukan **read**
+- Backend yang membuat tautan pembayaran memerlukan **write**
+- Hanya alat infrastruktur yang harus menggunakan **admin**
+</Accordion>
+
+<Accordion title="Monitor penggunaan kunci">
+Secara rutin periksa `last_used_at` pada kunci Anda untuk mengidentifikasi kunci yang tidak digunakan yang harus dicabut. Kunci aktif yang tidak digunakan adalah risiko keamanan.
+</Accordion>
+
+<Accordion title="Tetapkan tanggal kedaluwarsa">
+Untuk integrasi sementara, token CI/CD, atau akses kontraktor, selalu tetapkan cap waktu `expires_at` sehingga kunci secara otomatis menjadi tidak aktif.
+</Accordion>
+</AccordionGroup>
+
+## Kode error autentikasi
+
+| Status HTTP | Kode | Arti |
+|------------|------|---------|
+| `401` | `key_missing` | Tidak ada kunci API yang disediakan dalam header permintaan |
+| `401` | `key_invalid` | Kunci API tidak cocok dengan kunci aktif mana pun |
+| `401` | `key_expired` | Kunci API telah melewati cap waktu `expires_at` |
+| `401` | `key_revoked` | Kunci API secara eksplisit dicabut |
+| `403` | `insufficient_permissions` | Kunci API tidak memiliki level izin yang diperlukan |
+
+Lihat halaman [Kesalahan](/anyspend/api/errors) untuk referensi kesalahan lengkap.

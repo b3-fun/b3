@@ -1,0 +1,298 @@
+---
+title: Notificações
+description: Configure as configurações de notificação por email e Telegram
+lang: pt-BR
+originalPath: anyspend/api/notifications-api.mdx
+---
+Configure como você recebe notificações para eventos de pagamento. AnySpend suporta canais de entrega por email e Telegram com granularidade por evento.
+
+<Info>
+  Ler configurações de notificação requer permissão **read**. Atualizar configurações e vincular/desvincular Telegram requer permissão **admin**.
+</Info>
+
+## Autenticação
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Base: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Obter Configurações de Notificação
+
+<ParamField path="GET /notifications" type="read">
+  Recupere a configuração de notificação atual para sua conta.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const settings = await client.notifications.get();
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "merchant@example.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": [
+      "payment.completed",
+      "payment.failed",
+      "checkout.completed"
+    ],
+    "updated_at": "2026-02-20T14:30:00Z"
+  }
+}
+```
+
+---
+
+### Atualizar Configurações de Notificação
+
+<ParamField path="PATCH /notifications" type="admin">
+  Atualize as preferências de notificação. Todos os campos são opcionais -- apenas os campos fornecidos são alterados.
+</ParamField>
+
+<ParamField path="email_enabled" type="boolean">
+  Ativar ou desativar notificações por email.
+</ParamField>
+
+<ParamField path="email_address" type="string">
+  Endereço de email para receber notificações. Deve ser um formato de email válido.
+</ParamField>
+
+<ParamField path="telegram_enabled" type="boolean">
+  Ativar ou desativar notificações do Telegram. Telegram deve ser vinculado primeiro.
+</ParamField>
+
+<ParamField path="enabled_events" type="string[]">
+  Array de tipos de eventos para receber notificações. Aplica-se tanto para canais de email quanto para Telegram.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/notifications \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email_enabled": true,
+        "email_address": "payments@mycompany.com",
+        "telegram_enabled": true,
+        "enabled_events": ["payment.completed", "payment.failed"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.notifications.update({
+      email_enabled: true,
+      email_address: "payments@mycompany.com",
+      telegram_enabled: true,
+      enabled_events: ["payment.completed", "payment.failed"],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "email_enabled": true,
+    "email_address": "payments@mycompany.com",
+    "telegram_enabled": true,
+    "telegram_chat_id": "123456789",
+    "telegram_username": "@merchant",
+    "enabled_events": ["payment.completed", "payment.failed"],
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Vincular Telegram
+
+<ParamField path="POST /notifications/telegram/link" type="admin">
+  Gere uma URL de link do bot do Telegram. Abrir este link inicia uma conversa com o bot de notificação do AnySpend e vincula sua conta do Telegram.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/telegram/link \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const { link_url } = await client.notifications.linkTelegram();
+    // Redirecione o usuário ou exiba o link
+    console.log("Abra este link para conectar o Telegram:", link_url);
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "link_url": "https://t.me/AnySpendBot?start=link_abc123def456",
+    "expires_at": "2026-02-27T12:15:00Z"
+  }
+}
+```
+
+<Steps>
+  <Step title="Gerar link">
+    Chame `POST /notifications/telegram/link` para obter uma URL de link do bot.
+  </Step>
+  <Step title="Abrir no Telegram">
+    Abra o `link_url` no Telegram. Pressione **Iniciar** na conversa com o bot.
+  </Step>
+  <Step title="Habilitar notificações">
+    Chame `PATCH /notifications` com `telegram_enabled: true`.
+  </Step>
+</Steps>
+
+<Note>
+  A URL do link expira após 15 minutos. Gere uma nova se ela expirar antes de ser usada.
+</Note>
+
+---
+
+### Desvincular Telegram
+
+<ParamField path="DELETE /notifications/telegram" type="admin">
+  Desconecte o Telegram das suas configurações de notificação. Notificações do Telegram serão automaticamente desativadas.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/notifications/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.unlinkTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Enviar Email de Teste
+
+<ParamField path="POST /notifications/test/email" type="admin">
+  Envie uma notificação de teste para o seu endereço de email configurado. Email deve estar habilitado e um endereço deve ser definido.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/email \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testEmail();
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "payments@mycompany.com",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+### Enviar Mensagem de Teste do Telegram
+
+<ParamField path="POST /notifications/test/telegram" type="admin">
+  Envie uma notificação de teste para a sua conta do Telegram vinculada. Telegram deve estar vinculado e habilitado.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/notifications/test/telegram \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.notifications.testTelegram();
+    ```
+  </Tab>
+</Tabs>
+
+**Resposta**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sent_to": "@merchant",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+## Objeto de Configurações de Notificação
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `email_enabled` | `boolean` | Se as notificações por email estão ativas |
+| `email_address` | `string \| null` | Endereço de email configurado |
+| `telegram_enabled` | `boolean` | Se as notificações do Telegram estão ativas |
+| `telegram_chat_id` | `string \| null` | ID do chat do Telegram vinculado |
+| `telegram_username` | `string \| null` | Nome de usuário do Telegram vinculado |
+| `enabled_events` | `string[]` | Tipos de eventos que disparam notificações |
+| `updated_at` | `string` | Carimbo de data/hora da última atualização no formato ISO 8601 |
+
+## Eventos Suportados
+
+Os mesmos tipos de eventos estão disponíveis para canais de email e Telegram:
+
+| Tipo de Evento | Descrição |
+|------------|-------------|
+| `payment.completed` | Um pagamento foi processado com sucesso |
+| `payment.failed` | Uma tentativa de pagamento falhou |
+| `checkout.completed` | Uma sessão de checkout foi concluída com todos os dados de formulário/envio |

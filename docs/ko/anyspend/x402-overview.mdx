@@ -1,0 +1,163 @@
+---
+title: AnySpend x402 개요
+description: x402 오픈 결제 프로토콜을 사용하여 모든 토큰으로 유료 API 및 서비스에 대한 비용을 지불하세요
+lang: ko
+originalPath: anyspend/x402-overview.mdx
+---
+<CardGroup cols={2}>
+<Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  소스 코드, 예제 보기 및 기여하기
+</Card>
+
+<Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402 패키지 설치하기
+</Card>
+</CardGroup>
+
+## AnySpend x402란?
+
+AnySpend x402는 즉각적이고 자동적인 암호화폐 결제를 HTTP를 통해 직접 가능하게 하는 **x402 결제 프로토콜**의 B3 구현입니다. 기존의 x402 중계자들이 USDC만을 지원하는 것과 달리, **AnySpend는 호환 가능한 모든 토큰**(EIP-2612 또는 EIP-3009)으로 결제할 수 있게 하며, 리소스 서버는 원하는 토큰을 받을 수 있습니다.
+
+x402 프로토콜은 HTTP `402 Payment Required` 상태 코드를 현대화하여 기계 간 마이크로페이먼트, 유료 API, 그리고 자율 에이전트 상호작용을 위한 실용적인 해결책으로 변환합니다.
+
+## 구매자(지불자)를 위해
+
+보유한 호환 가능한 토큰을 사용하여 유료 리소스에 대해 지불하세요:
+
+
+- **호환 가능한 토큰으로 지불하기**: 가스 없는 결제를 위해 EIP-2612 또는 EIP-3009 지원 토큰 사용
+- **표준 프로토콜**: 표준 HTTP를 사용하는 모든 x402 지원 서비스와 작동
+- **수동 스왑 없음**: AnySpend가 자동으로 판매자가 필요로 하는 토큰으로 변환
+- **간단한 통합**: 하나의 SDK로 모든 x402 서비스를 지원
+
+<Card title="Token Compatibility Checker" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  19개 이상의 네트워크에서 EIP-2612 또는 EIP-3009 지원을 가진 호환 가능한 토큰 탐색
+</Card>
+
+**사용 사례:**
+- 프리미엄 API 및 AI 에이전트 서비스 접근
+- 컴퓨팅 자원 및 데이터 피드 결제
+- 자율 에이전트 간 결제 활성화
+- 프로그래매틱하게 유료 콘텐츠 소비
+
+## 판매자(리소스 서버)를 위해
+
+고객이 선호하는 토큰으로 결제하면서 USDC로 결제를 받으세요:
+
+- **USDC 받기**: 고객이 사용하는 토큰에 상관없이 USDC로 결제 받기
+- **Express 미들웨어**: 몇 줄의 코드로 API에 결제 추가
+- **블록체인 인프라 없음**: AnySpend가 모든 온체인 복잡성을 처리
+- **즉각적인 정산**: 결제가 자동으로 검증되고 정산됨
+
+**사용 사례:**
+- 프리미엄 API 및 데이터 서비스 수익화
+- 유료 AI 에이전트 워크플로우 구축
+- 유료 콘텐츠 및 도구 생성
+- 암호화폐 전문 지식 없이 암호화폐 결제 수락
+
+## 빠른 시작
+
+당신의 경로를 선택하세요:
+
+<CardGroup cols={2}>
+<Card title="I want to pay for services" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  **구매자를 위한**: 유료 리소스에 대해 모든 토큰으로 지불하기 위해 x402 클라이언트 SDK 사용 방법 배우기
+</Card>
+
+<Card title="I want to accept payments" icon="cash-register" href="/anyspend/x402-quickstart-sellers">
+  **판매자를 위한**: Express 미들웨어를 API에 추가하고 다중 토큰 결제를 시작하기
+</Card>
+</CardGroup>
+
+
+## 작동 원리
+
+<Steps>
+<Step title="Client Requests Resource">
+사용자의 애플리케이션이 API에 표준 HTTP 요청을 합니다
+</Step>
+
+<Step title="Payment Required">
+API가 결제 세부 정보와 함께 `402 Payment Required`를 반환합니다
+</Step>
+
+<Step title="Token Preference">
+클라이언트가 선호하는 결제 토큰(USDC, USDT 등)을 지정합니다
+</Step>
+
+<Step title="AnySpend Quotes">
+AnySpend가 클라이언트가 선택한 토큰의 동등한 금액을 계산합니다
+</Step>
+
+<Step title="Client Signs Payment">
+사용자가 토큰에 대한 암호화 인증을 서명합니다
+</Step>
+
+<Step title="Automatic Settlement">
+AnySpend가 토큰을 USDC로 스왑하고 당신의 지갑으로 정산합니다
+</Step>
+
+<Step title="Resource Delivered">
+API가 결제 확인을 받고 요청된 리소스를 반환합니다
+</Step>
+</Steps>
+
+## 주요 차별점
+
+### 다중 토큰 지원
+
+**표준 x402**: 리소스 서버와 클라이언트 모두 USDC를 사용해야 합니다
+
+**AnySpend x402**: 클라이언트는 보유한 **호환 가능한 모든 토큰**(EIP-2612 또는 EIP-3009 지원 필요)으로 지불합니다. AnySpend가 변환을 처리합니다.
+
+```
+클라이언트가 DAI(EIP-2612)로 지불 → AnySpend가 1 USDC로 스왑 → 판매자가 1 USDC를 받음
+```
+
+### 인프라 필요 없음
+
+리소스 서버는 다음을 할 필요가 없습니다:
+- 블록체인 노드 운영
+- 지갑이나 개인 키 관리
+- 토큰 스왑이나 브리징 처리
+- 거래 상태 모니터링
+
+AnySpend의 중계자가 모든 블록체인 작업을 처리하고 검증 및 정산을 위한 간단한 HTTP 엔드포인트를 제공합니다.
+
+### 표준 프로토콜 준수
+
+AnySpend를 사용하는 클라이언트는 특별한 중계자를 사용하고 있다는 것을 알 필요가 없습니다. 흐름은 표준 x402 프로토콜 메시지를 사용하며, 다중 토큰 변환은 미들웨어를 통해 리소스 서버 측에서 발생합니다.
+
+## 패키지 배달
+
+AnySpend x402는 두 가지 패키지로 구성됩니다:
+
+<CardGroup cols={2}>
+<Card title="Server SDK" icon="server">
+  **@b3dotfun/anyspend-x402**
+
+  리소스 서버가 다중 토큰 결제를 쉽게 수락할 수 있도록 Express, Next.js, Hono를 지원하는 범용 서버 미들웨어
+</Card>
+
+<Card title="Client SDK" icon="code">
+  **anyspend-x402-client**
+
+  클라이언트가 서명 도우미와 함께 결제를 할 수 있는 플랫폼 독립적인 TypeScript SDK
+</Card>
+</CardGroup>
+
+## AnySpend 중계자에 의해 구동됨
+
+모든 x402 결제는 다음을 처리하는 AnySpend 중계자를 통해 처리됩니다:
+
+- 19개 이상의 블록체인 네트워크에 걸친 다중 토큰 지원
+- 자동 토큰 스왑 및 크로스 체인 라우팅
+- 사용자를 위한 가스 없는 결제
+- 표준 x402 구현 준수
+- 모든 x402 중계자를 위한 드롭인 대체
+
+**Production Endpoint:** `https://mainnet.anyspend.com/x402`
+
+<Card title="AnySpend facilitator" icon="server" href="/anyspend/x402-facilitator">
+  API 엔드포인트, 아키텍처, 및 구성
+</Card>

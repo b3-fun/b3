@@ -1,0 +1,442 @@
+---
+title: 支付链接
+description: 创建、管理和跟踪用于接受加密支付的支付链接
+lang: cn
+originalPath: anyspend/api/payment-links.mdx
+---
+支付链接是可分享的URL，允许您的客户在任何支持的链上使用任何代币进行支付。每个链接都可以自定义品牌、表单、运输选项等。
+
+<Info>
+  支付链接通过AnySpend协议自动处理代币路由、燃气抽象和跨链交换。
+</Info>
+
+## 支付链接对象
+
+<ResponseField name="id" type="string">
+  支付链接的唯一标识符（例如，`pl_abc123`）。
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  结账时向客户显示的显示名称。
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  可分享的结账URL（例如，`https://pay.anyspend.com/pl_abc123`）。
+</ResponseField>
+
+<ResponseField name="short_url" type="string">
+  用于分享的缩短URL（例如，`https://as.pay/abc123`）。
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  您希望以此代币合约地址接收支付。
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  您希望在哪个链上接收支付。
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  接收支付的钱包地址。
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  以代币最小单位的固定支付金额。可变金额链接为Null。
+</ResponseField>
+
+<ResponseField name="min_amount" type="string | null">
+  可变金额链接的最小允许金额。
+</ResponseField>
+
+<ResponseField name="max_amount" type="string | null">
+  可变金额链接的最大允许金额。
+</ResponseField>
+
+<ResponseField name="suggested_amount" type="string | null">
+  可变金额链接的预填充建议金额。
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  在结账页面显示的描述。
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  如果链接到产品，则为关联的产品ID。
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  在结账页面显示的图片。
+</ResponseField>
+
+<ResponseField name="theme_color" type="string | null">
+  结账页面品牌的十六进制颜色代码（例如，`#6366f1`）。
+</ResponseField>
+
+<ResponseField name="button_text" type="string | null">
+  支付按钮的自定义文本（默认为`"Pay"`）。
+</ResponseField>
+
+<ResponseField name="max_uses" type="number | null">
+  允许的最大完成支付次数。无限制为Null。
+</ResponseField>
+
+<ResponseField name="uses" type="number">
+  到目前为止的完成支付次数。
+</ResponseField>
+
+<ResponseField name="expires_at" type="string | null">
+  ISO 8601过期时间戳。无过期为Null。
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  链接当前是否接受支付。
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  结账时从客户处收集的自定义表单字段。
+  <Expandable title="form_schema属性">
+    <ResponseField name="fields" type="array">
+      表单字段定义的数组。
+      <Expandable title="字段属性">
+        <ResponseField name="id" type="string">唯一字段标识符。</ResponseField>
+        <ResponseField name="type" type="string">字段类型：`text`、`email`、`phone`、`select`、`textarea`、`number`、`checkbox`。</ResponseField>
+        <ResponseField name="label" type="string">显示标签。</ResponseField>
+        <ResponseField name="required" type="boolean">字段是否必填。</ResponseField>
+        <ResponseField name="placeholder" type="string">占位符文本。</ResponseField>
+        <ResponseField name="options" type="array">`select`字段的选项。</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  实体商品的可用运输选项。
+  <Expandable title="运输选项属性">
+    <ResponseField name="id" type="string">唯一运输选项标识符。</ResponseField>
+    <ResponseField name="name" type="string">显示名称（例如，`"标准运输"`）。</ResponseField>
+    <ResponseField name="amount" type="string">以代币最小单位的运输成本。</ResponseField>
+    <ResponseField name="estimated_days" type="string">预计交货时间（例如，`"5-7个工作日"`）。</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="collect_shipping_address" type="boolean">
+  是否在结账时收集送货地址。
+</ResponseField>
+
+<ResponseField name="return_url" type="string | null">
+  支付后重定向客户的URL。
+</ResponseField>
+
+<ResponseField name="return_label" type="string | null">
+  返回按钮的标签（例如，`"返回商店"`）。
+</ResponseField>
+
+<ResponseField name="branding" type="object | null">
+  自定义品牌配置。
+  <Expandable title="branding属性">
+    <ResponseField name="logo_url" type="string">Logo图片URL。</ResponseField>
+    <ResponseField name="business_name" type="string">结账时显示的商业名称。</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="fee_on_top" type="boolean">
+  平台费用是加在支付金额之上（true）还是由商家吸收（false）。
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  附加到此支付链接的行项目。
+  <Expandable title="项目属性">
+    <ResponseField name="id" type="string">项目ID。</ResponseField>
+    <ResponseField name="name" type="string">项目名称。</ResponseField>
+    <ResponseField name="amount" type="string">项目价格。</ResponseField>
+    <ResponseField name="quantity" type="number">项目数量。</ResponseField>
+    <ResponseField name="image_url" type="string | null">项目图片URL。</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601创建时间戳。
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601最后更新时间戳。
+</ResponseField>
+
+---
+
+## URL参数
+
+分享支付链接URL时，您可以附加查询参数以预填充会话数据、跟踪归因，并将支付与您的客户关联。
+
+| 参数 | 描述 | 示例 |
+|-----------|-------------|---------|
+| `client_reference_id` | 您的内部参考ID（订单ID、用户ID等） | `?client_reference_id=order_123` |
+| `metadata[key]` | 任意键值元数据（括号表示法，最多50个键） | `?metadata[user_id]=clerk_abc&metadata[plan]=pro` |
+| `session_id` | 使用预创建的结账会话而不是创建新会话 | `?session_id=cs_abc123` |
+| `success_url` | 覆盖成功支付后的重定向URL | `?success_url=https://example.com/thanks` |
+| `cancel_url` | 覆盖取消/返回URL | `?cancel_url=https://example.com/cart` |
+| `utm_source` | UTM来源用于归因 | `?utm_source=twitter` |
+| `utm_medium` | UTM媒介用于归因 | `?utm_medium=social` |
+| `utm_campaign` | UTM活动用于归因 | `?utm_campaign=launch` |
+
+### 元数据限制
+
+- 每个会话最多50个键
+- 键长度：最多40个字符
+- 值长度：最多500个字符
+
+### 示例：将支付与您的客户关联
+
+```
+https://anyspend.com/pay/abc123?client_reference_id=order_456&metadata[user_id]=clerk_abc&metadata[plan]=pro
+```
+
+所有参数都会传递给webhooks，因此您可以在后端对支付进行对账。
+
+<Tip>
+  对于需要完全控制的企业集成，请使用[结账会话API](/anyspend/api/checkout-sessions-api)在服务器端创建会话，带有`customer_email`、`customer_name`、`metadata`和`client_reference_id`，然后使用返回的`url`重定向或将`?session_id=`附加到您的支付链接。
+</Tip>
+
+---
+
+## 列出支付链接
+
+<ParamField query="search" type="string">
+  通过名称或描述搜索支付链接。
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  按活动状态过滤。省略以返回所有链接。
+</ParamField>
+
+<ParamField query="sort" type="string" default="created_at">
+  排序字段。可选项：`created_at`、`updated_at`、`name`、`uses`。
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  排序顺序。可选项：`asc`、`desc`。
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  分页的页码。
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  每页的结果数（最大100）。
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&sort=created_at&order=desc&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.paymentLinks.list({
+  active: true,
+  sort: "created_at",
+  order: "desc",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pl_abc123",
+          "name": "高级计划",
+          "url": "https://pay.anyspend.com/pl_abc123",
+          "short_url": "https://as.pay/abc123",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234...abcd",
+          "amount": "50000000",
+          "description": "高级月度订阅",
+          "active": true,
+          "uses": 42,
+          "max_uses": null,
+          "expires_at": null,
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-20T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 创建支付链接
+
+创建一个新的支付链接，可自定义结账体验。
+
+<ParamField body="name" type="string" required>
+  支付链接的显示名称。
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  您希望接收的代币的合约地址。
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  您希望在哪个链上接收代币。
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  接收支付的钱包地址。
+</ParamField>
+
+<ParamField body="description" type="string">
+  在结账页面显示的描述。
+</ParamField>
+
+<ParamField body="amount" type="string">
+  以代币最小单位的固定支付金额。省略以获取可变金额链接。
+</ParamField>
+
+<ParamField body="min_amount" type="string">
+  可变金额链接的最小金额。
+</ParamField>
+
+<ParamField body="max_amount" type="string">
+  可变金额链接的最大金额。
+</ParamField>
+
+<ParamField body="suggested_amount" type="string">
+  可变金额链接的预填充金额。
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  链接到现有产品。
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  在结账页面显示的图片的URL。
+</ParamField>
+
+<ParamField body="theme_color" type="string">
+  结账品牌的十六进制颜色代码（例如，`"#6366f1"`）。
+</ParamField>
+
+<ParamField body="button_text" type="string">
+  自定义支付按钮文本。
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  完成支付的最大次数。省略以获得无限制。
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  ISO 8601过期时间戳。
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  结账时收集的自定义表单字段。有关结构，请参见上面的支付链接对象。
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  实体商品的运输选项。有关结构，请参见上面的支付链接对象。
+</ParamField>
+
+<ParamField body="collect_shipping_address" type="boolean" default={false}>
+  是否收集送货地址。
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  支付后重定向客户的URL。
+</ParamField>
+
+<ParamField body="return_label" type="string">
+  返回按钮的标签。
+</ParamField>
+
+<ParamField body="branding" type="object">
+  自定义品牌配置。有关结构，请参见上面的支付链接对象。
+</ParamField>
+
+<ParamField body="fee_on_top" type="boolean" default={false}>
+  在支付金额之上添加平台费用。
+</ParamField>
+
+<ParamField body="items" type="array">
+  在结账时显示的行项目。
+  <Expandable title="项目属性">
+    <ParamField body="items[].name" type="string" required>项目名称。</ParamField>
+    <ParamField body="items[].amount" type="string" required>以代币最小单位的项目价格。</ParamField>
+    <ParamField body="items[].quantity" type="number" required>数量。</ParamField>
+    <ParamField body="items[].image_url" type="string">项目图片URL。</ParamField>
+  </Expandable>
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "高级计划",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "50000000",
+    "description": "高级月度订阅",
+    "image_url": "https://example.com/premium.png",
+    "theme_color": "#6366f1",
+    "button_text": "立即订阅",
+    "return_url": "https://example.com/thank-you",
+    "return_label": "返回仪表板",
+    "form_schema": {
+      "fields": [
+        {
+          "id": "company_name",
+          "type": "text",
+          "label": "公司名称",
+          "required": true,
+          "placeholder": "Acme Inc."
+        },
+        {
+          "id": "team_size",
+          "type": "select",
+          "label": "团队规模",
+          "required": true,
+          "options": ["1-10", "11-50", "51-200", "200+"]
+        }
+      ]
+    },
+    "items": [
+      {
+        "name": "高级计划 - 月度",
+        "amount": "50000000",
+        "quantity": 1
+      }
+    ]
+  }'
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const paymentLink = await anyspend.paymentLinks.create({
+  name: "高级计划",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress:

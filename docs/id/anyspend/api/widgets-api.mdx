@@ -1,0 +1,370 @@
+---
+title: Widget
+description: Buat dan kelola konfigurasi widget yang dapat disematkan
+lang: id
+originalPath: anyspend/api/widgets-api.mdx
+---
+Widget adalah komponen UI yang dapat disematkan yang Anda konfigurasi sekali dan terapkan di mana saja. Setiap widget menyimpan tipe, konfigurasi, dan tema-nya sehingga Anda dapat memberikan pengalaman pembayaran yang konsisten di berbagai halaman atau aplikasi.
+
+<Info>
+  Endpoint CRUD widget memerlukan izin **write**. Mencantumkan dan mengambil widget (termasuk statistik) memerlukan izin **read**.
+</Info>
+
+## Otentikasi
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+URL Dasar: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoint
+
+### Daftar Widget
+
+<ParamField path="GET /widgets" type="read">
+  Daftar semua konfigurasi widget untuk akun Anda.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
+    const widgets = await client.widgets.list();
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wgt_abc123",
+      "name": "Homepage Checkout",
+      "widget_type": "checkout",
+      "description": "Widget checkout utama untuk halaman beranda",
+      "config": {
+        "recipient_address": "0x...",
+        "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "destination_chain_id": 8453,
+        "amount": "10000000"
+      },
+      "theme": {
+        "primary_color": "#4f46e5",
+        "border_radius": 12,
+        "font_family": "Inter"
+      },
+      "views_count": 1240,
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-20T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Buat Widget
+
+<ParamField path="POST /widgets" type="write">
+  Buat konfigurasi widget baru.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Nama yang mudah dibaca manusia untuk widget.
+</ParamField>
+
+<ParamField path="widget_type" type="string" required>
+  Tipe widget yang akan dibuat. Salah satu dari: `swap`, `checkout`, `nft`, `deposit`.
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  Objek konfigurasi spesifik widget. Isinya bervariasi berdasarkan `widget_type` (lihat [Tipe Widget](#widget-types) di bawah).
+</ParamField>
+
+<ParamField path="description" type="string">
+  Deskripsi opsional untuk referensi internal.
+</ParamField>
+
+<ParamField path="theme" type="object">
+  Penyesuaian tema visual. Lihat [Objek Tema](#theme-object) di bawah.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Product Checkout",
+        "widget_type": "checkout",
+        "description": "Widget checkout untuk halaman produk",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "25000000"
+        },
+        "theme": {
+          "primary_color": "#2563eb",
+          "border_radius": 8
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.create({
+      name: "Product Checkout",
+      widget_type: "checkout",
+      description: "Widget checkout untuk halaman produk",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "25000000",
+      },
+      theme: {
+        primary_color: "#2563eb",
+        border_radius: 8,
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wgt_def456",
+    "name": "Product Checkout",
+    "widget_type": "checkout",
+    "description": "Widget checkout untuk halaman produk",
+    "config": {
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "destination_chain_id": 8453,
+      "amount": "25000000"
+    },
+    "theme": {
+      "primary_color": "#2563eb",
+      "border_radius": 8
+    },
+    "views_count": 0,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Dapatkan Widget
+
+<ParamField path="GET /widgets/:id" type="read">
+  Ambil konfigurasi widget tunggal berdasarkan ID.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.get("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Perbarui Widget
+
+<ParamField path="PATCH /widgets/:id" type="write">
+  Perbarui konfigurasi widget yang ada. Semua bidang opsional -- hanya bidang yang disediakan yang diubah.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Updated Checkout",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "50000000"
+        },
+        "theme": {
+          "primary_color": "#059669"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.widgets.update("wgt_def456", {
+      name: "Updated Checkout",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "50000000",
+      },
+      theme: {
+        primary_color: "#059669",
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Hapus Widget
+
+<ParamField path="DELETE /widgets/:id" type="write">
+  Hapus konfigurasi widget secara permanen. Embed yang ada menggunakan ID widget ini akan berhenti dirender.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.widgets.delete("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Dapatkan Statistik Widget
+
+<ParamField path="GET /widgets/:id/stats" type="read">
+  Ambil statistik tampilan untuk sebuah widget. Termasuk total tampilan dan rincian harian.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456/stats \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const stats = await client.widgets.stats("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+**Respon**
+
+```json
+{
+  "success": true,
+  "data": {
+    "widget_id": "wgt_def456",
+    "total_views": 1240,
+    "daily": [
+      { "date": "2026-02-27", "views": 85 },
+      { "date": "2026-02-26", "views": 102 },
+      { "date": "2026-02-25", "views": 93 }
+    ]
+  }
+}
+```
+
+---
+
+## Objek Widget
+
+| Bidang | Tipe | Deskripsi |
+|-------|------|-------------|
+| `id` | `string` | Pengenal unik widget (mis., `wgt_abc123`) |
+| `name` | `string` | Nama widget yang mudah dibaca manusia |
+| `widget_type` | `string` | Tipe widget: `swap`, `checkout`, `nft`, atau `deposit` |
+| `description` | `string \| null` | Deskripsi opsional |
+| `config` | `object` | Konfigurasi spesifik tipe widget |
+| `theme` | `object \| null` | Penyesuaian tema visual |
+| `views_count` | `number` | Jumlah total render widget |
+| `created_at` | `string` | Cap waktu pembuatan ISO 8601 |
+| `updated_at` | `string` | Cap waktu pembaruan terakhir ISO 8601 |
+
+## Tipe Widget
+
+<Tabs>
+  <Tab title="checkout">
+    Widget checkout pembayaran untuk menerima pembayaran crypto atau fiat.
+
+    | Bidang Konfigurasi | Tipe | Deskripsi |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Alamat dompet pedagang |
+    | `destination_token` | `string` | Alamat kontrak token untuk diterima |
+    | `destination_chain_id` | `number` | ID rantai untuk token tujuan |
+    | `amount` | `string` | Jumlah pembayaran dalam unit terkecil |
+  </Tab>
+  <Tab title="swap">
+    Widget swap token untuk mengonversi antar token.
+
+    | Bidang Konfigurasi | Tipe | Deskripsi |
+    |-------------|------|-------------|
+    | `src_token` | `string` | Alamat token sumber |
+    | `src_chain_id` | `number` | ID rantai sumber |
+    | `dst_token` | `string` | Alamat token tujuan |
+    | `dst_chain_id` | `number` | ID rantai tujuan |
+  </Tab>
+  <Tab title="nft">
+    Widget pembuatan atau pembelian NFT.
+
+    | Bidang Konfigurasi | Tipe | Deskripsi |
+    |-------------|------|-------------|
+    | `collection_address` | `string` | Kontrak koleksi NFT |
+    | `chain_id` | `number` | ID rantai |
+    | `token_id` | `string` | ID token spesifik (opsional) |
+  </Tab>
+  <Tab title="deposit">
+    Widget deposit untuk mendanai dompet atau akun.
+
+    | Bidang Konfigurasi | Tipe | Deskripsi |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Alamat tujuan deposit |
+    | `accepted_tokens` | `string[]` | Daftar alamat token yang diterima |
+    | `accepted_chains` | `number[]` | Daftar ID rantai yang diterima |
+  </Tab>
+</Tabs>
+
+## Objek Tema
+
+| Bidang | Tipe | Default | Deskripsi |
+|-------|------|---------|-------------|
+| `primary_color` | `string` | `#4f46e5` | Warna aksen utama (hex) |
+| `border_radius` | `number` | `12` | Radius batas dalam piksel |
+| `font_family` | `string` | `Inter` | Nama keluarga font |
+| `dark_mode` | `boolean` | `false` | Aktifkan mode gelap |

@@ -1,0 +1,528 @@
+---
+title: x402 Iklan Kripto
+description: Iklankan di situs crypto tanpa biaya gas menggunakan x402
+lang: id
+originalPath: anyspend/marketplace-ads.mdx
+---
+[Kunjungi x402 Ad Marketplace (UI)](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+# x402 Ad Marketplace
+
+Beli ruang iklan di lebih dari 100 situs konten kripto menggunakan USDC dengan **biaya gas nol** berkat pembayaran tanpa gas x402.
+
+<CardGroup cols={2}>
+  <Card title="Tanpa Biaya Gas" icon="gas-pump">
+    Bayar hanya harga iklan - nol biaya transaksi
+  </Card>
+  <Card title="Pemesanan Instan" icon="bolt">
+    Satu tanda tangan dan Anda langsung live
+  </Card>
+  <Card title="100+ Situs" icon="globe">
+    Pilih dari situs berita kripto, DeFi, NFT
+  </Card>
+  <Card title="Konten Berbasis AI" icon="brain">
+    Kirim artikel dengan validasi dan generasi AI
+  </Card>
+  <Card title="Analitik Nyata" icon="chart-line">
+    Lihat data lalu lintas sebelum Anda membeli
+  </Card>
+  <Card title="Pantau Semuanya" icon="list-check">
+    Pantau iklan dan permintaan artikel Anda secara real-time
+  </Card>
+</CardGroup>
+
+## Mulai Cepat
+
+<Tabs>
+  <Tab title="Iklan Tampilan">
+    <Steps>
+      <Step title="Sambungkan Dompet">
+        Kunjungi [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) dan sambungkan dompet Anda di jaringan Base
+      </Step>
+      <Step title="Jelajahi Situs">
+        Jelajahi situs dengan statistik lalu lintas, pilih target audiens Anda
+      </Step>
+      <Step title="Pilih Format & Waktu">
+        Pilih format iklan (Banner/Sidebar/Leaderboard) dan slot waktu
+      </Step>
+      <Step title="Unggah Iklan">
+        Berikan URL gambar dan halaman arahan
+      </Step>
+      <Step title="Tanda Tangan & Bayar">
+        Satu tanda tangan dengan USDC - nol biaya gas - konfirmasi instan
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Pengajuan Artikel">
+    <Steps>
+      <Step title="Sambungkan Dompet">
+        Kunjungi [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) dan sambungkan dompet Anda di jaringan Base
+      </Step>
+      <Step title="Pilih Situs Target">
+        Pilih dari situs berita kripto yang menerima pengajuan artikel
+      </Step>
+      <Step title="Kirim Ide Anda">
+        Berikan URL tweet, topik, atau judul artikel lengkap
+      </Step>
+      <Step title="Validasi AI">
+        Dapatkan umpan balik AI instan dengan skor (0-100) dan saran
+      </Step>
+      <Step title="Tinjau & Kirim">
+        Jika disetujui (skor ≥70), kirim dengan satu tanda tangan x402
+      </Step>
+      <Step title="Pantau Progres">
+        Pantau status dan dapatkan notifikasi saat dipublikasikan
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>
+  Butuh USDC di Base? Jembatani dari Ethereum menggunakan [Base Bridge](https://bridge.base.org)
+</Note>
+
+## Format & Harga Iklan
+
+<Tabs>
+  <Tab title="Banner lebar">
+    **970×250 piksel** - Format banner lebar
+    
+    **Harga:** 1 USDC/jam
+    
+    Terbaik untuk kampanye hemat biaya dengan visibilitas bagus
+  </Tab>
+  <Tab title="Sidebar">
+    **300×600 piksel** - Penempatan sisi vertikal
+    
+    **Harga:** 2 USDC/jam
+    
+    Terbaik untuk visibilitas persisten saat pengguna scroll
+  </Tab>
+  <Tab title="Leaderboard">
+    **728×90 piksel** - Posisi banner atas
+    
+    **Harga:** 3 USDC/jam
+    
+    Terbaik untuk visibilitas maksimum dan kesadaran merek
+  </Tab>
+</Tabs>
+
+**Durasi:** minimum 1 jam, maksimum 7 hari (168 jam)
+
+## Pengajuan Artikel
+
+Kirim ide artikel ke situs konten kripto. AI memvalidasi topik Anda dan menghasilkan judul dan deskripsi yang dioptimalkan.
+
+### Cara Kerja
+
+<Steps>
+  <Step title="Kirim Topik atau Tweet">
+    Berikan URL tweet, ide topik, atau judul artikel lengkap
+  </Step>
+  <Step title="Validasi AI (Gratis)">
+    AI menilai konten Anda (0-100) dan menghasilkan saran jika diperlukan
+  </Step>
+  <Step title="Dapatkan Persetujuan">
+    - **Skor ≥80:** Input Anda sempurna, diterima apa adanya
+    - **Skor 70-79:** Disetujui dengan saran yang diperbaiki AI
+    - **Skor &lt;70:** Ditolak - coba topik lain
+  </Step>
+  <Step title="Kirim & Bayar">
+    Satu tanda tangan x402 untuk mengirim permintaan artikel Anda
+  </Step>
+  <Step title="Publikasi">
+    Situs mempublikasikan artikel Anda dan Anda menerima URL langsung
+  </Step>
+</Steps>
+
+### Harga
+
+Harga bervariasi berdasarkan situs, biasanya **$3-50 USDC** per artikel. Setiap situs menetapkan tarif mereka sendiri berdasarkan lalu lintas dan audiens.
+
+<Note>
+  Validasi gratis! Anda dapat memvalidasi sebanyak mungkin ide sebelum berkomitmen untuk pembayaran.
+</Note>
+
+## Referensi API
+
+### Detail Jaringan & Pembayaran
+
+<ParamField path="Jaringan" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Token Pembayaran" type="USDC">
+  6 desimal
+</ParamField>
+
+<ParamField path="Protokol" type="x402">
+  Tanda tangan Permit ERC-20
+</ParamField>
+
+<ParamField path="Harga Maksimum" type="$1000">
+  Harga maksimum per pemesanan
+</ParamField>
+
+### Pembelian Slot Iklan (Pembayaran x402)
+
+```bash
+POST https://x402.anyspend.com/ads/buy
+```
+
+Pembelian slot iklan secara programatis menggunakan pembayaran tanpa gas x402. Endpoint ini memerlukan otorisasi pembayaran x402.
+
+**Isi Permintaan:**
+
+<CodeGroup>
+```json Permintaan
+{
+  "productId": "slot_abc123",
+  "buyerAddress": "0x742d35Cc6...",
+  "startTime": "2025-01-15T14:00:00Z",
+  "endTime": "2025-01-15T18:00:00Z",
+  "adContent": {
+    "imageUrl": "https://...",
+    "linkUrl": "https://...",
+    "altText": "Teks alternatif",
+    "title": "Judul iklan",
+    "description": "Deskripsi"
+  }
+}
+```
+
+```json Respon Sukses (200)
+{
+  "success": true,
+  "data": {
+    "purchaseId": "purch_123...",
+    "bookingId": "booking_456...",
+    "totalPrice": "5000000",
+    "status": "confirmed"
+  }
+}
+```
+
+```json Respon Error (400)
+{
+  "success": false,
+  "error": "Slot sudah dipesan pada waktu ini"
+}
+```
+</CodeGroup>
+
+**Parameter:**
+- `productId` (wajib) - ID slot iklan dari `/ads/slots`
+- `buyerAddress` (wajib) - Alamat dompet Anda
+- `startTime` (wajib) - Waktu mulai dalam format ISO 8601
+- `endTime` (wajib) - Waktu berakhir dalam format ISO 8601
+- `adContent.imageUrl` (wajib) - URL langsung ke gambar iklan
+- `adContent.linkUrl` (wajib) - URL halaman arahan
+- `adContent.altText` (wajib) - Teks alternatif gambar
+- `adContent.title` (opsional) - Judul iklan
+- `adContent.description` (opsional) - Deskripsi iklan
+
+**Contoh JavaScript/TypeScript:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Membuat klien dompet
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+// Membungkus fetch dengan pembayaran x402
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Maks 1000 USDC
+);
+
+// Membeli slot iklan
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/ads/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'slot_abc123',
+      buyerAddress: '0x742d35Cc6...',
+      startTime: '2025-01-15T14:00:00Z',
+      endTime: '2025-01-15T18:00:00Z',
+      adContent: {
+        imageUrl: 'https://example.com/ad.jpg',
+        linkUrl: 'https://example.com',
+        altText: 'Iklan saya',
+        title: 'Lihat produk kami!',
+        description: 'Penawaran terbatas'
+      }
+    })
+  }
+);
+
+const result = await response.json();
+console.log('ID Pemesanan:', result.data.bookingId);
+```
+
+<Note>
+  Lihat [dokumentasi SDK x402](/anyspend/x402-overview) untuk lebih detail tentang menggunakan `wrapFetchWithPayment`.
+</Note>
+
+### Jelajahi Situs (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+Daftar semua situs yang tersedia dengan pagination. Endpoint ini gratis untuk dipanggil.
+
+Parameter query:
+- `page` - Nomor halaman (default: 1)
+- `limit` - Hasil per halaman (default: 20, maks: 100)
+- `search` - Cari berdasarkan nama/domain/kata kunci
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?search=defi&limit=10"
+```
+
+```javascript JavaScript
+const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
+  .then(r => r.json());
+```
+
+```json Respon
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "abc123",
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com",
+      "siteDomain": "cryptonews.com",
+      "description": "Berita dan analisis kripto harian",
+      "keywords": ["kripto", "bitcoin", "defi"],
+      "availableSlots": ["leaderboard", "sidebar", "banner"],
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+### Daftar Semua Slot (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots
+```
+
+Daftar semua slot iklan yang tersedia di semua situs. Endpoint ini gratis untuk dipanggil.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots"
+```
+
+```javascript JavaScript
+const slots = await fetch('https://x402.anyspend.com/ads/slots')
+  .then(r => r.json());
+```
+
+```json Respon
+{
+  "success": true,
+  "data": [
+    {
+      "slotId": "slot_abc123",
+      "siteId": "site_123",
+      "slotType": "leaderboard",
+      "pricePerHour": "5000000"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### Dapatkan Detail Slot (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId
+```
+
+Mengembalikan informasi slot statis termasuk harga, format, dan detail situs terkait. Endpoint ini gratis untuk dipanggil.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123"
+```
+
+```json Respon
+{
+  "success": true,
+  "data": {
+    "slot": {
+      "slotId": "slot_banner_abc123",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "pricePerHour": "1000000",
+      "available": true
+    },
+    "site": {
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com"
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Periksa Iklan Saat Ini (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
+```
+
+Mengembalikan iklan yang sedang berjalan di slot ini, atau menunjukkan jika slot tersedia. Endpoint ini gratis untuk dipanggil.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123/current-ad"
+```
+
+```json Iklan Berjalan
+{
+  "success": true,
+  "data": {
+    "type": "paid",
+    "ad": {
+      "imageUrl": "https://example.com/ad.png",
+      "linkUrl": "https://example.com/landing"
+    },
+    "booking": {
+      "bookingId": "booking_xyz789",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z"
+    }
+  }
+}
+```
+
+```json Slot Tersedia
+{
+  "success": true,
+  "data": {
+    "type": "empty"
+  }
+}
+```
+</CodeGroup>
+
+### Lihat Kampanye Anda (Gratis)
+
+```bash
+GET https://x402.anyspend.com/ads/bookings/buyer/:address
+```
+
+Pantau semua pemesanan iklan Anda - aktif, tertunda, dan selesai. Endpoint ini gratis untuk dipanggil.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourAddress"
+```
+
+```json Respon
+{
+  "success": true,
+  "data": [
+    {
+      "bookingId": "booking_xyz789",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z",
+      "adContent": {
+        "imageUrl": "https://mysite.com/ad.png",
+        "linkUrl": "https://mysite.com/landing"
+      },
+      "totalPrice": "3000000",
+      "status": "active",
+      "paymentTxHash": "0xabcdef...",
+      "createdAt": "2024-01-22T16:30:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Nilai status:**
+- `active` - Sedang berjalan
+- `pending` - Dijadwalkan untuk masa depan
+- `completed` - Kampanye berakhir
+
+<Info>
+  Harga dalam respons API dalam wei USDC (6 desimal). Bagi dengan 1.000.000 untuk mendapatkan jumlah USDC.
+</Info>
+
+---
+
+## Pengajuan Artikel Endpoint
+
+### Validasi Ide Artikel (Gratis)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Validasi ide artikel dan dapatkan judul dan deskripsi yang dihasilkan AI. Endpoint ini gratis untuk dipanggil - tidak memerlukan pembayaran.
+
+**Isi Permintaan:**
+
+<CodeGroup>
+```json Permintaan
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "Cara Menggunakan Base Pay untuk Kreator di DApp Anda"
+}
+```
+
+```json Respon Disetujui (Skor ≥70)
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 92,
+    "reasoning": "Cocok sempurna untuk konten ekosistem Base",
+    "estimatedPrice": "15000000",
+    "suggestedTitle": "Cara Menggunakan Base Pay untuk Kreator di DApp Anda",
+    "suggestedDescription": "Pelajari cara mengintegrasikan Base Pay...",
+    "userProvidedTitle": true,
+    "message": "Input Anda disetujui apa adanya"
+  }
+}
+```
+
+```json Respon Ditolak (Skor <70)
+{
+  "success": false,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "Topik tidak sejalan dengan fokus situs pada ekosistem Base",
+    "estimatedPrice": "15000000",
+    "message": "Konten tidak sesuai fokus situs"
+  }
+}
+```
+</CodeGroup>
+
+**Parameter:**
+- `siteDomain` (wajib) - Domain situs target (misal, "baseradar.com", "solanaecho.com
