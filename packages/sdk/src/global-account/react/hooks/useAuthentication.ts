@@ -11,6 +11,7 @@ import {
   useActiveWallet,
   useAutoConnect,
   useConnectedWallets,
+  useConnectionManager,
   useDisconnect,
   useSetActiveWallet,
 } from "thirdweb/react";
@@ -44,6 +45,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   useEffect(() => {
     activeWalletRef.current = activeWallet;
   }, [activeWallet]);
+  const connectionManager = useConnectionManager();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
@@ -134,33 +136,20 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
         throw new Error("No account found during auto-connect");
       }
 
-      // Try to re-authenticate first
+      const finalizeAuth = async (userAuth: Awaited<ReturnType<typeof app.reAuthenticate>>, label: string) => {
+        setUser(userAuth.user);
+        setIsAuthenticated(true);
+        setIsAuthenticating(false);
+        debug(label, { userAuth });
+        await authenticateWithB3JWT(userAuth.accessToken);
+        return userAuth;
+      };
+
       try {
-        const userAuth = await app.reAuthenticate();
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        setIsAuthenticating(false);
-        debug("Re-authenticated successfully", { userAuth });
-
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        debug("@@b3Jwt", b3Jwt);
-
-        return userAuth;
+        return await finalizeAuth(await app.reAuthenticate(), "Re-authenticated successfully");
       } catch (error) {
-        // If re-authentication fails, try fresh authentication
         debug("Re-authentication failed, attempting fresh authentication");
-        const userAuth = await authenticate(wallet, partnerId);
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        setIsAuthenticating(false);
-        debug("Fresh authentication successful", { userAuth });
-
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        debug("@@b3Jwt", b3Jwt);
-
-        return userAuth;
+        return await finalizeAuth(await authenticate(wallet, partnerId), "Fresh authentication successful");
       }
     },
     [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
@@ -180,26 +169,34 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
         }
       });
 
-      // Unconditionally disconnect the active wallet to clear thirdweb's activeAccountStore.
-      // This is separate from the loop above: even if the active wallet is an EOA (e.g.
-      // Coinbase Wallet), we must disconnect it so activeAccount becomes undefined.
-      // Without this, ConnectEmbed renders show=false (blank modal) because it checks
-      // show = !activeAccount. Note: thirdweb's disconnect() is idempotent — calling it
-      // on an already-disconnected wallet (from the loop above) is a no-op.
-      // We use the exact reference from activeWalletRef because thirdweb's
-      // onWalletDisconnect uses strict identity (===) to decide whether to clear
-      // activeAccountStore.
-      // Tradeoff: EOA wallets (MetaMask, Coinbase Wallet) will be removed from
-      // connectedWallets and require a new approval popup on next login.
-      // This is acceptable because a working login form is more critical than
-      // skipping one wallet approval step.
+      // Clear thirdweb's active wallet state so activeAccount becomes undefined and
+      // ConnectEmbed shows the login form (not a blank modal).
+      // Split behavior based on wallet type:
+      // - Ecosystem/smart wallets: full disconnect() to revoke auth and remove from connectedWallets
+      // - EOA wallets (MetaMask, Coinbase Wallet): clear only the active-wallet stores directly,
+      //   keeping the wallet in connectedWallets and preserving `thirdweb:active-wallet-id` in
+      //   localStorage. This lets autoConnectCore silently reconnect via eth_accounts on next
+      //   login without triggering a new wallet approval popup.
       if (activeWalletRef.current) {
-        debug("@@logout:disconnecting active wallet", activeWalletRef.current.id);
-        disconnect(activeWalletRef.current);
+        const activeId = activeWalletRef.current.id;
+        if (activeId.startsWith("ecosystem.") || activeId === "smart") {
+          debug("@@logout:disconnecting active wallet (ecosystem/smart)", activeId);
+          disconnect(activeWalletRef.current);
+        } else {
+          // EOA wallet — reset active-wallet stores without calling disconnect(),
+          // which would revoke permissions and remove the wallet from connectedWallets.
+          debug("@@logout:clearing active wallet stores (EOA preserved)", activeId);
+          const mgr = connectionManager;
+          mgr.activeAccountStore.setValue(undefined);
+          mgr.activeWalletStore.setValue(undefined);
+          mgr.activeWalletChainStore.setValue(undefined);
+          mgr.activeWalletConnectionStatusStore.setValue("disconnected");
+        }
       }
 
       // Clear user-specific storage (auth tokens, cached user data).
-      // Thirdweb's wallet connection state is managed separately via disconnect() above.
+      // Thirdweb's wallet connection state (including `thirdweb:active-wallet-id`) is
+      // preserved for EOA wallets so autoConnectCore can silently reconnect them.
       if (typeof localStorage !== "undefined") {
         localStorage.removeItem("lastAuthProvider");
         localStorage.removeItem("b3-user");
@@ -222,8 +219,9 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
     },
     // wallets intentionally omitted — we use walletsRef.current so this callback stays stable
     // and always operates on current wallets even when captured in stale closures.
+    // connectionManager included for correctness (stable ref from ThirdwebProvider).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [disconnect, setIsAuthenticated, setIsAuthenticating, setUser, setIsConnected, onLogoutCallback],
+    [disconnect, connectionManager, setIsAuthenticated, setIsAuthenticating, setUser, setIsConnected, onLogoutCallback],
   );
 
   const onConnect = useCallback(
