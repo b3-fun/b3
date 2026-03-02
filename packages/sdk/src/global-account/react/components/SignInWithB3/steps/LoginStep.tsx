@@ -3,6 +3,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";
+import { useMemo } from "react";
 import { Account, ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
 /**
  * Props for the LoginStep component
@@ -49,42 +50,40 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, chain }: LoginStepProps) {
-  const { partnerId, theme } = useB3Config();
-  const wallet = ecosystemWallet(ecosystemWalletId, {
-    partnerId: partnerId,
-  });
-  const { onConnect } = useAuthentication(partnerId);
+/** Inner component that only mounts when partnerId is a non-empty string.
+ *  Keeps all hooks unconditional without calling useAuthentication(""). */
+function LoginStepContent({
+  onSuccess,
+  chain,
+  partnerId,
+  theme,
+}: {
+  onSuccess: (account: Account) => Promise<void>;
+  chain: Chain;
+  partnerId: string;
+  theme: string;
+}) {
+  const wallet = useMemo(() => ecosystemWallet(ecosystemWalletId, { partnerId }), [partnerId]);
+  // skipAutoConnect: AuthenticationProvider already owns the auto-connect instance.
+  // Creating another here would cause a second authentication cycle (another 401 attempt)
+  // that makes the modal flash between spinner and blank before finally showing the login form.
+  const { onConnect } = useAuthentication(partnerId, { skipAutoConnect: true });
 
   return (
     <LoginStepContainer partnerId={partnerId}>
       <ConnectEmbed
         showThirdwebBranding={false}
+        autoConnect={false}
         client={client}
         chain={chain}
         wallets={[wallet]}
         theme={
           theme === "light"
-            ? lightTheme({
-                colors: {
-                  modalBg: "hsl(var(--b3-react-background))",
-                },
-              })
-            : darkTheme({
-                colors: {
-                  modalBg: "hsl(var(--b3-react-background))",
-                },
-              })
+            ? lightTheme({ colors: { modalBg: "hsl(var(--b3-react-background))" } })
+            : darkTheme({ colors: { modalBg: "hsl(var(--b3-react-background))" } })
         }
-        style={{
-          width: "100%",
-          height: "100%",
-          border: 0,
-        }}
-        header={{
-          title: "Sign in with B3",
-          titleIcon: "https://cdn.b3.fun/b3_logo.svg",
-        }}
+        style={{ width: "100%", height: "100%", border: 0 }}
+        header={{ title: "Sign in with B3", titleIcon: "https://cdn.b3.fun/b3_logo.svg" }}
         className="b3-login-step"
         onConnect={async (wallet, allConnectedWallets) => {
           await onConnect(wallet, allConnectedWallets);
@@ -95,4 +94,15 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
       />
     </LoginStepContainer>
   );
+}
+
+export function LoginStep({ onSuccess, chain }: LoginStepProps) {
+  const { partnerId, theme } = useB3Config();
+
+  // partnerId may be undefined during the brief B3Provider hydration window.
+  // Return null rather than rendering ConnectEmbed with an invalid ecosystem
+  // wallet config (which causes a blank screen).
+  if (!partnerId) return null;
+
+  return <LoginStepContent onSuccess={onSuccess} chain={chain} partnerId={partnerId} theme={theme} />;
 }
