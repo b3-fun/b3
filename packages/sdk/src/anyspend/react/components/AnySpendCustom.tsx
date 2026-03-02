@@ -1270,7 +1270,7 @@ function AnySpendCustomInner({
 
   // Recipient selection view
   const recipientSelectionView = (
-    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+    <div className={cn("bg-as-surface-primary mx-auto w-full max-w-[460px] rounded-xl p-4")}>
       <RecipientSelection
         initialValue={recipientAddress || ""}
         title="Add recipient address or ENS"
@@ -1287,7 +1287,7 @@ function AnySpendCustomInner({
 
   // Crypto payment method view
   const cryptoPaymentMethodView = (
-    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+    <div className={cn("bg-as-surface-primary mx-auto w-full max-w-[460px] rounded-xl p-4")}>
       <CryptoPaymentMethod
         selectedPaymentMethod={effectiveCryptoPaymentMethod}
         setSelectedPaymentMethod={method => {
@@ -1318,7 +1318,7 @@ function AnySpendCustomInner({
 
   // Fiat payment method view
   const fiatPaymentMethodView = (
-    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+    <div className={cn("bg-as-surface-primary mx-auto w-full max-w-[460px] rounded-xl p-4")}>
       <FiatPaymentMethodComponent
         selectedPaymentMethod={selectedFiatPaymentMethod}
         setSelectedPaymentMethod={setSelectedFiatPaymentMethod}
@@ -1331,7 +1331,7 @@ function AnySpendCustomInner({
 
   // Points detail view
   const pointsDetailView = (
-    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+    <div className={cn("bg-as-surface-primary mx-auto w-full max-w-[460px] rounded-xl p-4")}>
       <PointsDetailPanel
         pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}

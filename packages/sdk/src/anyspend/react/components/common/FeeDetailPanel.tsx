@@ -85,7 +85,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack, classes }: F
   const [showAllDiscountTiers, setShowAllDiscountTiers] = useState(false);
 
   return (
-    <div className={classes?.container || "mx-auto flex w-[460px] max-w-full flex-col items-center gap-3 px-5"}>
+    <div className={classes?.container || "mx-auto flex w-full max-w-[460px] flex-col items-center gap-3 px-5"}>
       <div className="flex w-full flex-col gap-3">
         <div className="text-center">
           <h3 className={classes?.title || "text-as-primary text-lg font-bold"}>Fee Breakdown</h3>

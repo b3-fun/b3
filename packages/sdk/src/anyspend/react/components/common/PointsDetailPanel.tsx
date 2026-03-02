@@ -11,7 +11,7 @@ interface PointsDetailPanelProps {
 
 export function PointsDetailPanel({ pointsAmount = 0, onBack, classes }: PointsDetailPanelProps) {
   return (
-    <div className={classes?.container || "mx-auto flex w-[460px] max-w-full flex-col items-center gap-4 px-5"}>
+    <div className={classes?.container || "mx-auto flex w-full max-w-[460px] flex-col items-center gap-4 px-5"}>
       <div className="flex flex-col items-center gap-4 text-center">
         <h3 className={classes?.title || "text-as-primary text-xl font-bold"}>Earn Points with Every Swap</h3>
         <p className={classes?.description || "text-as-primary/70 text-balance text-sm leading-relaxed"}>

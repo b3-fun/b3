@@ -416,7 +416,7 @@ function AnySpendCustomExactInInner({
     <div
       className={
         classes?.container ||
-        "anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"
+        "anyspend-custom-exact-in-container mx-auto flex w-full max-w-[460px] flex-col items-center gap-2"
       }
     >
       {headerContent}
@@ -725,7 +725,7 @@ function AnySpendCustomExactInInner({
   };
 
   const orderDetailsView = (
-    <div className={"mx-auto w-[460px] max-w-full"}>
+    <div className={"mx-auto w-full max-w-[460px]"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
           <OrderDetails

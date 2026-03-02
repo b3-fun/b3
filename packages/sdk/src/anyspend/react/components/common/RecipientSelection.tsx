@@ -94,7 +94,7 @@ export function RecipientSelection({
   const canConfirm = recipientAddress && isAddressValid;
 
   return (
-    <div className={classes?.container || "recipient-selection mx-auto w-[460px] max-w-full p-5"}>
+    <div className={classes?.container || "recipient-selection mx-auto w-full max-w-[460px] p-5"}>
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className={classes?.header || "flex justify-around"}>
