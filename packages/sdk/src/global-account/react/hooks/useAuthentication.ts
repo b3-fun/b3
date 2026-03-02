@@ -198,8 +198,8 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
         disconnect(activeWalletRef.current);
       }
 
-      // Clear user-specific storage but preserve wallet connection state
-      // so EOA wallets (e.g. MetaMask) can auto-reconnect on next login
+      // Clear user-specific storage (auth tokens, cached user data).
+      // Thirdweb's wallet connection state is managed separately via disconnect() above.
       if (typeof localStorage !== "undefined") {
         localStorage.removeItem("lastAuthProvider");
         localStorage.removeItem("b3-user");
