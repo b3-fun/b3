@@ -189,6 +189,10 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       // We use the exact reference from activeWalletRef because thirdweb's
       // onWalletDisconnect uses strict identity (===) to decide whether to clear
       // activeAccountStore.
+      // Tradeoff: EOA wallets (MetaMask, Coinbase Wallet) will be removed from
+      // connectedWallets and require a new approval popup on next login.
+      // This is acceptable because a working login form is more critical than
+      // skipping one wallet approval step.
       if (activeWalletRef.current) {
         debug("@@logout:disconnecting active wallet", activeWalletRef.current.id);
         disconnect(activeWalletRef.current);
@@ -225,21 +229,21 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   const onConnect = useCallback(
     async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
       debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
-      const ecosystemWallet = allConnectedWallets.find(w => w.id.startsWith("ecosystem."));
+      const connectedEcosystemWallet = allConnectedWallets.find(w => w.id.startsWith("ecosystem."));
       try {
-        if (!ecosystemWallet) {
+        if (!connectedEcosystemWallet) {
           throw new Error("No smart wallet found during auto-connect");
         }
 
-        debug("@@useAuthentication:onConnect", { wallet: ecosystemWallet });
+        debug("@@useAuthentication:onConnect", { wallet: connectedEcosystemWallet });
         setHasStartedConnecting(true);
         setIsConnected(true);
         setIsAuthenticating(true);
-        await setActiveWallet(ecosystemWallet);
-        const userAuth = await authenticateUser(ecosystemWallet);
+        await setActiveWallet(connectedEcosystemWallet);
+        const userAuth = await authenticateUser(connectedEcosystemWallet);
 
         if (userAuth && onConnectCallback) {
-          await onConnectCallback(ecosystemWallet, userAuth.accessToken);
+          await onConnectCallback(connectedEcosystemWallet, userAuth.accessToken);
         }
       } catch (error) {
         debug("@@useAuthentication:onConnect:failed", { error });
@@ -251,19 +255,19 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
         // entirely within a single React commit cycle — before the ref updates.
         // Note: logout() below may also call disconnect() on the same wallet via
         // activeWalletRef — thirdweb's disconnect() is idempotent so this is safe.
-        if (ecosystemWallet) {
-          debug("@@useAuthentication:onConnect:disconnecting ecosystem wallet", ecosystemWallet.id);
-          disconnect(ecosystemWallet);
+        if (connectedEcosystemWallet) {
+          debug("@@useAuthentication:onConnect:disconnecting ecosystem wallet", connectedEcosystemWallet.id);
+          disconnect(connectedEcosystemWallet);
         }
         // Also disconnect the wallet that autoConnectCore set as active.
         // When only a non-ecosystem wallet (e.g. MetaMask) auto-reconnects,
-        // ecosystemWallet is undefined, so the block above is skipped.
+        // connectedEcosystemWallet is undefined, so the block above is skipped.
         // But autoConnectCore already set this wallet as thirdweb's activeWallet,
         // leaving activeAccount set. ConnectEmbed checks show = !activeAccount,
         // so if we don't clear it, the login form renders blank.
         // Uses object identity (===) which is safe because thirdweb returns
         // stable references for connected wallet instances.
-        if (_walleAutoConnectedWith && _walleAutoConnectedWith !== ecosystemWallet) {
+        if (_walleAutoConnectedWith && _walleAutoConnectedWith !== connectedEcosystemWallet) {
           debug("@@useAuthentication:onConnect:disconnecting auto-connected wallet", _walleAutoConnectedWith.id);
           disconnect(_walleAutoConnectedWith);
         }
