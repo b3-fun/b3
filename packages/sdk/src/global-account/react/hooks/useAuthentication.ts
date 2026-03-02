@@ -179,16 +179,13 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
         }
       });
 
-      // Also disconnect the active wallet using the exact reference from thirdweb's
-      // activeWalletStore. The wallets in walletsRef (from useConnectedWallets) may be
-      // different object references than what thirdweb holds as "active". Thirdweb's
+      // Always disconnect the active wallet to clear thirdweb's activeAccountStore.
+      // Without this, any auto-reconnected wallet (e.g. Coinbase Wallet, MetaMask)
+      // keeps activeAccount set, and ConnectEmbed renders show=false (blank modal).
+      // We use the exact reference from activeWalletRef because thirdweb's
       // onWalletDisconnect uses strict identity (===) to decide whether to clear
-      // activeAccountStore — if the reference doesn't match, activeAccount stays set
-      // and ConnectEmbed renders show=false (blank).
-      if (
-        activeWalletRef.current &&
-        (activeWalletRef.current.id.startsWith("ecosystem.") || activeWalletRef.current.id === "smart")
-      ) {
+      // activeAccountStore.
+      if (activeWalletRef.current) {
         debug("@@logout:disconnecting active wallet", activeWalletRef.current.id);
         disconnect(activeWalletRef.current);
       }
@@ -224,27 +221,44 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   const onConnect = useCallback(
     async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
       debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
+      const ecosystemWalletToDisconnect = allConnectedWallets.find(w => w.id.startsWith("ecosystem."));
       try {
-        const wallet = allConnectedWallets.find(wallet => wallet.id.startsWith("ecosystem."));
-
-        if (!wallet) {
+        if (!ecosystemWalletToDisconnect) {
           throw new Error("No smart wallet found during auto-connect");
         }
 
-        debug("@@useAuthentication:onConnect", { wallet });
+        debug("@@useAuthentication:onConnect", { wallet: ecosystemWalletToDisconnect });
         setHasStartedConnecting(true);
         setIsConnected(true);
         setIsAuthenticating(true);
-        await setActiveWallet(wallet);
-        const userAuth = await authenticateUser(wallet);
+        await setActiveWallet(ecosystemWalletToDisconnect);
+        const userAuth = await authenticateUser(ecosystemWalletToDisconnect);
 
         if (userAuth && onConnectCallback) {
-          await onConnectCallback(wallet, userAuth.accessToken);
+          await onConnectCallback(ecosystemWalletToDisconnect, userAuth.accessToken);
         }
       } catch (error) {
         debug("@@useAuthentication:onConnect:failed", { error });
         setIsAuthenticated(false);
         setUser(undefined);
+        // Directly disconnect the ecosystem wallet we set active above.
+        // We can't rely on logout()'s activeWalletRef here because it's updated
+        // via useEffect (deferred until after paint), but this callback may run
+        // entirely within a single React commit cycle — before the ref updates.
+        if (ecosystemWalletToDisconnect) {
+          debug("@@useAuthentication:onConnect:disconnecting ecosystem wallet", ecosystemWalletToDisconnect.id);
+          disconnect(ecosystemWalletToDisconnect);
+        }
+        // Also disconnect the wallet that autoConnectCore set as active.
+        // When only a non-ecosystem wallet (e.g. MetaMask) auto-reconnects,
+        // ecosystemWalletToDisconnect is undefined, so the block above is skipped.
+        // But autoConnectCore already set this wallet as thirdweb's activeWallet,
+        // leaving activeAccount set. ConnectEmbed checks show = !activeAccount,
+        // so if we don't clear it, the login form renders blank.
+        if (_walleAutoConnectedWith && _walleAutoConnectedWith !== ecosystemWalletToDisconnect) {
+          debug("@@useAuthentication:onConnect:disconnecting auto-connected wallet", _walleAutoConnectedWith.id);
+          disconnect(_walleAutoConnectedWith);
+        }
         await logout();
       } finally {
         setIsAuthenticating(false);
@@ -260,6 +274,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       isAuthenticated,
       isAuthenticating,
       isConnected,
+      disconnect,
       setHasStartedConnecting,
       setIsConnected,
       setIsAuthenticating,
