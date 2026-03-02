@@ -1250,13 +1250,13 @@ function AnySpendInner({
   }, [isAuthenticated]);
 
   const historyView = (
-    <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
+    <div className={"mx-auto flex w-full max-w-[560px] flex-col items-center"}>
       <OrderHistory mode={mode} onBack={navigateBack} onSelectOrder={onSelectOrder} />
     </div>
   );
 
   const orderDetailsView = (
-    <div className={"mx-auto w-[460px] max-w-full p-5"}>
+    <div className={"mx-auto w-full max-w-[460px] p-5"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
           <OrderDetails
@@ -1289,7 +1289,7 @@ function AnySpendInner({
   );
 
   const mainView = (
-    <div className={classes?.mainContent || "mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 pt-5"}>
+    <div className={classes?.mainContent || "mx-auto flex w-full max-w-[460px] flex-col items-center gap-2 pt-5"}>
       <div className={"flex w-full max-w-full flex-col items-center gap-2 px-5"}>
         {/* Token Header - Show when in buy mode */}
         {isBuyMode && !hideHeader && (
@@ -1649,7 +1649,7 @@ function AnySpendInner({
       returnLabel: resolvedReturnLabel || undefined,
     })
   ) : (
-    <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-6 p-5">
+    <div className="mx-auto flex w-full max-w-[460px] flex-col items-center gap-6 p-5">
       <div className="flex flex-col items-center gap-4">
         <AnimatedCheckmark className="h-16 w-16" />
         <div className="text-center">

@@ -1235,7 +1235,7 @@ function TransactionDetails({
 }
 
 export const OrderDetailsLoadingView = (
-  <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-4"}>
+  <div className={"mx-auto flex w-full max-w-[460px] flex-col items-center gap-4"}>
     {/* Status Badge */}
     <Badge
       variant="default"
