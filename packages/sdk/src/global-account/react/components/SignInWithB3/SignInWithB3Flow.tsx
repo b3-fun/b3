@@ -283,12 +283,11 @@ export function SignInWithB3Flow({
     );
   } else if (step === "login") {
     // Show loading spinner while: authenticating, waiting for pre-login logout to finish,
-    // fetching signers, or in the requestPermissions flow.
+    // or fetching signers.
     if (
       !readyToShowLogin ||
       isAuthenticating ||
-      (isFetchingSigners && step === "login") ||
-      source === "requestPermissions"
+      isFetchingSigners
     ) {
       content = (
         <LoginStepContainer partnerId={partnerId}>
