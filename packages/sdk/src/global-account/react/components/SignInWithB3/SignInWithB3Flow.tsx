@@ -35,16 +35,23 @@ export function SignInWithB3Flow({
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
   const { automaticallySetFirstEoa } = useB3Config();
-  const { user, logout } = useAuthentication(partnerId);
+  // skipAutoConnect: this component intentionally logs out on mount to show a fresh login screen.
+  // AuthenticationProvider is the sole owner of useAutoConnect to avoid competing auth cycles.
+  const { user, logout } = useAuthentication(partnerId, { skipAutoConnect: true });
 
-  // FIXME Logout before login to ensure a clean state
+  // Tracks whether the pre-login logout has finished.
+  // We must not render ConnectEmbed until logout (wallet disconnect) completes,
+  // otherwise the wallet state disrupts ConnectEmbed causing a blank modal.
+  const [readyToShowLogin, setReadyToShowLogin] = useState(source === "requestPermissions");
   const hasLoggedOutRef = useRef(false);
   useEffect(() => {
     if (hasLoggedOutRef.current) return;
     if (source !== "requestPermissions") {
       debug("Logging out before login");
-      logout();
       hasLoggedOutRef.current = true;
+      logout().finally(() => {
+        setReadyToShowLogin(true);
+      });
     }
   }, [source, logout]);
 
@@ -275,8 +282,14 @@ export function SignInWithB3Flow({
       </LoginStepContainer>
     );
   } else if (step === "login") {
-    // Show loading spinner
-    if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
+    // Show loading spinner while: authenticating, waiting for pre-login logout to finish,
+    // fetching signers, or in the requestPermissions flow.
+    if (
+      !readyToShowLogin ||
+      isAuthenticating ||
+      (isFetchingSigners && step === "login") ||
+      source === "requestPermissions"
+    ) {
       content = (
         <LoginStepContainer partnerId={partnerId}>
           <div className="my-8 flex min-h-[350px] items-center justify-center">

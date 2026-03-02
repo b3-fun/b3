@@ -64,12 +64,16 @@ function LoginStepContent({
   theme: string;
 }) {
   const wallet = useMemo(() => ecosystemWallet(ecosystemWalletId, { partnerId }), [partnerId]);
-  const { onConnect } = useAuthentication(partnerId);
+  // skipAutoConnect: AuthenticationProvider already owns the auto-connect instance.
+  // Creating another here would cause a second authentication cycle (another 401 attempt)
+  // that makes the modal flash between spinner and blank before finally showing the login form.
+  const { onConnect } = useAuthentication(partnerId, { skipAutoConnect: true });
 
   return (
     <LoginStepContainer partnerId={partnerId}>
       <ConnectEmbed
         showThirdwebBranding={false}
+        autoConnect={false}
         client={client}
         chain={chain}
         wallets={[wallet]}

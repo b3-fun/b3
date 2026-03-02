@@ -130,7 +130,8 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
       });
       return result;
     },
-    enabled: Boolean(chain && accountAddress),
+    // Respect queryOptions.enabled if explicitly set (e.g. signersEnabled=false from SignInWithB3Flow)
+    enabled: queryOptions?.enabled !== false && Boolean(chain && accountAddress),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

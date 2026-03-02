@@ -44,7 +44,7 @@ export function SignIn(props: SignInWithB3Props) {
   const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
 
   const isMobile = useIsMobile();
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication(partnerId, { skipAutoConnect: true });
   const onDisconnect = async (): Promise<void> => {
     await logout();
   };

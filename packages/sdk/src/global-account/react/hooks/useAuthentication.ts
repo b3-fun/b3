@@ -24,11 +24,26 @@ import { useUserQuery } from "./useUserQuery";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(partnerId: string) {
+export function useAuthentication(partnerId: string, { skipAutoConnect = false }: { skipAutoConnect?: boolean } = {}) {
   const { onConnectCallback, onLogoutCallback } = useContext(LocalSDKContext);
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
+  // Keep refs so logout() always disconnects current wallets, not stale closure values.
+  // autoConnectCore captures onConnect (and thus logout) from the first render before wallets
+  // are populated — without these refs, logout() would capture wallets=[] and disconnect nothing.
+  const walletsRef = useRef(wallets);
+  useEffect(() => {
+    walletsRef.current = wallets;
+  }, [wallets]);
   const activeWallet = useActiveWallet();
+  // Track the active wallet by ref so logout() can disconnect the exact reference
+  // stored in thirdweb's activeWalletStore. walletsRef.current (from useConnectedWallets)
+  // may hold a different object reference than what thirdweb considers "active",
+  // causing the identity check in onWalletDisconnect to fail silently.
+  const activeWalletRef = useRef(activeWallet);
+  useEffect(() => {
+    activeWalletRef.current = activeWallet;
+  }, [activeWallet]);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
@@ -154,13 +169,26 @@ export function useAuthentication(partnerId: string) {
   const logout = useCallback(
     async (callback?: () => void) => {
       // Only disconnect ecosystem/smart wallets, preserve EOA wallets (e.g. MetaMask)
-      // so they remain available after re-login
-      wallets.forEach(wallet => {
+      // so they remain available after re-login.
+      // Use walletsRef.current (not the stale closure value) so we always get current wallets —
+      // autoConnectCore captures logout from the first render when wallets is still [].
+      walletsRef.current.forEach(wallet => {
         debug("@@logout:wallet", wallet.id);
         if (wallet.id.startsWith("ecosystem.") || wallet.id === "smart") {
           disconnect(wallet);
         }
       });
+
+      // Also disconnect the active wallet using the exact reference from thirdweb's
+      // activeWalletStore. The wallets in walletsRef (from useConnectedWallets) may be
+      // different object references than what thirdweb holds as "active". Thirdweb's
+      // onWalletDisconnect uses strict identity (===) to decide whether to clear
+      // activeAccountStore — if the reference doesn't match, activeAccount stays set
+      // and ConnectEmbed renders show=false (blank).
+      if (activeWalletRef.current) {
+        debug("@@logout:disconnecting active wallet", activeWalletRef.current.id);
+        disconnect(activeWalletRef.current);
+      }
 
       // Clear user-specific storage but preserve wallet connection state
       // so EOA wallets (e.g. MetaMask) can auto-reconnect on next login
@@ -174,6 +202,9 @@ export function useAuthentication(partnerId: string) {
 
       setIsAuthenticated(false);
       setIsConnected(false);
+      // Reset isAuthenticating so any in-flight page-load auto-connect that set it true
+      // does not keep the login modal spinner stuck after logout() is called.
+      setIsAuthenticating(false);
       setUser();
       callback?.();
 
@@ -181,7 +212,10 @@ export function useAuthentication(partnerId: string) {
         await onLogoutCallback();
       }
     },
-    [disconnect, wallets, setIsAuthenticated, setUser, setIsConnected, onLogoutCallback],
+    // wallets intentionally omitted — we use walletsRef.current so this callback stays stable
+    // and always operates on current wallets even when captured in stale closures.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [disconnect, setIsAuthenticated, setIsAuthenticating, setUser, setIsConnected, onLogoutCallback],
   );
 
   const onConnect = useCallback(
@@ -208,7 +242,6 @@ export function useAuthentication(partnerId: string) {
         debug("@@useAuthentication:onConnect:failed", { error });
         setIsAuthenticated(false);
         setUser(undefined);
-
         await logout();
       } finally {
         setIsAuthenticating(false);
@@ -238,9 +271,13 @@ export function useAuthentication(partnerId: string) {
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
-    wallets: [wallet],
+    // When skipAutoConnect is true (e.g. LoginStepContent, SignInWithB3Flow), pass an empty
+    // wallets array so useAutoConnect completes immediately without firing onConnect.
+    // Only AuthenticationProvider (the primary instance) should own auto-connect.
+    wallets: skipAutoConnect ? [] : [wallet],
     onConnect,
     onTimeout: () => {
+      if (skipAutoConnect) return;
       logout().catch(error => {
         debug("@@useAuthentication:logout on timeout failed", { error });
       });
@@ -248,14 +285,17 @@ export function useAuthentication(partnerId: string) {
   });
 
   /**
-   * useAutoConnectLoading starts as false
+   * useAutoConnectLoading starts as false.
+   * Only the primary (non-skip) instance manages isAuthenticating via this effect
+   * to avoid race conditions when multiple useAuthentication instances are mounted.
    */
   useEffect(() => {
+    if (skipAutoConnect) return;
     if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
       setIsAuthenticating(false);
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
-  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating]);
+  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating, skipAutoConnect]);
 
   const isReady = isAuthenticated && !isAuthenticating;
 

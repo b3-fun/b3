@@ -23,7 +23,7 @@ export function SignInWithB3Privy({ onSuccess, onError, chain }: SignInWithB3Pri
   const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(chain, onSuccess);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication(partnerId, { skipAutoConnect: true });
 
   debug("@@SignInWithB3Privy", {
     isLoading,
