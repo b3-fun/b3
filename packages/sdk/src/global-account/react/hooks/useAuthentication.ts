@@ -185,7 +185,10 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       // onWalletDisconnect uses strict identity (===) to decide whether to clear
       // activeAccountStore — if the reference doesn't match, activeAccount stays set
       // and ConnectEmbed renders show=false (blank).
-      if (activeWalletRef.current) {
+      if (
+        activeWalletRef.current &&
+        (activeWalletRef.current.id.startsWith("ecosystem.") || activeWalletRef.current.id === "smart")
+      ) {
         debug("@@logout:disconnecting active wallet", activeWalletRef.current.id);
         disconnect(activeWalletRef.current);
       }
