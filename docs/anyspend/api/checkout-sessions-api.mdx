@@ -190,7 +190,7 @@ const { data, pagination } = await anyspend.checkoutSessions.list({
       "data": [
         {
           "id": "cs_abc123",
-          "url": "https://pay.anyspend.com/s/cs_abc123",
+          "url": "https://anyspend.com/pay/s/cs_abc123",
           "status": "completed",
           "payment_link_id": "pl_abc123",
           "product_id": null,
@@ -353,7 +353,7 @@ const session = await anyspend.checkoutSessions.create({
 
 // Redirect the customer
 console.log(session.url);
-// => "https://pay.anyspend.com/s/cs_newSession123"
+// => "https://anyspend.com/pay/s/cs_newSession123"
 
 // Create with manual configuration
 const manualSession = await anyspend.checkoutSessions.create({
@@ -373,7 +373,7 @@ const manualSession = await anyspend.checkoutSessions.create({
     ```json
     {
       "id": "cs_newSession123",
-      "url": "https://pay.anyspend.com/s/cs_newSession123",
+      "url": "https://anyspend.com/pay/s/cs_newSession123",
       "status": "open",
       "payment_link_id": "pl_abc123",
       "product_id": null,
@@ -471,7 +471,7 @@ console.log(expired.status); // => "expired"
     ```json
     {
       "id": "cs_abc123",
-      "url": "https://pay.anyspend.com/s/cs_abc123",
+      "url": "https://anyspend.com/pay/s/cs_abc123",
       "status": "expired",
       "payment_link_id": "pl_abc123",
       "product_id": null,

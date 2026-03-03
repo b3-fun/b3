@@ -20,7 +20,7 @@ Payment links are shareable URLs that allow your customers to pay with any token
 </ResponseField>
 
 <ResponseField name="url" type="string">
-  The shareable checkout URL (e.g., `https://pay.anyspend.com/pl_abc123`).
+  The shareable checkout URL (e.g., `https://anyspend.com/pay/pl_abc123`).
 </ResponseField>
 
 <ResponseField name="short_url" type="string">
@@ -253,7 +253,7 @@ const { data, pagination } = await anyspend.paymentLinks.list({
         {
           "id": "pl_abc123",
           "name": "Premium Plan",
-          "url": "https://pay.anyspend.com/pl_abc123",
+          "url": "https://anyspend.com/pay/pl_abc123",
           "short_url": "https://as.pay/abc123",
           "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
           "chain_id": 1,
@@ -481,7 +481,7 @@ const paymentLink = await anyspend.paymentLinks.create({
     {
       "id": "pl_abc123",
       "name": "Premium Plan",
-      "url": "https://pay.anyspend.com/pl_abc123",
+      "url": "https://anyspend.com/pay/pl_abc123",
       "short_url": "https://as.pay/abc123",
       "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       "chain_id": 1,

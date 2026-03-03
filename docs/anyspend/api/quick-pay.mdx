@@ -36,7 +36,7 @@ A successful request returns a full `PaymentLink` object:
 ```json
 {
   "id": "pl_abc123",
-  "url": "https://pay.anyspend.com/pl_abc123",
+  "url": "https://anyspend.com/pay/pl_abc123",
   "recipient_address": "0x1234...abcd",
   "amount": "1000000",
   "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
@@ -79,7 +79,7 @@ const link = await AnySpendPlatformClient.quickPay({
 });
 
 console.log(link.url);
-// => https://pay.anyspend.com/pl_abc123
+// => https://anyspend.com/pay/pl_abc123
 ```
 
 ```python Python (requests)
