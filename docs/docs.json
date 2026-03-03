@@ -372,9 +372,6 @@
                       "anyspend/api/checkout-sessions-api",
                       "anyspend/api/webhooks-api",
                       "anyspend/api/discount-codes",
-                      "anyspend/api/notifications-api",
-                      "anyspend/api/widgets-api",
-                      "anyspend/api/analytics",
                       "anyspend/api/events"
                     ]
                   },
