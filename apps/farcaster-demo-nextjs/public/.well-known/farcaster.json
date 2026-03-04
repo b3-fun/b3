@@ -1,0 +1,14 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "AnySpend Demo",
+    "homeUrl": "https://ab82-2402-800-6279-90a7-846d-d261-47bf-d4d8.ngrok-free.app",
+    "iconUrl": "https://ab82-2402-800-6279-90a7-846d-d261-47bf-d4d8.ngrok-free.app/icon.png",
+    "splashBackgroundColor": "#000000"
+  }
+}

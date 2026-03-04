@@ -2,7 +2,7 @@ import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useA
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { createContext, useContext } from "react";
-import { Account } from "thirdweb/wallets";
+import { Account, EIP1193 } from "thirdweb/wallets";
 import { ClientType } from "../../../client-manager";
 
 /**
@@ -18,6 +18,7 @@ const DEFAULT_PERMISSIONS: PermissionsConfig = {
 export interface B3ConfigContextType {
   accountOverride?: Account;
   automaticallySetFirstEoa: boolean;
+  defaultEoaProvider?: EIP1193.EIP1193Provider;
   environment: "development" | "production";
   defaultPermissions: PermissionsConfig;
   theme: "light" | "dark";
@@ -35,6 +36,7 @@ export function B3ConfigProvider({
   environment = "development",
   defaultPermissions = DEFAULT_PERMISSIONS,
   automaticallySetFirstEoa = false,
+  defaultEoaProvider,
   theme = "light",
   clientType = "rest",
   partnerId,
@@ -46,6 +48,7 @@ export function B3ConfigProvider({
   environment?: "development" | "production";
   defaultPermissions?: PermissionsConfig;
   automaticallySetFirstEoa?: boolean;
+  defaultEoaProvider?: EIP1193.EIP1193Provider;
   theme?: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
@@ -59,6 +62,7 @@ export function B3ConfigProvider({
         environment,
         defaultPermissions,
         automaticallySetFirstEoa,
+        defaultEoaProvider,
         theme,
         clientType,
         partnerId,

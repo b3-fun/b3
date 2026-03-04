@@ -8,7 +8,7 @@ import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { ThirdwebProvider } from "thirdweb/react";
-import { Account, Wallet } from "thirdweb/wallets";
+import { Account, EIP1193, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
@@ -29,6 +29,7 @@ export function B3Provider({
   accountOverride,
   environment,
   automaticallySetFirstEoa,
+  defaultEoaProvider,
   simDuneApiKey,
   // deprecated since v0.0.87
   toaster: _toaster,
@@ -48,6 +49,8 @@ export function B3Provider({
   accountOverride?: Account;
   environment?: "development" | "production";
   automaticallySetFirstEoa?: boolean;
+  /** EIP-1193 provider to auto-connect as the default EOA wallet (e.g., Farcaster frame wallet) */
+  defaultEoaProvider?: EIP1193.EIP1193Provider;
   simDuneApiKey?: string;
   toaster?: {
     position?: "top-center" | "top-right" | "bottom-center" | "bottom-right";
@@ -91,6 +94,7 @@ export function B3Provider({
                   accountOverride={accountOverride}
                   environment={environment}
                   automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+                  defaultEoaProvider={defaultEoaProvider}
                   theme={theme}
                   clientType={clientType}
                   partnerId={partnerId}
@@ -104,7 +108,11 @@ export function B3Provider({
                     {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
                     <StyleRoot id="b3-root" />
                   </RelayKitProviderWrapper>
-                  <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={!!automaticallySetFirstEoa} />
+                  <AuthenticationProvider
+                    partnerId={partnerId}
+                    automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+                    defaultEoaProvider={defaultEoaProvider}
+                  />
                 </B3ConfigProvider>
               </LocalSDKProvider>
             </ToastProvider>
