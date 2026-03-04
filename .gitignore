@@ -26,3 +26,9 @@ doppler.yaml
 .env*
 
 CURRENT_WORK.md
+
+# Auto-generated
+next-env.d.ts
+
+# Farcaster
+apps/farcaster-demo-nextjs/public/.well-known/farcaster.json
