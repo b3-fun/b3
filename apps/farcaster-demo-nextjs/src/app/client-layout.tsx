@@ -43,12 +43,17 @@ function useFarcasterProvider() {
   const [provider, setProvider] = useState<EIP1193.EIP1193Provider>();
 
   useEffect(() => {
-    sdk.isInMiniApp().then(isInMiniApp => {
-      if (isInMiniApp) {
-        setProvider(sdk.wallet.ethProvider as EIP1193.EIP1193Provider);
-      }
-      sdk.actions.ready();
-    });
+    sdk
+      .isInMiniApp()
+      .then(isInMiniApp => {
+        if (isInMiniApp) {
+          setProvider(sdk.wallet.ethProvider as EIP1193.EIP1193Provider);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        sdk.actions.ready();
+      });
   }, []);
 
   return provider;

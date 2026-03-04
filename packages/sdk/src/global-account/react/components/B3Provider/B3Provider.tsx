@@ -94,7 +94,6 @@ export function B3Provider({
                   accountOverride={accountOverride}
                   environment={environment}
                   automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-                  defaultEoaProvider={defaultEoaProvider}
                   theme={theme}
                   clientType={clientType}
                   partnerId={partnerId}
