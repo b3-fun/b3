@@ -3,12 +3,12 @@
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import { B3DynamicModal, B3Provider, StyleRoot } from "@b3dotfun/sdk/global-account/react";
 import sdk from "@farcaster/frame-sdk";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { EIP1193 } from "thirdweb/wallets";
 
 import "@b3dotfun/sdk/index.css";
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({ children }: { children: ReactNode }) {
   return (
     <B3ProviderWrapper>
       <AnyspendProvider featureFlags={{ showPoints: true }}>
@@ -21,7 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   );
 }
 
-function B3ProviderWrapper({ children }: { children: React.ReactNode }) {
+function B3ProviderWrapper({ children }: { children: ReactNode }) {
   const farcasterProvider = useFarcasterProvider();
 
   return (
