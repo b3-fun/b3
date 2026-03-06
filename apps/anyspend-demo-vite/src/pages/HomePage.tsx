@@ -16,6 +16,7 @@ import {
   Receipt,
   RotateCw,
   ShoppingBag,
+  ShieldCheck,
   ShoppingCart,
   Sun,
   Swords,
@@ -153,10 +154,15 @@ export default function HomePage() {
               onError: error => console.error("Checkout error:", error),
             }),
         },
+      ],
+    },
+    {
+      title: "KYC",
+      cards: [
         {
           title: "Checkout (No Items)",
-          icon: Receipt,
-          description: "Total-only payment panel, no line items",
+          icon: ShieldCheck,
+          description: "Total-only payment panel with KYC verification",
           tag: "modal",
           onClick: () =>
             openModal({
