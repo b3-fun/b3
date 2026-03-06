@@ -246,7 +246,11 @@ export function LoginStepCustom({
           {authStrategies.length > 0 && (
             <div
               className={`mb-6 grid w-full gap-4 px-3 ${authStrategies.length > 4 ? "grid-cols-4" : ""}`}
-              style={authStrategies.length <= 4 ? { gridTemplateColumns: `repeat(${authGridColumns}, minmax(0, 1fr))` } : undefined}
+              style={
+                authStrategies.length <= 4
+                  ? { gridTemplateColumns: `repeat(${authGridColumns}, minmax(0, 1fr))` }
+                  : undefined
+              }
             >
               {authStrategies.map(strategy => (
                 <AuthButton
