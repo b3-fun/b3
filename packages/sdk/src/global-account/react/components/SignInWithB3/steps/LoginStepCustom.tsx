@@ -2,8 +2,8 @@ import {
   AllowedStrategy,
   AuthButton,
   Button,
-  Input,
   getConnectOptionsFromStrategy,
+  Input,
   isWalletType,
   LoginStepContainer,
   useAuthentication,
@@ -17,7 +17,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useState } from "react";
 import { Chain } from "thirdweb";
-import { useConnect as useConnectTW } from "thirdweb/react";
+import { useConnectedWallets, useConnect as useConnectTW } from "thirdweb/react";
 import {
   Account,
   createWallet,
@@ -58,9 +58,9 @@ export function LoginStepCustom({
   const [emailError, setEmailError] = useState<string | null>(null);
   const { connect } = useConnect(partnerId, chain);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId, { skipAutoConnect: true });
+  const { connect: onAuthConnect, logout } = useAuthentication(partnerId, { skipAutoConnect: true });
   const { connect: connectTW } = useConnectTW();
+  const connectedWallets = useConnectedWallets();
 
   // Split strategies into auth and wallet types
   const authStrategies = strategies.filter(s => !isWalletType(s));
@@ -105,9 +105,13 @@ export function LoginStepCustom({
 
       const account = connectResult?.getAccount();
       debug("@@connectResult", { connectResult, account, options });
-      if (!account) throw new Error("Failed to connect");
+      if (!account || !connectResult) throw new Error("Failed to connect");
+      const allConnectedWallets =
+        connectedWallets.length > 0 && connectedWallets.some(wallet => wallet.id === connectResult.id)
+          ? connectedWallets
+          : [connectResult, ...connectedWallets.filter(wallet => wallet.id !== connectResult.id)];
+      await onAuthConnect(connectResult, allConnectedWallets);
       await onSuccess(account);
-      setIsAuthenticated(true);
       if (strategy === "email") {
         resetEmailFlow();
       }
@@ -117,7 +121,6 @@ export function LoginStepCustom({
       }
       await onError?.(error as Error);
       await logout();
-      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
       debug("setIsAuthenticating:false:3");
@@ -218,7 +221,11 @@ export function LoginStepCustom({
 
           {emailError && <p className="text-sm text-red-500">{emailError}</p>}
 
-          <Button onClick={emailCodeSent ? handleEmailLogin : handleSendEmailCode} disabled={isLoading} className="w-full">
+          <Button
+            onClick={emailCodeSent ? handleEmailLogin : handleSendEmailCode}
+            disabled={isLoading}
+            className="w-full"
+          >
             {isLoading ? "Loading..." : emailCodeSent ? "Verify code" : "Send code"}
           </Button>
 
@@ -238,7 +245,12 @@ export function LoginStepCustom({
           {authStrategies.length > 0 && (
             <div className={`mb-6 w-full ${authStrategies.length <= 3 ? "space-y-3 px-3" : "grid grid-cols-4 gap-4"}`}>
               {authStrategies.map(strategy => (
-                <AuthButton key={strategy} strategy={strategy} onClick={() => handleConnect(strategy)} isLoading={isLoading} />
+                <AuthButton
+                  key={strategy}
+                  strategy={strategy}
+                  onClick={() => handleConnect(strategy)}
+                  isLoading={isLoading}
+                />
               ))}
             </div>
           )}
