@@ -101,7 +101,7 @@ export function Demos() {
 
                 <div className="mb-4">
                   <SignInWithB3
-                    strategies={["google", "discord", "x"]}
+                    strategies={["google", "github", "email"]}
                     chain={b3Chain}
                     partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
                     onLoginSuccess={globalAccount => {
