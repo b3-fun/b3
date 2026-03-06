@@ -100,6 +100,7 @@ function App() {
                           console.error("Error signing in:", error);
                         }}
                         sessionKeyAddress={wallet?.address as `0x${string}`}
+                        strategies={["google", "github", "email"]}
                       />
                     </div>
                   </div>
