@@ -10,14 +10,20 @@ import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { ShinyButton, TextShimmer, useB3Config, useModalStore, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import {
+  ShinyButton,
+  TextShimmer,
+  useAccountWallet,
+  useB3Config,
+  useModalStore,
+  useTokenData,
+} from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { Loader2, Lock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { KycGate } from "./KycGate";
 
@@ -58,7 +64,7 @@ export function FiatCheckoutPanel({
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
-  const { address } = useAccount();
+  const { address } = useAccountWallet();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 

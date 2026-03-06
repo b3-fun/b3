@@ -1,12 +1,17 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, TextShimmer, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import {
+  ShinyButton,
+  TextShimmer,
+  useAccountWallet,
+  useB3Config,
+  useModalStore,
+} from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { Loader2, ShieldCheck, AlertTriangle, Clock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc, useWalletAuthHeaders } from "../../hooks/useKycStatus";
 
@@ -20,7 +25,7 @@ interface KycGateProps {
 }
 
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
-  const { address } = useAccount();
+  const { address } = useAccountWallet();
   const { partnerId } = useB3Config();
   // Gate the status fetch behind explicit user consent so the wallet
   // signature prompt doesn't fire automatically on tab open.
