@@ -52,10 +52,11 @@ export function getCachedWalletHeaders(address: string): Record<string, string> 
  */
 export function useWalletAuthHeaders() {
   const { address, wallet } = useAccountWallet();
+  const signMessage = wallet.signMessage;
 
   const getHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!address) throw new Error("No wallet connected");
-    if (!wallet.signMessage) throw new Error("Wallet does not support message signing");
+    if (!signMessage) throw new Error("Wallet does not support message signing");
     const walletAddress = address.toLowerCase();
 
     const cached = headerCache.get(walletAddress);
@@ -63,7 +64,7 @@ export function useWalletAuthHeaders() {
 
     const timestamp = Math.floor(Date.now() / 1000);
     const message = buildWalletAuthMessage(walletAddress, timestamp);
-    const signature = await wallet.signMessage({ message });
+    const signature = await signMessage({ message });
 
     const headers = {
       "X-Wallet-Address": walletAddress,
@@ -73,7 +74,7 @@ export function useWalletAuthHeaders() {
     // Cache for 4 minutes so repeated fetches don't re-prompt the user
     headerCache.set(walletAddress, { headers, expiresAt: Date.now() + 4 * 60 * 1000 });
     return headers;
-  }, [address, wallet]);
+  }, [address, signMessage]);
 
   return { address, getHeaders };
 }

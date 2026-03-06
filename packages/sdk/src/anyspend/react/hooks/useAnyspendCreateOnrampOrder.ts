@@ -4,7 +4,7 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CreateOrderResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
-import { useAccountWallet, useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -41,8 +41,7 @@ export type UseAnyspendCreateOnrampOrderProps = {
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
   // Get B3 context values
   const { partnerId } = useB3Config();
-  const { address } = useAccountWallet();
-  const { getHeaders: getWalletAuthHeaders } = useWalletAuthHeaders();
+  const { address, getHeaders: getWalletAuthHeaders } = useWalletAuthHeaders();
 
   // Get validated client reference ID from B3 context
   const createValidatedClientReferenceId = useValidatedClientReferenceId();
