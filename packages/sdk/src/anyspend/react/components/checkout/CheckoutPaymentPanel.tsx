@@ -186,14 +186,12 @@ export function CheckoutPaymentPanel({
   const accordionButtonClass = (active: boolean) =>
     cn(
       "anyspend-payment-method-btn flex w-full items-center gap-3 px-4 py-4 text-left transition-colors",
-      active
-        ? "bg-white dark:bg-neutral-900"
-        : "bg-white hover:bg-gray-50 dark:bg-neutral-900 dark:hover:bg-neutral-800",
+      !active && "hover:bg-gray-50 dark:hover:bg-neutral-800",
       classes?.paymentMethodButton,
     );
 
   const expandedPanelClass = cn(
-    "anyspend-payment-method-panel border-t border-gray-100 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-900",
+    "anyspend-payment-method-panel border-t border-gray-100 px-4 py-4 dark:border-neutral-800",
   );
 
   return (

@@ -1,9 +1,9 @@
 "use client";
 
 import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { useAccount, useSignMessage } from "wagmi";
 
 export interface KycStatusResponse {
   kycRequired: boolean;
@@ -46,14 +46,16 @@ export function getCachedWalletHeaders(address: string): Record<string, string> 
 
 /**
  * Returns a function that builds the wallet-signature auth headers.
+ * Uses useAccountWallet (thirdweb) instead of wagmi so signing works
+ * for all wallet types (social login, EOA, smart wallet, etc.).
  * Caches signatures for 4 minutes (server allows 5-minute window).
  */
 export function useWalletAuthHeaders() {
-  const { address } = useAccount();
-  const { signMessageAsync } = useSignMessage();
+  const { address, wallet } = useAccountWallet();
 
   const getHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!address) throw new Error("No wallet connected");
+    if (!wallet.signMessage) throw new Error("Wallet does not support message signing");
     const walletAddress = address.toLowerCase();
 
     const cached = headerCache.get(walletAddress);
@@ -61,7 +63,7 @@ export function useWalletAuthHeaders() {
 
     const timestamp = Math.floor(Date.now() / 1000);
     const message = buildWalletAuthMessage(walletAddress, timestamp);
-    const signature = await signMessageAsync({ message });
+    const signature = await wallet.signMessage({ message });
 
     const headers = {
       "X-Wallet-Address": walletAddress,
@@ -71,7 +73,7 @@ export function useWalletAuthHeaders() {
     // Cache for 4 minutes so repeated fetches don't re-prompt the user
     headerCache.set(walletAddress, { headers, expiresAt: Date.now() + 4 * 60 * 1000 });
     return headers;
-  }, [address, signMessageAsync]);
+  }, [address, wallet]);
 
   return { address, getHeaders };
 }

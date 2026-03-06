@@ -4,16 +4,15 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CreateOrderResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
-import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
-import { useAccount } from "wagmi";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
-import { getCachedWalletHeaders } from "./useKycStatus";
+import { getCachedWalletHeaders, useWalletAuthHeaders } from "./useKycStatus";
 import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type OnrampOptions = {
@@ -42,7 +41,8 @@ export type UseAnyspendCreateOnrampOrderProps = {
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
   // Get B3 context values
   const { partnerId } = useB3Config();
-  const { address } = useAccount();
+  const { address } = useAccountWallet();
+  const { getHeaders: getWalletAuthHeaders } = useWalletAuthHeaders();
 
   // Get validated client reference ID from B3 context
   const createValidatedClientReferenceId = useValidatedClientReferenceId();
@@ -86,12 +86,11 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
 
         // For card payments, include wallet auth headers so the backend can verify
         // KYC by the signing wallet address (may differ from the B3 JWT address).
-        // Only use already-cached headers — never trigger a fresh wallet signature
-        // here, as that would prompt the user without their explicit consent.
-        // KycGate pre-caches the headers in the "Continue to Verify" user-gesture.
+        // First try cached headers (from KycGate), then sign on-the-fly.
+        // The user is already clicking "Continue"/"Pay" so signing here is acceptable.
         let kycWalletHeaders: Record<string, string> | undefined;
         if (onramp.vendor === "stripe-web2" && address) {
-          kycWalletHeaders = getCachedWalletHeaders(address);
+          kycWalletHeaders = getCachedWalletHeaders(address) || (await getWalletAuthHeaders());
         }
 
         return await anyspendService.createOrder({
