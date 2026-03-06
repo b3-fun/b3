@@ -4,7 +4,7 @@ import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useCallback, useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
-import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { ecosystemWallet, MultiStepAuthArgsType, SingleStepAuthArgsType } from "thirdweb/wallets";
 const debug = debugB3React("useConnect");
 
 /**
@@ -23,7 +23,7 @@ export function useConnect(partnerId: string, chain?: Chain) {
    * It is used to connect to a wallet using the thirdweb client.
    */
   const connectTw = useCallback(
-    async (strategyOptions?: SingleStepAuthArgsType) => {
+    async (strategyOptions?: MultiStepAuthArgsType | SingleStepAuthArgsType) => {
       setIsLoading(true);
       return await connect(async () => {
         if (!strategyOptions) throw new Error("Strategy options are required");
