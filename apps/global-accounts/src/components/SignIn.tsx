@@ -19,6 +19,7 @@ export function SignIn({ wallet }: { wallet: Wallet }) {
         console.error("Error signing in:", error);
       }}
       sessionKeyAddress={wallet?.address as `0x${string}`}
+      strategies={["google", "github", "email"]}
     />
   );
 }

@@ -8,6 +8,7 @@ export default {
         "b3-grey": "#1E1E1E",
       },
       fontFamily: {
+        sans: ['"Neue Montreal Medium"', '"Inter"', "ui-sans-serif", "system-ui", "sans-serif"],
         "neue-montreal-bold": ['"Neue Montreal Bold"', "sans-serif"],
         "neue-montreal": ['"Neue Montreal Regular"', "sans-serif"],
         "neue-montreal-book": ['"Neue Montreal Book"', "sans-serif"],

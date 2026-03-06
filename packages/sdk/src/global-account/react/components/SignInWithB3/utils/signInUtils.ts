@@ -5,7 +5,8 @@ type WalletType = Wallet["id"];
 type StrategyType = SingleStepAuthArgsType["strategy"];
 type CustomStrategyType = "basement" | "privy";
 
-type AllowedStrategies = StrategyType | WalletType | CustomStrategyType;
+type AllowedStrategies = StrategyType | WalletType | CustomStrategyType | "email";
+type NonWalletStrategyType = Exclude<AllowedStrategies, WalletType>;
 const customStrategies = ["basement", "privy"] as const;
 // type CustomStrategy = (typeof customStrategies)[number];
 
@@ -13,9 +14,10 @@ export const allowedStrategies = [
   // Auth strategies
   "apple",
   "google",
+  "github",
   "x",
   "discord",
-  // "github",
+  "email",
   "guest",
 
   // Wallet IDs
@@ -36,7 +38,7 @@ export function isWalletType(strategy: AllowedStrategies): strategy is WalletTyp
   return strategy === "walletConnect" || walletIdPattern.test(strategy);
 }
 
-export function isStrategyType(strategy: AllowedStrategies): strategy is StrategyType {
+export function isStrategyType(strategy: AllowedStrategies): strategy is NonWalletStrategyType {
   return !isWalletType(strategy);
 }
 
@@ -47,6 +49,10 @@ export function getConnectOptionsFromStrategy(strategy: AllowedStrategy): {
 } {
   if (!allowedStrategies.includes(strategy)) {
     throw new Error(`Invalid strategy: ${strategy}`);
+  }
+
+  if (strategy === "email") {
+    throw new Error("Email strategy requires OTP flow and cannot be connected in a single step");
   }
 
   if (isWalletType(strategy)) {
@@ -64,6 +70,16 @@ export const strategyIcons: Record<string, string> = {
   apple: "https://cdn.b3.fun/apple.svg",
   guest: "https://cdn.b3.fun/incognito.svg",
   // Add more strategies as needed
+};
+
+export const strategyLabels: Record<string, string> = {
+  google: "Google",
+  x: "X",
+  discord: "Discord",
+  apple: "Apple",
+  guest: "Guest",
+  github: "GitHub",
+  email: "Email",
 };
 // Test it
 // console.log(getConnectOptionsFromStrategy("io.metamask"));

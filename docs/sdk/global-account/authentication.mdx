@@ -314,7 +314,7 @@ The main authentication button component.
 #### Props
 
 <ParamField path="strategies" type="AllowedStrategy[]">
-  Array of authentication strategies to display. Options include: `"google"`, `"discord"`, `"x"`, `"apple"`, `"walletConnect"`, `"io.metamask"`, `"com.coinbase.wallet"`. 
+  Array of authentication strategies to display. Options include: `"google"`, `"github"`, `"email"`, `"discord"`, `"x"`, `"apple"`, `"walletConnect"`, `"io.metamask"`, `"com.coinbase.wallet"`. 
   
   Leave undefined to show all options.
 </ParamField>
@@ -371,6 +371,11 @@ B3 Global Accounts supports the following authentication methods:
       <td>Discord OAuth authentication</td>
     </tr>
     <tr>
+      <td>`"github"`</td>
+      <td>Social</td>
+      <td>GitHub OAuth authentication</td>
+    </tr>
+    <tr>
       <td>`"x"`</td>
       <td>Social</td>
       <td>X (formerly Twitter) authentication</td>
@@ -384,6 +389,11 @@ B3 Global Accounts supports the following authentication methods:
       <td>`"guest"`</td>
       <td>Passwordless</td>
       <td>Guest authentication without signup</td>
+    </tr>
+    <tr>
+      <td>`"email"`</td>
+      <td>Passwordless</td>
+      <td>Email verification code authentication</td>
     </tr>
     <tr>
       <td>`"walletConnect"`</td>
