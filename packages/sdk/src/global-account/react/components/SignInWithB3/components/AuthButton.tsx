@@ -19,14 +19,15 @@ export function AuthButton({
   const strategyIcon = strategyIcons[strategy];
   const strategyLabel = strategyLabels[strategy] || strategy;
   const FallbackIcon = fallbackIcons[strategy as keyof typeof fallbackIcons];
+  const buttonLabel = `Sign in with ${strategyLabel}`;
 
   return (
     <Button
       key={strategy}
       onClick={onClick}
       disabled={isLoading}
-      aria-label={`Sign in with ${strategyLabel}`}
-      title={`Sign in with ${strategyLabel}`}
+      aria-label={buttonLabel}
+      title={buttonLabel}
       className="flex w-full items-center justify-center bg-gray-100 px-2 py-3 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
     >
       {strategyIcon ? (
@@ -34,7 +35,7 @@ export function AuthButton({
       ) : FallbackIcon ? (
         <FallbackIcon className="h-9 w-9 text-gray-900 dark:text-gray-100" />
       ) : (
-        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{strategyLabel[0]}</span>
+        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{strategyLabel.charAt(0)}</span>
       )}
     </Button>
   );

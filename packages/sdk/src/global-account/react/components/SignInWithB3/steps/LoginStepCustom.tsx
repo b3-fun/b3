@@ -67,6 +67,7 @@ export function LoginStepCustom({
   const walletStrategies = strategies.filter(isWalletType);
   const initialWallets = walletStrategies.slice(0, maxInitialWallets);
   const additionalWallets = walletStrategies.slice(maxInitialWallets);
+  const authGridColumns = Math.max(1, Math.min(authStrategies.length, 4));
 
   const resetEmailFlow = () => {
     setShowEmailFlow(false);
@@ -243,7 +244,10 @@ export function LoginStepCustom({
         <>
           {/* Auth Strategies */}
           {authStrategies.length > 0 && (
-            <div className={`mb-6 w-full ${authStrategies.length <= 3 ? "space-y-3 px-3" : "grid grid-cols-4 gap-4"}`}>
+            <div
+              className={`mb-6 grid w-full gap-4 px-3 ${authStrategies.length > 4 ? "grid-cols-4" : ""}`}
+              style={authStrategies.length <= 4 ? { gridTemplateColumns: `repeat(${authGridColumns}, minmax(0, 1fr))` } : undefined}
+            >
               {authStrategies.map(strategy => (
                 <AuthButton
                   key={strategy}
