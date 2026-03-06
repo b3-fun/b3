@@ -13,7 +13,6 @@ import {
   Lock,
   Moon,
   Package,
-  Receipt,
   RotateCw,
   ShoppingBag,
   ShieldCheck,
