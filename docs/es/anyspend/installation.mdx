@@ -1,6 +1,6 @@
 ---
-title: Instalación y Configuración
-description: 'Comienza con AnySpend - instalación, configuración básica y verificación'
+title: Instalación y configuración
+description: 'Instala el SDK, configura los proveedores y verifica que todo funcione'
 lang: es
 originalPath: anyspend/installation.mdx
 ---
@@ -50,7 +50,7 @@ import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (
-    <B3Provider theme="light" environment="production">
+    <B3Provider theme="light" environment="production" partnerId="tu-increíble-id-de-socio">
       <AnyspendProvider>{/* Tus componentes de la aplicación */}</AnyspendProvider>
     </B3Provider>
   );
@@ -114,7 +114,7 @@ function TestComponent() {
     Descubre hooks de React para construir flujos de pago personalizados
   </Card>
   <Card title="Ver Ejemplos" icon="code" href="/anyspend/examples">
-    Explora ejemplos de implementación del mundo real
+    Navega por ejemplos de implementación del mundo real
   </Card>
 </CardGroup>
 
@@ -125,7 +125,7 @@ function TestComponent() {
     Asegúrate de haber instalado el SDK correctamente e importado el archivo CSS. El SDK requiere React 18\+ y puede tener problemas de compatibilidad con versiones anteriores.
   </Accordion>
   <Accordion title="Proveedor No Encontrado">
-    Asegúrate de tener `B3Provider` y `AnyspendProvider` colocados en lo alto de tu árbol de componentes, típicamente en tu componente principal App.
+    Asegúrate de tener `B3Provider` y `AnyspendProvider` colocados en la parte alta de tu árbol de componentes, típicamente en tu componente principal App.
   </Accordion>
   <Accordion title="Errores de TypeScript">
     Si estás viendo errores de TypeScript, verifica que tu `tsconfig.json` incluya las configuraciones recomendadas arriba.
