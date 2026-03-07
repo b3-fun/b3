@@ -1,310 +1,166 @@
 ---
-title: Manejo de errores y solución de problemas
+title: Manejo de errores
 description: >-
-  Guía completa para manejar errores con elegancia y depurar problemas comunes
-  con AnySpend
+  Estados de pedidos, códigos de error y patrones para manejar fallos en
+  AnySpend
 lang: es
 originalPath: anyspend/error-handling.mdx
 ---
+## Ciclo de vida del estado de la orden
 
-Guía completa para manejar errores de manera elegante y depurar problemas comunes con AnySpend para proporcionar la mejor experiencia al usuario.
+Cada orden de AnySpend pasa por estos estados:
 
-## 📊 Ciclo de Vida del Estado de la Orden
-
-Entender los estados de las órdenes es crucial para el manejo adecuado de errores y la experiencia del usuario.
-
-### Tipos de Estado de la Orden
-
-```typescript title="Enumeración de Estado de la Orden" icon="list"
+```typescript title="Estados de la orden" icon="list"
 enum OrderStatus {
-  // Estados Iniciales
+  // Esperando
   SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
   WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
   EXPIRED = "expired",
 
-  // Estados de Procesamiento
+  // Procesando
   SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
   RELAY = "relay",
 
-  // Estados de Éxito
+  // Hecho
   EXECUTED = "executed",
 
-  // Estados de Fallo
+  // Fallido
   REFUNDING = "refunding",
   REFUNDED = "refunded",
   FAILURE = "failure",
 }
 ```
 
-### Descripciones de los Estados
+| Estado | Qué está pasando | Acción del usuario |
+|--------|-----------------|-------------|
+| `scanning_deposit_transaction` | Esperando la confirmación de la blockchain | Ninguna -- esperar |
+| `waiting_stripe_payment` | Procesando el pago con tarjeta | Puede necesitar completar 3D Secure |
+| `sending_token_from_vault` | Enviando tokens para el intercambio | Ninguna -- automático |
+| `relay` | Transacción entre cadenas en proceso | Ninguna -- esperar |
+| `executed` | Hecho | Ninguna |
+| `expired` | La orden expiró antes de que llegara el pago | Crear una nueva orden |
+| `refunding` | Reembolso automático en proceso | Ninguna -- esperar |
+| `refunded` | Reembolso enviado | Verificar la cartera para los tokens reembolsados |
+| `failure` | La transacción falló | Revisar los detalles del error, reintentar |
 
-<table>
-  <thead>
-    <tr>
-      <th>Estado</th>
-      <th>Descripción</th>
-      <th>Acción Requerida por el Usuario</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`scanning_deposit_transaction`</td>
-      <td>Esperando confirmación de pago</td>
-      <td>Ninguna - esperar confirmación de la blockchain</td>
-    </tr>
-    <tr>
-      <td>`waiting_stripe_payment`</td>
-      <td>Procesando pago con tarjeta de crédito</td>
-      <td>Puede necesitar completar 3D Secure</td>
-    </tr>
-    <tr>
-      <td>`sending_token_from_vault`</td>
-      <td>Enviando tokens para el intercambio</td>
-      <td>Ninguna - proceso automático</td>
-    </tr>
-    <tr>
-      <td>`relay`</td>
-      <td>Transacción entre cadenas en progreso</td>
-      <td>Ninguna - esperar a la finalización</td>
-    </tr>
-    <tr>
-      <td>`executed`</td>
-      <td>Transacción completada con éxito</td>
-      <td>Ninguna - ¡éxito!</td>
-    </tr>
-    <tr>
-      <td>`expired`</td>
-      <td>Orden expirada antes de la finalización</td>
-      <td>Crear nueva orden</td>
-    </tr>
-    <tr>
-      <td>`refunding`</td>
-      <td>Reembolso automático en progreso</td>
-      <td>Ninguna - esperar al reembolso</td>
-    </tr>
-    <tr>
-      <td>`refunded`</td>
-      <td>Reembolso completado</td>
-      <td>Verificar billetera para tokens reembolsados</td>
-    </tr>
-    <tr>
-      <td>`failure`</td>
-      <td>Transacción fallida</td>
-      <td>Revisar detalles del error, reintentar</td>
-    </tr>
-  </tbody>
-</table>
+## Códigos de error
 
-## ⚠️ Códigos de Error Comunes
-
-### Errores de Pago
+### Errores de pago
 
 <AccordionGroup>
 <Accordion title="INSUFFICIENT_BALANCE">
-**Descripción**: El usuario no tiene suficientes tokens para la transacción
-
-**Solución**: Solicitar al usuario que agregue fondos a su billetera o elija un token de pago diferente
-
-**Ejemplo**:
+El usuario no tiene suficientes tokens. Indícales que agreguen fondos o elijan otro token.
 
 ```typescript
 if (error.message === "INSUFFICIENT_BALANCE") {
-  toast.error("Saldo insuficiente. Por favor, añada fondos a su billetera.");
-  // Opcionalmente redirigir a rampa de entrada fiat
-  openFiatOnramp();
+  toast.error("Fondos insuficientes. Agrega tokens o elige otro método de pago.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="INVALID_TOKEN_ADDRESS">
-**Descripción**: El contrato de token no es compatible en la cadena objetivo
-
-**Solución**: Verificar que el token sea compatible y proporcionar opciones alternativas
-
-**Ejemplo**:
+El contrato del token no es compatible en la cadena objetivo. Muestra al usuario qué tokens están disponibles.
 
 ```typescript
 if (error.message === "INVALID_TOKEN_ADDRESS") {
-  toast.error("Este token no es compatible. Por favor, elija otro.");
-  showSupportedTokens();
+  toast.error("Este token no es compatible. Por favor, elige otro.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="MINIMUM_AMOUNT_NOT_MET">
-**Descripción**: La cantidad de la transacción está por debajo del umbral mínimo
-
-**Solución**: Aumentar la cantidad de la transacción o informar al usuario sobre los requisitos mínimos
-
-**Ejemplo**:
+La cantidad de la transacción está por debajo del umbral mínimo.
 
 ```typescript
 if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
-  toast.error(`La cantidad mínima es $${minimumAmount}. Por favor, aumente su cantidad.`);
+  toast.error(`La cantidad mínima es $${minimumAmount}.`);
 }
 ```
-
 </Accordion>
 
 <Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
-**Descripción**: La cantidad de la transacción excede el límite máximo
-
-**Solución**: Reducir la cantidad o dividir en múltiples transacciones
-
-**Ejemplo**:
+La cantidad de la transacción excede el límite. Divide en múltiples transacciones o reduce la cantidad.
 
 ```typescript
 if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
-  toast.error(`La cantidad máxima es $${maximumAmount}. Por favor, reduzca su cantidad.`);
+  toast.error(`La cantidad máxima es $${maximumAmount}.`);
 }
 ```
-
 </Accordion>
 </AccordionGroup>
 
-### Errores de Red
+### Errores de red
 
 <AccordionGroup>
 <Accordion title="SLIPPAGE">
-**Descripción**: El precio se movió más allá de la tolerancia aceptable durante la ejecución
-
-**Solución**: Reintentar con una tolerancia de deslizamiento mayor o esperar a la estabilidad del precio
-
-**Ejemplo**:
+El precio se movió más allá de la tolerancia durante la ejecución. Reintenta o espera a que el mercado se estabilice.
 
 ```typescript
 if (error.message === "SLIPPAGE") {
-  toast.warning("El precio se movió de manera desfavorable. Reintentando con ajustes modificados...");
+  toast.warning("El precio se movió. Reintentando...");
   retryWithHigherSlippage();
 }
 ```
-
 </Accordion>
 
 <Accordion title="NETWORK_ERROR">
-**Descripción**: Problemas de conexión RPC o congestión de la blockchain
-
-**Solución**: Reintentar después de un retraso o cambiar a un RPC alternativo
-
-**Ejemplo**:
+Problema de conexión RPC o congestión de la cadena. Reintenta después de un breve retraso.
 
 ```typescript
 if (error.message === "NETWORK_ERROR") {
-  toast.error("Problema de red detectado. Por favor, verifique la conexión e intente de nuevo.");
-  scheduleRetry();
+  toast.error("Problema de red. Verifica tu conexión y vuelve a intentarlo.");
 }
 ```
-
 </Accordion>
 
 <Accordion title="QUOTE_EXPIRED">
-**Descripción**: La cotización del precio ya no es válida
-
-**Solución**: Obtener una nueva cotización y reintentar la transacción
-
-**Ejemplo**:
+La cotización del precio está desactualizada. Obtén una nueva.
 
 ```typescript
 if (error.message === "QUOTE_EXPIRED") {
-  toast.info("Cotización de precio expirada. Obteniendo nueva cotización...");
+  toast.info("Cotización expirada. Obteniendo una nueva...");
   refreshQuoteAndRetry();
 }
 ```
-
 </Accordion>
 
 <Accordion title="CHAIN_NOT_SUPPORTED">
-**Descripción**: La blockchain solicitada no es compatible
-
-**Solución**: Usar cadenas compatibles o implementar una alternativa
-
-**Ejemplo**:
+La cadena solicitada no es compatible. Muestra al usuario qué cadenas están disponibles.
 
 ```typescript
 if (error.message === "CHAIN_NOT_SUPPORTED") {
-  toast.error("Esta blockchain no es compatible. Por favor, elija otra.");
+  toast.error("Esta cadena no es compatible.");
   showSupportedChains();
 }
 ```
-
 </Accordion>
 </AccordionGroup>
 
-### Errores de Contrato
+### Errores de contrato
 
 <AccordionGroup>
 <Accordion title="CONTRACT_CALL_FAILED">
-**Descripción**: La ejecución del contrato inteligente falló
-
-**Solución**: Verificar los parámetros y el estado del contrato
-
-**Ejemplo**:
-
-```typescript
-if (error.message === "CONTRACT_CALL_FAILED") {
-  toast.error("Interacción con el contrato fallida. Por favor, verifique los parámetros.");
-  logContractError(error);
-}
-```
-
+La ejecución del contrato inteligente falló. Verifica los parámetros del contrato y el estado.
 </Accordion>
 
 <Accordion title="INSUFFICIENT_GAS">
-**Descripción**: El límite de gas establecido es demasiado bajo para la transacción
-
-**Solución**: Aumentar el límite de gas o sugerir optimización de gas
-
-**Ejemplo**:
-
-```typescript
-if (error.message === "INSUFFICIENT_GAS") {
-  toast.error("La transacción requiere más gas. Aumentando el límite de gas...");
-  retryWithHigherGas();
-}
-```
-
+El límite de gas fue demasiado bajo. Reintenta con un límite más alto.
 </Accordion>
 
 <Accordion title="NONCE_TOO_LOW">
-**Descripción**: Conflicto de nonce de transacción
-
-**Solución**: Esperar a que se completen las transacciones pendientes
-
-**Ejemplo**:
-
-```typescript
-if (error.message === "NONCE_TOO_LOW") {
-  toast.info("Por favor, espere a que se completen las transacciones pendientes.");
-  waitAndRetry();
-}
-```
-
+Conflicto de nonce de una transacción pendiente. Espera a que la tx pendiente se confirme, luego reintenta.
 </Accordion>
 
 <Accordion title="TRANSACTION_REVERTED">
-**Descripción**: El contrato revirtió la transacción
-
-**Solución**: Verificar el estado y los parámetros del contrato
-
-**Ejemplo**:
-
-```typescript
-if (error.message === "TRANSACTION_REVERTED") {
-  toast.error("La transacción fue rechazada por el contrato. Por favor, verifique los requisitos.");
-  showTransactionDetails();
-}
-```
-
+El contrato se revirtió. Usualmente significa que no se cumplió una precondición (por ejemplo, venta finalizada, sin suficiente permiso).
 </Accordion>
 </AccordionGroup>
 
-## 🛠️ Patrones de Manejo de Errores
+## Patrones de manejo de errores
 
-### Manejo de Errores a Nivel de Componente
+### Manejo de errores por componente
 
-```tsx title="Componente de Pago con Manejo de Errores" icon="shield-exclamation" lines
+```tsx title="Pago con manejo de errores" icon="shield-exclamation"
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
 
 function PaymentComponent() {
@@ -312,48 +168,30 @@ function PaymentComponent() {
   const [retryCount, setRetryCount] = useState(0);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
-    onError: error => {
-      console.error("Pago fallido:", error);
-
-      // Manejar errores específicos
+    onError: (error) => {
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
-          setError("Saldo insuficiente. Por favor, añada fondos a su billetera.");
+          setError("Fondos insuficientes. Agrega tokens o intenta con otro método de pago.");
           break;
-
         case "SLIPPAGE":
           if (retryCount < 3) {
-            setError("El precio se movió de manera desfavorable. Reintentando...");
+            setError("El precio se movió. Reintentando...");
             setTimeout(() => {
-              setRetryCount(prev => prev + 1);
+              setRetryCount((prev) => prev + 1);
               retryPayment();
             }, 2000);
           } else {
-            setError("Precio demasiado volátil. Por favor, intente de nuevo más tarde.");
+            setError("El precio es demasiado volátil ahora. Intenta más tarde.");
           }
           break;
-
-        case "NETWORK_ERROR":
-          setError("Problema de red. Por favor, verifique su conexión e intente de nuevo.");
-          break;
-
         case "QUOTE_EXPIRED":
-          setError("Cotización de precio expirada. Obteniendo nueva cotización...");
+          setError("Cotización expirada. Obteniendo una nueva...");
           refreshQuote();
           break;
-
         default:
-          setError("Pago fallido. Por favor, intente de nuevo o contacte al soporte.");
+          setError("El pago falló. Intenta nuevamente o contacta al soporte.");
       }
-
-      // Rastrear errores para monitoreo
-      analytics.track("payment_error", {
-        error: error.message,
-        retryCount,
-        timestamp: new Date().toISOString(),
-      });
     },
-
     onSuccess: () => {
       setError(null);
       setRetryCount(0);
@@ -361,231 +199,186 @@ function PaymentComponent() {
   });
 
   return (
-    <div className="payment-component">
+    <div>
       {error && (
         <div className="error-banner">
-          <span className="error-icon">⚠️</span>
           <span>{error}</span>
           <button onClick={() => setError(null)}>Descartar</button>
         </div>
       )}
-
       <button onClick={handlePayment} disabled={isCreatingOrder}>
-        {isCreatingOrder ? "Procesando..." : "Pagar Ahora"}
+        {isCreatingOrder ? "Procesando..." : "Pagar ahora"}
       </button>
     </div>
   );
 }
 ```
 
-### Monitoreo del Estado de la Orden
+### Monitoreo del estado de la orden
 
-```tsx title="Monitor de Estado de la Orden" icon="eye" lines
+```tsx title="Rastreador de orden" icon="eye"
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
-function OrderStatusMonitor({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions, getOrderAndTransactionsError } =
+    useAnyspendOrderAndTransactions(orderId);
 
   if (getOrderAndTransactionsError) {
     return (
-      <div className="error-state">
-        <h3>No se puede cargar el estado de la orden</h3>
-        <p>Por favor, verifique su conexión e intente de nuevo.</p>
+      <div>
+        <p>No se pudo cargar el estado de la orden. Verifica tu conexión e intenta nuevamente.</p>
         <button onClick={() => window.location.reload()}>Reintentar</button>
       </div>
     );
   }
 
-  if (!orderAndTransactions) {
-    return <div>Cargando estado de la orden...</div>;
-  }
+  if (!orderAndTransactions) return <div>Cargando estado de la orden...</div>;
 
-  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+  const { order, executeTx, refundTxs } = orderAndTransactions.data;
 
-  const renderStatusMessage = () => {
-    switch (order.status) {
-      case "scanning_deposit_transaction":
-        return (
-          <div className="status-pending">
-            <div className="spinner" />
-            <div>
-              <h3>⏳ Esperando confirmación de pago</h3>
-              <p>Esto suele tomar 1-2 minutos. Por favor, no cierre esta ventana.</p>
-              {depositTxs.length > 0 && (
-                <a
-                  href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ver transacción de pago
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "relay":
-        return (
-          <div className="status-processing">
-            <div className="spinner" />
-            <div>
-              <h3>🔄 Procesando transacción entre cadenas</h3>
-              <p>Su pago está siendo procesado. Esto puede tomar unos minutos.</p>
-            </div>
-          </div>
-        );
-
-      case "executed":
-        return (
-          <div className="status-success">
-            <div className="success-icon">✅</div>
-            <div>
-              <h3>¡Transacción completada con éxito!</h3>
-              <p>Su orden ha sido procesada.</p>
-              {executeTx && (
-                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
-                  Ver transacción
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "failure":
-      case "obtain_failed":
-        return (
-          <div className="status-error">
-            <div className="error-icon">❌</div>
-            <div>
-              <h3>Transacción fallida</h3>
-              <p>{order.errorDetails || "Ocurrió un error al procesar su orden."}</p>
-              <div className="error-actions">
-                <button onClick={() => createNewOrder()}>Intentar de Nuevo</button>
-                <button onClick={() => contactSupport(orderId)}>Contactar Soporte</button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "refunded":
-        return (
-          <div className="status-refunded">
-            <div className="refund-icon">↩️</div>
-            <div>
-              <h3>Reembolso procesado</h3>
-              <p>Su pago ha sido reembolsado automáticamente.</p>
-              {refundTxs.length > 0 && (
-                <a
-                  href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ver transacción de reembolso
-                </a>
-              )}
-            </div>
-          </div>
-        );
-
-      case "expired":
-        return (
-          <div className="status-expired">
-            <div className="expired-icon">⏰</div>
-            <div>
-              <h3>Orden expirada</h3>
-              <p>Esta orden expiró antes de recibir el pago.</p>
-              <button onClick={() => createNewOrder()}>Crear Nueva Orden</button>
-            </div>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="status-unknown">
-            <div className="spinner" />
-            <div>
-              <h3>Procesando...</h3>
-              <p>Estado de la orden: {order.status}</p>
-            </div>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className="order-status-monitor">
-      <div className="order-header">
-        <h2>Orden #{orderId.slice(0, 8)}</h2>
-        <div className="order-meta">
-          <span>Creada: {new Date(order.createdAt).toLocaleString()}</span>
-          <span>Estado: {order.status}</span>
+  switch (order.status) {
+    case "scanning_deposit_transaction":
+      return <p>Esperando la confirmación del pago (1-2 minutos)...</p>;
+    case "relay":
+      return <p>Procesando la transacción entre cadenas...</p>;
+    case "executed":
+      return (
+        <div>
+          <p>¡Hecho!</p>
+          {executeTx && (
+            <a href={`https://basescan.org/tx/${executeTx.txHash}`} target="_blank">
+              Ver transacción
+            </a>
+          )}
         </div>
-      </div>
-
-      {renderStatusMessage()}
-
-      {/* Información de depuración en desarrollo */}
-      {process.env.NODE_ENV === "development" && (
-        <details className="debug-info">
-          <summary>Información de Depuración</summary>
-          <pre>{JSON.stringify(order, null, 2)}</pre>
-        </details>
-      )}
-    </div>
-  );
+      );
+    case "failure":
+    case "obtain_failed":
+      return (
+        <div>
+          <p>La transacción falló: {order.errorDetails || "Error desconocido"}</p>
+          <button onClick={() => createNewOrder()}>Intentar nuevamente</button>
+        </div>
+      );
+    case "refunded":
+      return <p>Reembolso procesado. Verifica tu cartera.</p>;
+    case "expired":
+      return (
+        <div>
+          <p>La orden expiró antes de que llegara el pago.</p>
+          <button onClick={() => createNewOrder()}>Crear nueva orden</button>
+        </div>
+      );
+    default:
+      return <p>Procesando... (estado: {order.status})</p>;
+  }
 }
 ```
 
-### Límite Global de Errores
+### Límite de error
 
-```tsx title="Componente de Límite de Errores" icon="shield" lines
+Envuelve los componentes de AnySpend en un límite de error para capturar fallos de renderizado:
+
+```tsx title="Límite de error" icon="shield"
 import React, { Component, ErrorInfo } from "react";
 
-interface Props {
-  children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
-}
+class AnySpendErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  state = { hasError: false, error: undefined as Error | undefined };
 
-interface State {
-  hasError: boolean;
-  error?: Error;
-}
-
-class AnySpendErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Límite de Errores AnySpend capturó un error:", error, errorInfo);
-
-    // Reportar al servicio de seguimiento de errores
-    if (typeof window !== "undefined") {
-      // Ejemplo: Sentry.captureException(error, { contexts: { errorInfo } });
-    }
+    console.error("Error de AnySpend:", error, errorInfo);
+    // Informar a tu servicio de seguimiento de errores (Sentry, etc.)
   }
-
-  resetError = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
 
   render() {
     if (this.state.hasError) {
-      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+      return (
+        <div>
+          <h3>Algo salió mal</h3>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => this.setState({ hasError: false })}>Intentar nuevamente</button>
+        </div>
+      );
     }
-
     return this.props.children;
   }
 }
 
-function DefaultErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+// Uso
+function App() {
   return (
-    <div className="error-fallback">
-      <h2>Algo salió mal</h2>
-      <p>O
+    <AnySpendErrorBoundary>
+      <AnyspendProvider>
+        <YourApp />
+      </AnyspendProvider>
+    </AnySpendErrorBoundary>
+  );
+}
+```
+
+## Mensajes de error amigables para el usuario
+
+Un ayudante que mapea códigos de error a mensajes que tus usuarios pueden entender realmente:
+
+```tsx title="Ayudante de mensajes de error" icon="comment"
+function getErrorMessage(error: Error) {
+  const map: Record<string, { title: string; message: string; action?: string }> = {
+    INSUFFICIENT_BALANCE: {
+      title: "Saldo insuficiente",
+      message: "No tienes fondos suficientes para esta transacción.",
+      action: "Agrega fondos o elige otro método de pago.",
+    },
+    SLIPPAGE: {
+      title: "Cambio de precio",
+      message: "El precio cambió mientras procesábamos tu transacción.",
+      action: "Reintentaremos con una cotización actualizada.",
+    },
+    NETWORK_ERROR: {
+      title: "Problema de conexión",
+      message: "No se puede alcanzar la red blockchain.",
+      action: "Verifica tu conexión a internet y vuelve a intentarlo.",
+    },
+    QUOTE_EXPIRED: {
+      title: "Cotización expirada",
+      message: "La cotización del precio ya no es válida.",
+      action: "Obteniendo una nueva cotización...",
+    },
+  };
+
+  return map[error.message] ?? {
+    title: "Transacción fallida",
+    message: "Algo salió mal.",
+    action: "Intenta nuevamente o contacta al soporte.",
+  };
+}
+```
+
+## Consejos
+
+- **Mantén informados a los usuarios** durante operaciones largas. Las transacciones entre cadenas pueden tardar unos minutos -- muestra el progreso, no solo un cargador.
+- **Reintenta errores transitorios** (deslizamiento, red, cotización expirada) con retroceso exponencial. Muchos se resuelven en el segundo intento.
+- **Registra errores** con contexto (ID de la orden, dirección del usuario, marca de tiempo) para que puedas depurar problemas después del hecho.
+- **Ofrece alternativas** cuando sea posible. Si la transacción entre cadenas falla, sugiere una en la misma cadena. Si falla cripto, sugiere una rampa de entrada fiat.
+
+## Obtener ayuda
+
+<CardGroup cols={2}>
+<Card title="Discord" icon="discord" href="https://discord.gg/b3dotfun">
+  Obtén ayuda de la comunidad y el equipo de soporte
+</Card>
+
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3/issues">
+  Reporta errores y solicita características
+</Card>
+</CardGroup>
+
+<Info>
+  Al reportar problemas, incluye: mensaje/código de error, pasos para reproducir, información del navegador/dispositivo y el ID de la orden si aplica.
+</Info>

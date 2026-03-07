@@ -1,6 +1,6 @@
 ---
 title: Ejemplos
-description: Ejemplos completos y patrones de integración para Cuentas Globales B3
+description: Ejemplos completos y patrones de integración para B3 Global Accounts
 lang: es
 originalPath: sdk/global-account/examples.mdx
 ---
@@ -182,7 +182,7 @@ function AuthenticationStep() {
           provider={{ strategy: "discord" }}
           partnerId="epic-game-studio"
           onLoginSuccess={(account) => {
-            console.log("Jugador de Discord unido:", account.displayName);
+            console.log("Jugador de Discord se unió:", account.displayName);
           }}
         />
       </div>
@@ -209,7 +209,7 @@ function PermissionStep() {
     approvedTargets: gameContracts,
     startDate: new Date(),
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
-    nativeTokenLimitPerTransaction: 0.001, // Pequeño límite de ETH para gas
+    nativeTokenLimitPerTransaction: 0.001, // Límite pequeño de ETH para gas
   };
 
   return (
@@ -265,7 +265,7 @@ function GameReadyState() {
       </div>
       
       <div className="game-actions">
-        <button className="play-btn">Empezar a Jugar</button>
+        <button className="play-btn">Comenzar a Jugar</button>
         <button className="inventory-btn">Ver Inventario</button>
         <button className="marketplace-btn">Mercado</button>
       </div>
@@ -386,7 +386,7 @@ function GuestShop() {
           provider={{ strategy: "google" }}
           partnerId="nft-marketplace"
           onLoginSuccess={() => {
-            console.log("¡Usuario unido al mercado!");
+            console.log("¡Usuario se unió al mercado!");
           }}
         />
       </section>
@@ -467,7 +467,7 @@ function MainScreen() {
 function SignInView() {
   return (
     <View style={styles.signInContainer}>
-      <Text style={styles.title}>Bienvenido a B3 Móvil</Text>
+      <Text style={styles.title}>Bienvenido a B3 Mobile</Text>
       
       {/* La implementación en React Native usaría flujos de autenticación nativos */}
       <TouchableOpacity style={styles.signInButton}>
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
 export default App;
 ```
 
-## Ejemplo de Enrutador de Aplicación Next.js
+## Ejemplo de Router de App Next.js
 
 Ejemplo para Next.js 13+ App Router.
 
@@ -607,7 +607,7 @@ export default function AuthComponent() {
         provider={{ strategy: "google" }}
         partnerId="nextjs-app"
         onLoginSuccess={(account) => {
-          console.log("Éxito de autenticación en Next.js:", account);
+          console.log("Éxito en la autenticación de Next.js:", account);
         }}
       />
     </div>
@@ -615,7 +615,7 @@ export default function AuthComponent() {
 }
 ```
 
-## Ejemplo de Hook Personalizado Avanzado
+## Ejemplo Avanzado de Hook Personalizado
 
 Hook personalizado que combina múltiples características de B3:
 
@@ -649,11 +649,4 @@ function useB3GameState() {
   const gameState = {
     player: {
       id: account?.id,
-      name: account?.displayName,
-      avatar: account?.avatarUrl,
-      email: account?.email,
-    },
-    wallet: {
-      address: wallet?.address,
-      balance: wallet?.balance,
-      chainId: wallet?.
+      name: account?.displayName
