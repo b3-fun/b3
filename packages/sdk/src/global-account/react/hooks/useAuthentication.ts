@@ -6,7 +6,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { ConnectionOptions } from "@thirdweb-dev/wagmi-adapter";
 import { getConnectors } from "@wagmi/core";
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import {
   useActiveWallet,
   useAutoConnect,
@@ -57,7 +57,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   const { authenticate } = useTWAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
-  const wagmiConfig = createWagmiConfig({ partnerId });
+  const wagmiConfig = useMemo(() => createWagmiConfig({ partnerId }), [partnerId]);
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
@@ -113,9 +113,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       });
     }
     syncWagmiFunc();
-    // wagmi config shouldn't change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [partnerId, wallets]);
+  }, [wagmiConfig, wallets, connect, switchAccount]);
 
   useEffect(() => {
     syncWagmi();

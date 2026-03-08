@@ -5,6 +5,7 @@ import { Account, Wallet } from "thirdweb/wallets";
 
 import { ClientType } from "../../../client-manager";
 
+import { useMemo } from "react";
 import { WagmiProvider } from "wagmi";
 import { createWagmiConfig } from "../../utils/createWagmiConfig";
 import AuthenticationProvider from "./AuthenticationProvider";
@@ -82,7 +83,7 @@ export function InnerProvider({
   partnerId: string;
   rpcUrls?: Record<number, string>;
 }) {
-  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
+  const wagmiConfig = useMemo(() => createWagmiConfig({ partnerId, rpcUrls }), [partnerId, rpcUrls]);
 
   return (
     <WagmiProvider config={wagmiConfig}>
