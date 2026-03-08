@@ -113,7 +113,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       });
     }
     syncWagmiFunc();
-  }, [wagmiConfig, wallets]);
+  }, [wagmiConfig, wallets, connect, switchAccount]);
 
   useEffect(() => {
     syncWagmi();

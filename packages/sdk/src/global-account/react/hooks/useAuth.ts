@@ -136,7 +136,7 @@ export function useAuth() {
       });
     }
     syncWagmiFunc();
-  }, [wagmiConfig, wallets]);
+  }, [wagmiConfig, wallets, connect, switchAccount]);
 
   useEffect(() => {
     syncWagmi();
