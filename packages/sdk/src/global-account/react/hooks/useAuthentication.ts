@@ -1,13 +1,12 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
-import { B3_AUTH_COOKIE_NAME, ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import Cookies from "js-cookie";
+import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { ConnectionOptions } from "@thirdweb-dev/wagmi-adapter";
 import { getConnectors } from "@wagmi/core";
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import {
   useActiveWallet,
   useAutoConnect,
@@ -19,7 +18,7 @@ import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { LocalSDKContext } from "../components/B3Provider/LocalSDKProvider";
-import { getCachedWagmiConfig } from "../utils/createWagmiConfig";
+import { createWagmiConfig } from "../utils/createWagmiConfig";
 import { useTWAuth } from "./useTWAuth";
 import { useUserQuery } from "./useUserQuery";
 
@@ -58,7 +57,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   const { authenticate } = useTWAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
-  const wagmiConfig = getCachedWagmiConfig({ partnerId });
+  const wagmiConfig = useMemo(() => createWagmiConfig({ partnerId }), [partnerId]);
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
@@ -114,9 +113,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       });
     }
     syncWagmiFunc();
-    // wagmi config shouldn't change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [partnerId, wallets]);
+  }, [wagmiConfig, wallets]);
 
   useEffect(() => {
     syncWagmi();
@@ -207,14 +204,6 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
       }
 
       app.logout();
-
-      // Explicitly remove auth cookies as a safety net. Feathers' logout() calls
-      // storage.removeItem() internally, but if the cookie was set with different
-      // attributes (e.g. extended expiry for dev users), the remove may not match.
-      // This ensures reAuthenticate() cannot succeed with a stale session after
-      // logging out of wallet A and signing in with wallet B.
-      Cookies.remove(B3_AUTH_COOKIE_NAME);
-      Cookies.remove("stream-token");
       debug("@@logout:loggedOut");
 
       setIsAuthenticated(false);
