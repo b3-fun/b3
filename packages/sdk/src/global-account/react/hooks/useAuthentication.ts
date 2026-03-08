@@ -18,7 +18,7 @@ import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { LocalSDKContext } from "../components/B3Provider/LocalSDKProvider";
-import { createWagmiConfig } from "../utils/createWagmiConfig";
+import { getCachedWagmiConfig } from "../utils/createWagmiConfig";
 import { useTWAuth } from "./useTWAuth";
 import { useUserQuery } from "./useUserQuery";
 
@@ -57,7 +57,7 @@ export function useAuthentication(partnerId: string, { skipAutoConnect = false }
   const { authenticate } = useTWAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
-  const wagmiConfig = createWagmiConfig({ partnerId });
+  const wagmiConfig = getCachedWagmiConfig({ partnerId });
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
