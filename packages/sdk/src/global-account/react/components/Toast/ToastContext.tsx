@@ -15,6 +15,9 @@ interface ToastContextType {
   addToast: (type: ToastType, message: string, duration?: number) => string;
   removeToast: (id: string) => void;
   clearAll: () => void;
+  headerMode: boolean;
+  setHeaderMode: (enabled: boolean) => void;
+  latestToast: ToastItem | null;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -23,6 +26,9 @@ let globalToastCounter = 0;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [headerMode, setHeaderMode] = useState(false);
+  const headerModeRef = useRef(false);
+  const [latestToast, setLatestToast] = useState<ToastItem | null>(null);
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const removeToast = useCallback((id: string) => {
@@ -45,13 +51,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         createdAt: Date.now(),
       };
 
-      setToasts(prev => [...prev, newToast]);
+      if (headerModeRef.current) {
+        setLatestToast(newToast);
+        if (duration > 0) {
+          const timeout = setTimeout(() => {
+            setLatestToast(null);
+          }, duration);
+          timeoutsRef.current.set(id, timeout);
+        }
+      } else {
+        setToasts(prev => [...prev, newToast]);
 
-      if (duration > 0) {
-        const timeout = setTimeout(() => {
-          removeToast(id);
-        }, duration);
-        timeoutsRef.current.set(id, timeout);
+        if (duration > 0) {
+          const timeout = setTimeout(() => {
+            removeToast(id);
+          }, duration);
+          timeoutsRef.current.set(id, timeout);
+        }
       }
 
       return id;
@@ -65,6 +81,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts([]);
   }, []);
 
+  const setHeaderModeCallback = useCallback((enabled: boolean) => {
+    setHeaderMode(enabled);
+    headerModeRef.current = enabled;
+    if (!enabled) {
+      setLatestToast(null);
+      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      timeoutsRef.current.clear();
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     const timeouts = timeoutsRef.current;
@@ -74,7 +100,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  return <ToastContext.Provider value={{ toasts, addToast, removeToast, clearAll }}>{children}</ToastContext.Provider>;
+  return (
+    <ToastContext.Provider
+      value={{ toasts, addToast, removeToast, clearAll, headerMode, setHeaderMode: setHeaderModeCallback, latestToast }}
+    >
+      {children}
+    </ToastContext.Provider>
+  );
 }
 
 export function useToastContext() {

@@ -43,7 +43,7 @@ export function B3DynamicModal() {
   const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3Config();
   const isMobile = useIsMobile();
-  const { toasts, removeToast } = useToastContext();
+  const { toasts, removeToast, headerMode } = useToastContext();
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [
@@ -247,7 +247,7 @@ export function B3DynamicModal() {
 
           {/* Toast Container - Part of modal-inner-content layer */}
           <AnimatePresence>
-            {toasts.length > 0 && (
+            {!headerMode && toasts.length > 0 && (
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: "auto" }}

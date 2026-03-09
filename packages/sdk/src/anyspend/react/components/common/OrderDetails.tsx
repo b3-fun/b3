@@ -24,6 +24,7 @@ import {
   useB3Config,
   useModalStore,
   useProfile,
+  useToastContext,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { useRouter, useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
@@ -230,6 +231,13 @@ export const OrderDetails = memo(function OrderDetails({
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { setHeaderMode } = useToastContext();
+
+  useEffect(() => {
+    setHeaderMode(true);
+    return () => setHeaderMode(false);
+  }, [setHeaderMode]);
 
   // Get theme from B3Provider context
   const { theme } = useB3Config();

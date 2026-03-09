@@ -1,12 +1,15 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
+import { TextMorph } from "torph/react";
 import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
 
 export interface Step {
   id: string | number;
   title: string;
   description?: string;
+  icon?: React.ReactNode;
 }
 
 export interface StepProgressProps {
@@ -32,8 +35,8 @@ export function StepProgress({
       {/* Step Progress Indicator */}
       <div className="flex items-center gap-2">
         {steps.map((_, index) => (
-          <>
-            <div key={index} className="flex items-center">
+          <React.Fragment key={index}>
+            <div className="flex items-center">
               {index < currentStepIndex ? (
                 // Completed step - checkmark replaces the whole circle
                 <motion.div
@@ -71,7 +74,7 @@ export function StepProgress({
                 ))}
               </div>
             )}
-          </>
+          </React.Fragment>
         ))}
       </div>
 
@@ -83,8 +86,15 @@ export function StepProgress({
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <h2 className="text-as-primary text-xl font-semibold">{currentStep.title}</h2>
-          {currentStep.description && <p className="text-as-tertiary mt-1 text-sm">{currentStep.description}</p>}
+          <h2 className="text-as-primary text-xl font-semibold">
+            <TextMorph>{currentStep.title}</TextMorph>
+          </h2>
+          {currentStep.description && (
+            <p className="text-as-tertiary mt-1 flex items-center justify-center gap-1.5 text-sm">
+              {currentStep.icon}
+              <TextMorph>{currentStep.description}</TextMorph>
+            </p>
+          )}
         </motion.div>
       )}
     </div>
