@@ -35,8 +35,8 @@ export function StepProgress({
       {/* Step Progress Indicator */}
       <div className="flex items-center gap-2">
         {steps.map((_, index) => (
-          <>
-            <div key={index} className="flex items-center">
+          <React.Fragment key={index}>
+            <div className="flex items-center">
               {index < currentStepIndex ? (
                 // Completed step - checkmark replaces the whole circle
                 <motion.div
@@ -74,7 +74,7 @@ export function StepProgress({
                 ))}
               </div>
             )}
-          </>
+          </React.Fragment>
         ))}
       </div>
 

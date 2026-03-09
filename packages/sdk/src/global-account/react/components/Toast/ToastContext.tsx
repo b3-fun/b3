@@ -27,6 +27,7 @@ let globalToastCounter = 0;
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [headerMode, setHeaderMode] = useState(false);
+  const headerModeRef = useRef(false);
   const [latestToast, setLatestToast] = useState<ToastItem | null>(null);
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -50,7 +51,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         createdAt: Date.now(),
       };
 
-      if (headerMode) {
+      if (headerModeRef.current) {
         setLatestToast(newToast);
       } else {
         setToasts(prev => [...prev, newToast]);
@@ -65,7 +66,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       return id;
     },
-    [removeToast, headerMode],
+    [removeToast],
   );
 
   const clearAll = useCallback(() => {
@@ -76,6 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const setHeaderModeCallback = useCallback((enabled: boolean) => {
     setHeaderMode(enabled);
+    headerModeRef.current = enabled;
     if (!enabled) {
       setLatestToast(null);
     }
