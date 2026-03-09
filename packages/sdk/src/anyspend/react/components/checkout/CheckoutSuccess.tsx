@@ -1,6 +1,7 @@
 "use client";
 
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
+import { b3 } from "viem/chains";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
@@ -38,7 +39,7 @@ export function CheckoutSuccess({
               : "Your payment has been processed successfully.",
           txHash,
           orderId,
-          explorerUrl: txHash && dstChainId ? getExplorerTxUrl(dstChainId, txHash) : undefined,
+          explorerUrl: txHash ? getExplorerTxUrl(dstChainId ?? b3.id, txHash) : undefined,
           onDone: () => {
             if (returnUrl) window.location.href = returnUrl;
           },
@@ -78,7 +79,7 @@ export function CheckoutSuccess({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
-          href={dstChainId ? getExplorerTxUrl(dstChainId, txHash) : `https://explorer.b3.fun/tx/${txHash}`}
+          href={getExplorerTxUrl(dstChainId ?? b3.id, txHash)}
           target="_blank"
           rel="noopener noreferrer"
           className="anyspend-success-tx-link mt-4 flex items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400"
