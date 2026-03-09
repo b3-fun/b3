@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-// @ts-expect-error -- torph uses package.json exports which requires moduleResolution "bundler"
 import { TextMorph } from "torph/react";
 import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
 
