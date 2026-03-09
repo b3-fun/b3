@@ -1,5 +1,6 @@
 "use client";
 
+import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
@@ -9,13 +10,21 @@ import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 
 interface CheckoutSuccessProps {
   txHash?: string;
+  dstChainId?: number;
   orderId?: string;
   returnUrl?: string;
   returnLabel?: string;
   classes?: AnySpendCheckoutClasses;
 }
 
-export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, classes }: CheckoutSuccessProps) {
+export function CheckoutSuccess({
+  txHash,
+  dstChainId,
+  orderId,
+  returnUrl,
+  returnLabel,
+  classes,
+}: CheckoutSuccessProps) {
   const { content, slots } = useAnySpendCustomization();
 
   if (slots.successScreen) {
@@ -29,7 +38,7 @@ export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, class
               : "Your payment has been processed successfully.",
           txHash,
           orderId,
-          explorerUrl: txHash ? `https://explorer.b3.fun/tx/${txHash}` : undefined,
+          explorerUrl: txHash && dstChainId ? getExplorerTxUrl(dstChainId, txHash) : undefined,
           onDone: () => {
             if (returnUrl) window.location.href = returnUrl;
           },
@@ -69,7 +78,7 @@ export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, class
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
-          href={`https://explorer.b3.fun/tx/${txHash}`}
+          href={dstChainId ? getExplorerTxUrl(dstChainId, txHash) : `https://explorer.b3.fun/tx/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
           className="anyspend-success-tx-link mt-4 flex items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400"

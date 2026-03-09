@@ -1,4 +1,4 @@
-import { ABI_ERC20_STAKING, B3_TOKEN, eqci } from "@b3dotfun/sdk/anyspend";
+import { ABI_ERC20_STAKING, B3_TOKEN, eqci, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -474,7 +474,7 @@ export function AnySpendStakeB3({
           >
             <div className="mb-6">
               <a
-                href={`https://basescan.org/tx/${stakingTxHash}`}
+                href={getExplorerTxUrl(base.id, stakingTxHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-as-primary/70 hover:text-as-primary block break-all text-center font-mono text-sm underline transition-colors"
