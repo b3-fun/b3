@@ -53,6 +53,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       if (headerModeRef.current) {
         setLatestToast(newToast);
+        if (duration > 0) {
+          const timeout = setTimeout(() => {
+            setLatestToast(null);
+          }, duration);
+          timeoutsRef.current.set(id, timeout);
+        }
       } else {
         setToasts(prev => [...prev, newToast]);
 
@@ -80,6 +86,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     headerModeRef.current = enabled;
     if (!enabled) {
       setLatestToast(null);
+      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      timeoutsRef.current.clear();
     }
   }, []);
 
