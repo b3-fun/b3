@@ -1,7 +1,9 @@
 import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useSearchParams } from "@b3dotfun/sdk/shared/react";
-import { Clock, Loader2, RotateCcw, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle, Clock, Info, Loader2, RotateCcw, X } from "lucide-react";
+import { useToastContext } from "@b3dotfun/sdk/global-account/react";
+import type { ToastType } from "@b3dotfun/sdk/global-account/react";
 import React, { memo, useEffect, useRef } from "react";
 import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
 import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
@@ -13,6 +15,20 @@ function getStepIndex(status: string): number {
   if (["waiting_stripe_payment", "scanning_deposit_transaction"].includes(status)) return 0;
   if (["quoting_after_deposit", "sending_token_from_vault", "relay", "executing"].includes(status)) return 1;
   return -1;
+}
+
+function getToastIcon(type: ToastType): React.ReactNode {
+  const iconClass = "h-5 w-5";
+  switch (type) {
+    case "success":
+      return <CheckCircle className={`${iconClass} text-green-500`} />;
+    case "error":
+      return <AlertCircle className={`${iconClass} text-red-500`} />;
+    case "info":
+      return <Info className={`${iconClass} text-blue-500`} />;
+    case "warning":
+      return <AlertTriangle className={`${iconClass} text-amber-500`} />;
+  }
 }
 
 export const OrderStatus = memo(function OrderStatus({
@@ -56,9 +72,28 @@ export const OrderStatus = memo(function OrderStatus({
     if (content.processingDescription) description = content.processingDescription;
   }
 
+  const { latestToast } = useToastContext();
+
+  // Override subtitle with toast notification when present (title stays unchanged)
+  let notificationIcon: React.ReactNode = undefined;
+  if (latestToast && currentStepIndex >= 0) {
+    description = latestToast.message;
+    notificationIcon = getToastIcon(latestToast.type);
+  }
+
   const paymentSteps: Step[] = [
-    { id: 1, title: text, description: typeof description === "string" ? description : defaultDescription || "" },
-    { id: 2, title: text, description: typeof description === "string" ? description : defaultDescription || "" },
+    {
+      id: 1,
+      title: text,
+      description: typeof description === "string" ? description : defaultDescription || "",
+      icon: notificationIcon,
+    },
+    {
+      id: 2,
+      title: text,
+      description: typeof description === "string" ? description : defaultDescription || "",
+      icon: notificationIcon,
+    },
   ];
 
   if (currentStepIndex === 0) {
