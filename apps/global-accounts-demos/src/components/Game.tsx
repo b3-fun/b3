@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
+import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { B3 } from "../B3";
 import { MintButton } from "@b3dotfun/sdk/global-account/react";
 import { b3Chain } from "../b3Chain";
@@ -509,7 +510,7 @@ export function Game({
                       {successHash && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
                           <TransactionLink
-                            href={`https://explorer.b3.fun/tx/${successHash}`}
+                            href={getExplorerTxUrl(b3Chain.id, successHash)}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
