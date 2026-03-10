@@ -40,11 +40,12 @@ const SessionDurationContent = ({ partnerId }: SessionDurationContentProps) => {
         const updated = await app.service("users").patch(user.userId, {
           preferences: {
             ...user.preferences,
-            [partnerId]: { ...(user.preferences as Record<string, any>)?.[partnerId], sessionDuration: days },
+            [partnerId]: { ...((user.preferences?.[partnerId] as Record<string, unknown>) ?? {}), sessionDuration: days },
           },
         });
         setUser(updated);
-      } catch {
+      } catch (error) {
+        console.error("Failed to save session duration preference:", error);
         // Revert optimistic update so UI stays consistent with server state
         setSessionDays(previous);
         setSessionDurationDays(previous, partnerId);
