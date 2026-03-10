@@ -41,7 +41,7 @@ const SessionDurationContent = ({ partnerId }: SessionDurationContentProps) => {
           preferences: {
             ...user.preferences,
             [partnerId]: {
-              ...((user.preferences?.[partnerId] as Record<string, unknown>) ?? {}),
+              ...((((user.preferences as Record<string, unknown>) ?? {})[partnerId] as Record<string, unknown>) ?? {}),
               sessionDuration: days,
             },
           },
