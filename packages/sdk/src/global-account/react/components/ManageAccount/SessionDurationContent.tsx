@@ -56,11 +56,12 @@ const SessionDurationContent = ({ partnerId }: SessionDurationContentProps) => {
 
   return (
     <div className="flex h-[470px] flex-col">
-      <ModalHeader showBackButton={true} showCloseButton={false} title="Stay signed in" onBack={navigateBack} />
+      <ModalHeader showBackButton={true} showCloseButton={false} title="Stay signed in" handleBack={navigateBack} />
 
       <div className="flex flex-col gap-2 p-5">
         {SESSION_DURATION_OPTIONS.map(days => (
           <button
+            type="button"
             key={days}
             onClick={() => handleSelect(days)}
             disabled={saving}

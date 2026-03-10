@@ -113,6 +113,7 @@ const SettingsContent = ({
       {/* Logout Section */}
       <div className="mt-auto px-5 pb-5">
         <button
+          type="button"
           className="b3-modal-sign-out-button border-b3-line hover:bg-b3-line bg-b3-background dark:bg-b3-background dark:border-b3-line dark:hover:bg-b3-line/80 flex w-full items-center justify-center gap-1.5 rounded-xl border border-solid p-3 transition-colors"
           onClick={onLogoutEnhanced}
           disabled={logoutLoading}
