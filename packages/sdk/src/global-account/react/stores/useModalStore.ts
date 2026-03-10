@@ -452,6 +452,16 @@ export interface SendModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the Session Duration modal
+ * Allows users to configure how long they stay signed in
+ */
+export interface SessionDurationModalProps extends BaseModalProps {
+  type: "sessionDuration";
+  partnerId: string;
+  chain: Chain;
+}
+
+/**
  * Props for the Notifications modal
  * Allows users to manage notification settings and channels
  */
@@ -677,6 +687,7 @@ export type ModalContentType =
   | DepositModalProps
   | SendModalProps
   | NotificationsModalProps
+  | SessionDurationModalProps
   | AnySpendCollectorClubPurchaseProps
   | AnySpendDepositModalProps
   | AnySpendWorkflowTriggerModalProps

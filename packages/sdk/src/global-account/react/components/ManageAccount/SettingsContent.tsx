@@ -1,5 +1,6 @@
 import { useAuthentication, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { getSessionDurationDays } from "@b3dotfun/sdk/shared/utils/session-duration";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
@@ -8,6 +9,14 @@ import SignOutIcon from "../icons/SignOutIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
 import SettingsProfileCard from "./SettingsProfileCard";
+
+const DURATION_LABELS: Record<number, string> = {
+  0: "Session only",
+  1: "1 day",
+  7: "7 days",
+  14: "14 days",
+  30: "30 days",
+};
 
 const SettingsContent = ({
   partnerId,
@@ -20,46 +29,29 @@ const SettingsContent = ({
 }) => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const { logout } = useAuthentication(partnerId);
+  const { logout, user } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
-  const { data: profilesRaw = [] } = useProfiles({ client });
+  const sessionDays = getSessionDurationDays(user?.preferences, partnerId);
 
+  const { data: profilesRaw = [] } = useProfiles({ client });
   const profiles = profilesRaw.filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type));
 
-  const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor" | "notifications") => {
+  const handleNavigate = (
+    type: "home" | "swap" | "linkAccount" | "avatarEditor" | "notifications" | "sessionDuration",
+  ) => {
     if (type === "home") {
-      setB3ModalContentType({
-        type: "manageAccount",
-        chain,
-        partnerId,
-        onLogout,
-        activeTab: "home",
-      });
+      setB3ModalContentType({ type: "manageAccount", chain, partnerId, onLogout, activeTab: "home" });
     } else if (type === "swap") {
-      setB3ModalContentType({
-        type: "manageAccount",
-        chain,
-        partnerId,
-        onLogout,
-        activeTab: "tokens",
-      });
+      setB3ModalContentType({ type: "manageAccount", chain, partnerId, onLogout, activeTab: "tokens" });
     } else if (type === "linkAccount") {
-      setB3ModalContentType({
-        type: "linkAccount",
-        chain,
-        partnerId,
-      });
+      setB3ModalContentType({ type: "linkAccount", chain, partnerId });
     } else if (type === "notifications") {
-      setB3ModalContentType({
-        type: "notifications",
-        chain,
-        partnerId,
-      });
+      setB3ModalContentType({ type: "notifications", chain, partnerId });
+    } else if (type === "sessionDuration") {
+      setB3ModalContentType({ type: "sessionDuration", chain, partnerId });
     } else {
-      setB3ModalContentType({
-        type: "avatarEditor",
-      });
+      setB3ModalContentType({ type: "avatarEditor" });
     }
     setB3ModalOpen(true);
   };
@@ -110,6 +102,19 @@ const SettingsContent = ({
           title="Notifications"
           subtitle="Manage your notifications"
           onClick={() => handleNavigate("notifications")}
+        />
+        <SettingsMenuItem
+          icon={
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0 12C0 5.37258 5.37258 0 12 0H28C34.6274 0 40 5.37258 40 12V28C40 34.6274 34.6274 40 28 40H12C5.37258 40 0 34.6274 0 28V12Z"
+                fill="#F4F4F5"
+              />
+            </svg>
+          }
+          title="Stay signed in"
+          subtitle={DURATION_LABELS[sessionDays] ?? `${sessionDays} days`}
+          onClick={() => handleNavigate("sessionDuration")}
         />
       </div>
 
