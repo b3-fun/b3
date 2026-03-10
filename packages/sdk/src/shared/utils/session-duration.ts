@@ -46,6 +46,14 @@ export function getSessionDurationDays(userPreferences?: Record<string, any>, pa
   return DEFAULT_DAYS;
 }
 
+export const SESSION_DURATION_LABELS: Record<SessionDurationDays, string> = {
+  0: "Session only",
+  1: "1 day",
+  7: "7 days",
+  14: "14 days",
+  30: "30 days",
+};
+
 /** Cache the preference locally so it's available immediately on next login */
 export function setSessionDurationDays(days: SessionDurationDays, partnerId?: string): void {
   try {

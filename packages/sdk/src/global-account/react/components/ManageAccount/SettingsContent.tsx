@@ -1,6 +1,6 @@
 import { useAuthentication, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { getSessionDurationDays } from "@b3dotfun/sdk/shared/utils/session-duration";
+import { getSessionDurationDays, SESSION_DURATION_LABELS } from "@b3dotfun/sdk/shared/utils/session-duration";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
@@ -9,14 +9,6 @@ import SignOutIcon from "../icons/SignOutIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
 import SettingsProfileCard from "./SettingsProfileCard";
-
-const DURATION_LABELS: Record<number, string> = {
-  0: "Session only",
-  1: "1 day",
-  7: "7 days",
-  14: "14 days",
-  30: "30 days",
-};
 
 const SettingsContent = ({
   partnerId,
@@ -113,7 +105,7 @@ const SettingsContent = ({
             </svg>
           }
           title="Stay signed in"
-          subtitle={DURATION_LABELS[sessionDays] ?? `${sessionDays} days`}
+          subtitle={SESSION_DURATION_LABELS[sessionDays] ?? `${sessionDays} days`}
           onClick={() => handleNavigate("sessionDuration")}
         />
       </div>

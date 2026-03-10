@@ -2,26 +2,17 @@ import app from "@b3dotfun/sdk/global-account/app";
 import { useAuthentication, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import {
   getSessionDurationDays,
+  SESSION_DURATION_LABELS,
   SESSION_DURATION_OPTIONS,
   SessionDurationDays,
   setSessionDurationDays,
 } from "@b3dotfun/sdk/shared/utils/session-duration";
 import { useState } from "react";
-import { Chain } from "thirdweb";
 import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface SessionDurationContentProps {
   partnerId: string;
-  chain: Chain;
 }
-
-const LABELS: Record<SessionDurationDays, string> = {
-  0: "Session only",
-  1: "1 day",
-  7: "7 days",
-  14: "14 days",
-  30: "30 days",
-};
 
 const DESCRIPTIONS: Record<SessionDurationDays, string> = {
   0: "Sign out when browser closes",
@@ -31,7 +22,7 @@ const DESCRIPTIONS: Record<SessionDurationDays, string> = {
   30: "Stay signed in for 30 days",
 };
 
-const SessionDurationContent = ({ partnerId, chain }: SessionDurationContentProps) => {
+const SessionDurationContent = ({ partnerId }: SessionDurationContentProps) => {
   const { user, setUser } = useAuthentication(partnerId);
   const navigateBack = useModalStore(state => state.navigateBack);
   const [sessionDays, setSessionDays] = useState<SessionDurationDays>(() =>
@@ -40,6 +31,7 @@ const SessionDurationContent = ({ partnerId, chain }: SessionDurationContentProp
   const [saving, setSaving] = useState(false);
 
   const handleSelect = async (days: SessionDurationDays) => {
+    const previous = sessionDays;
     setSessionDurationDays(days, partnerId);
     setSessionDays(days);
     if (user?.userId) {
@@ -48,12 +40,14 @@ const SessionDurationContent = ({ partnerId, chain }: SessionDurationContentProp
         const updated = await app.service("users").patch(user.userId, {
           preferences: {
             ...user.preferences,
-            [partnerId]: { ...(user.preferences as any)?.[partnerId], sessionDuration: days },
+            [partnerId]: { ...(user.preferences as Record<string, any>)?.[partnerId], sessionDuration: days },
           },
         });
         setUser(updated);
       } catch {
-        // non-critical — localStorage cache is still updated
+        // Revert optimistic update so UI stays consistent with server state
+        setSessionDays(previous);
+        setSessionDurationDays(previous, partnerId);
       } finally {
         setSaving(false);
       }
@@ -78,7 +72,7 @@ const SessionDurationContent = ({ partnerId, chain }: SessionDurationContentProp
           >
             <div className="flex flex-col items-start gap-0.5">
               <span className="font-neue-montreal-semibold text-[14px] leading-none tracking-[-0.28px] text-[#3f3f46] dark:text-white">
-                {LABELS[days]}
+                {SESSION_DURATION_LABELS[days]}
               </span>
               <span className="font-neue-montreal-medium text-[13px] leading-none tracking-[-0.26px] text-[#70707b] dark:text-white/50">
                 {DESCRIPTIONS[days]}

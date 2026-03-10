@@ -174,7 +174,7 @@ export function B3DynamicModal() {
       case "notifications":
         return <NotificationsContent {...contentType} />;
       case "sessionDuration":
-        return <SessionDurationContent {...contentType} />;
+        return <SessionDurationContent partnerId={contentType.partnerId} />;
       // Add other modal types here
       default:
         return null;
