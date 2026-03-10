@@ -40,7 +40,10 @@ const SessionDurationContent = ({ partnerId }: SessionDurationContentProps) => {
         const updated = await app.service("users").patch(user.userId, {
           preferences: {
             ...user.preferences,
-            [partnerId]: { ...((user.preferences?.[partnerId] as Record<string, unknown>) ?? {}), sessionDuration: days },
+            [partnerId]: {
+              ...((user.preferences?.[partnerId] as Record<string, unknown>) ?? {}),
+              sessionDuration: days,
+            },
           },
         });
         setUser(updated);

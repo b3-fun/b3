@@ -35,7 +35,11 @@ export const authenticate = async (
     const token = Cookies.get(B3_AUTH_COOKIE_NAME);
     if (token) {
       const days = getSessionDurationDays(response?.user?.preferences, params?.partnerId);
-      Cookies.set(B3_AUTH_COOKIE_NAME, token, { ...(days > 0 ? { expires: days } : {}), secure: true, sameSite: "Lax" });
+      Cookies.set(B3_AUTH_COOKIE_NAME, token, {
+        ...(days > 0 ? { expires: days } : {}),
+        secure: true,
+        sameSite: "Lax",
+      });
     }
 
     return response;
