@@ -27,6 +27,7 @@ import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import NotificationsContent from "./ManageAccount/NotificationsContent";
+import SessionDurationContent from "./ManageAccount/SessionDurationContent";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -172,6 +173,8 @@ export function B3DynamicModal() {
         return <Send {...contentType} />;
       case "notifications":
         return <NotificationsContent {...contentType} />;
+      case "sessionDuration":
+        return <SessionDurationContent partnerId={contentType.partnerId} />;
       // Add other modal types here
       default:
         return null;
